@@ -314,7 +314,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
     title: '成交确认',
     desc: '确认最高有效报价，确定成交受让方',
     time: '2026-05-18 11:20',
-    files: ['成交确认单.pdf'],
+    files: ['成���确认单.pdf'],
   },
   {
     title: '订单创建',
@@ -812,17 +812,41 @@ function CertTab({ cfg }: { cfg: CertConfig }) {
 
 /* ---------------- 碳核算 Tab ---------------- */
 
-function AccountTab() {
+function AccountTab({ cfg }: { cfg: CertConfig }) {
   return (
     <div className="flex flex-col gap-6">
-      {/* 租赁流转过程 */}
-      <SectionCard title="租赁流转过程">
+      {/* 流转过程 */}
+      <SectionCard title={`${cfg.flowLabel}流转过程`}>
         <div className="flex flex-wrap items-center justify-between gap-4 px-2 py-2">
-          <FlowNode icon={Building2} title="出租方" sub="中铁物资/华南公司" tone="chart-4" />
-          <FlowArrow label="出库发运" note="物资运输至承租方" dir="right" />
-          <FlowNode icon={HardHat} title="承租方" sub="广州帝隆科技股份有限公司" tone="primary" active />
-          <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
-          <FlowNode icon={Recycle} title="循环复用" sub="检修入库 · 再次出租" tone="chart-4" />
+          <FlowNode
+            icon={Building2}
+            title={cfg.flow.ownerTitle}
+            sub={cfg.flow.ownerSub}
+            tone="chart-4"
+          />
+          <FlowArrow
+            label={cfg.flow.forwardLabel}
+            note={cfg.flow.forwardNote}
+            dir="right"
+          />
+          <FlowNode
+            icon={HardHat}
+            title={cfg.flow.counterpartyTitle}
+            sub={cfg.flow.counterpartySub}
+            tone="primary"
+            active
+          />
+          {cfg.flow.hasReturn ? (
+            <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
+          ) : (
+            <FlowArrow label="货权转移" note="不再返回转让方" dir="right" />
+          )}
+          <FlowNode
+            icon={Recycle}
+            title="循环复用"
+            sub={cfg.flow.reuseSub}
+            tone="chart-4"
+          />
         </div>
       </SectionCard>
 
@@ -831,8 +855,10 @@ function AccountTab() {
         <TrendingDown className="mt-0.5 size-4 shrink-0 text-chart-4" />
         <p className="text-muted-foreground">
           <span className="font-medium text-foreground">本核算结果 </span>
-          <span className="font-medium text-chart-4">仅考核本次租赁</span>
-          （订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排与运输碳排放，不含历史周转累计减碳量。
+          <span className="font-medium text-chart-4">
+            仅考核本次{cfg.flowLabel}
+          </span>
+          {cfg.scopeText}
         </p>
       </div>
 
@@ -846,32 +872,37 @@ function AccountTab() {
           碳减排量（净减排量）=（物资重量 × 新品排放因子）–（运输量 × 运输距离 × 运输因子）
         </p>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          即：循环利用减排 182.05 – 运输碳排放 0.97 = 净减排量{' '}
-          <span className="font-semibold text-primary">181.08 tCO₂e</span>
+          即：循环利用减排 {cfg.reuseTotal} – 运输碳排放 {cfg.transportTotal} =
+          净减排量{' '}
+          <span className="font-semibold text-primary">
+            {cfg.netReduction} tCO₂e
+          </span>
         </p>
       </div>
 
       {/* 指标卡 */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-        <MetricCard icon={Recycle} label="循环利用减排" value="182.05" unit="tCO₂e" />
-        <MetricCard icon={Truck} label="运输碳排放" value="0.97" unit="tCO₂e" />
-        <MetricCard icon={Zap} label="运输碳减排（新能源）" value="0.32" unit="tCO₂e" />
-        <MetricCard icon={TrendingDown} label="碳减排量（净减排量）" value="181.08" unit="tCO₂e" highlight />
-        <MetricCard icon={Leaf} label="净减排率" value="99.5" unit="%" />
+        <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />
+        <MetricCard icon={Truck} label="运输碳排放" value={cfg.transportTotal} unit="tCO₂e" />
+        <MetricCard icon={Zap} label="运输碳减排（新能源）" value={cfg.transportNewReduction} unit="tCO₂e" />
+        <MetricCard icon={TrendingDown} label="碳减排量（净减排量）" value={cfg.netReduction} unit="tCO₂e" highlight />
+        <MetricCard icon={Leaf} label="净减排率" value={cfg.netRate} unit="%" />
       </div>
 
       {/* 运输碳排放表 */}
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold text-foreground">本次租赁运输碳排放</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            {cfg.transportTitle}
+          </h3>
           <div className="flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1 text-chart-4">
               <span className="size-2 rounded-full bg-chart-4" />
-              运输碳排放合计 0.97 tCO₂e
+              运输碳排放合计 {cfg.transportTotal} tCO₂e
             </span>
             <span className="flex items-center gap-1 text-primary">
               <Zap className="size-3" />
-              新能源较燃油减排 0.32 tCO₂e
+              新能源较燃油减排 {cfg.transportNewReduction} tCO₂e
             </span>
           </div>
         </div>
@@ -892,7 +923,7 @@ function AccountTab() {
               </tr>
             </thead>
             <tbody>
-              {TRANSPORT_ROWS.map((r) => (
+              {cfg.transportRows.map((r) => (
                 <tr key={r.stage} className="border-t border-border align-top">
                   <td className="px-3 py-3 text-foreground">{r.stage}</td>
                   <td className="px-3 py-3 text-muted-foreground">{r.mode}</td>
@@ -937,7 +968,9 @@ function AccountTab() {
 
       {/* 循环利用减排明细表 */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold text-foreground">本次租赁循环利用减排明细</h3>
+        <h3 className="mb-3 text-sm font-semibold text-foreground">
+          {cfg.reuseTitle}
+        </h3>
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <table className="w-full min-w-[560px] border-collapse text-sm">
             <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
@@ -950,7 +983,7 @@ function AccountTab() {
               </tr>
             </thead>
             <tbody>
-              {REUSE_ROWS.map((r) => (
+              {cfg.reuseRows.map((r) => (
                 <tr key={r.name} className="border-t border-border">
                   <td className="px-3 py-3 text-foreground">{r.name}</td>
                   <td className="px-3 py-3 text-muted-foreground">{r.spec}</td>
