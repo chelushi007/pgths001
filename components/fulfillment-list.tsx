@@ -1,7 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, RefreshCw, Send, Eye, ShieldCheck } from 'lucide-react'
+import {
+  Search,
+  RefreshCw,
+  Send,
+  Eye,
+  ShieldCheck,
+  FilePlus2,
+  X,
+  AlertTriangle,
+  CircleCheck,
+} from 'lucide-react'
 import {
   FulfillmentDetail,
   type FulfillmentProject,
@@ -19,6 +29,9 @@ type ProjectRow = {
   stageTone: 'blue' | 'green'
   signupStart: string
   signupEnd: string
+  // 'issued' 已核发碳凭证，可直接查看；'generate' 待生成，需先补充信息
+  certState?: 'issued' | 'generate'
+  pendingItems?: string[]
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -69,6 +82,11 @@ const ENDED_PROJECTS: ProjectRow[] = [
     stageTone: 'green',
     signupStart: '2026-07-05 09:10:00',
     signupEnd: '2026-07-08 00:00:00',
+    certState: 'generate',
+    pendingItems: [
+      '补充各批次运输信息（承运方式、运输距离、能源类型等）',
+      '上传对应批次的过磅单附件',
+    ],
   },
   {
     code: '2086901355420188160',
@@ -78,6 +96,8 @@ const ENDED_PROJECTS: ProjectRow[] = [
     stageTone: 'green',
     signupStart: '2026-06-28 14:00:00',
     signupEnd: '2026-06-30 00:00:00',
+    certState: 'generate',
+    pendingItems: ['补充开具发票信息（发票抬头、税号、开票金额等）'],
   },
   {
     code: '2086331209988110336',
@@ -107,6 +127,9 @@ export function FulfillmentList({
   const [detailProject, setDetailProject] =
     useState<FulfillmentProject | null>(null)
   const [certProject, setCertProject] = useState<CarbonCertProject | null>(null)
+  const [generateProject, setGenerateProject] = useState<ProjectRow | null>(
+    null,
+  )
 
   const openDetail = (p: ProjectRow) => {
     setDetailProject({
@@ -265,18 +288,28 @@ export function FulfillmentList({
                           <Eye className="size-3.5" />
                           管理项目
                         </button>
-                        {isEnded && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setCertProject({ code: p.code, title: p.title })
-                            }
-                            className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
-                          >
-                            <ShieldCheck className="size-3.5" />
-                            碳凭证
-                          </button>
-                        )}
+                        {isEnded &&
+                          (p.certState === 'generate' ? (
+                            <button
+                              type="button"
+                              onClick={() => setGenerateProject(p)}
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-5 transition-colors hover:text-chart-5/80"
+                            >
+                              <FilePlus2 className="size-3.5" />
+                              生成碳凭证
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCertProject({ code: p.code, title: p.title })
+                              }
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                            >
+                              <ShieldCheck className="size-3.5" />
+                              碳凭证
+                            </button>
+                          ))}
                       </div>
                     </td>
                   </tr>
@@ -322,6 +355,105 @@ export function FulfillmentList({
         project={certProject}
         onClose={() => setCertProject(null)}
       />
+
+      <GenerateCertPrompt
+        project={generateProject}
+        onClose={() => setGenerateProject(null)}
+      />
+    </div>
+  )
+}
+
+function GenerateCertPrompt({
+  project,
+  onClose,
+}: {
+  project: ProjectRow | null
+  onClose: () => void
+}) {
+  if (!project) return null
+  const items = project.pendingItems ?? []
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="生成碳凭证"
+    >
+      <button
+        type="button"
+        aria-label="关闭弹窗"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-foreground/40 backdrop-blur-sm"
+      />
+
+      <div className="relative flex w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
+          <div className="flex items-center gap-2">
+            <FilePlus2 className="size-4 text-chart-5" />
+            <h2 className="text-base font-semibold text-foreground">
+              生成碳凭证
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={onClose}
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="space-y-4 p-6">
+          <div className="rounded-lg border border-border bg-muted/40 px-4 py-3">
+            <p className="text-xs text-muted-foreground">关联项目</p>
+            <p className="mt-1 text-sm font-medium text-foreground">
+              {project.title}
+            </p>
+            <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+              {project.code}
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border border-chart-5/30 bg-chart-5/10 px-4 py-3">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-chart-5" />
+            <div className="text-sm text-foreground">
+              <p className="font-medium">该项目暂不满足碳凭证生成条件</p>
+              <p className="mt-0.5 text-muted-foreground">
+                生成碳凭证前，请先补充以下信息：
+              </p>
+            </div>
+          </div>
+
+          <ul className="space-y-2">
+            {items.map((it) => (
+              <li key={it} className="flex items-start gap-2 text-sm">
+                <CircleCheck className="mt-0.5 size-4 shrink-0 text-primary" />
+                <span className="text-foreground">{it}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex items-center justify-end gap-3 border-t border-border bg-secondary/40 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-input bg-background px-5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            稍后处理
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            去补充信息
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

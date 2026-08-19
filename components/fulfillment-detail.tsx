@@ -11,6 +11,9 @@ import {
   FileText,
   Truck,
   Scale,
+  MapPin,
+  Navigation,
+  CircleDot,
 } from 'lucide-react'
 
 export type FulfillmentProject = {
@@ -507,6 +510,9 @@ function PickupOrderDialog({
   const [tareWeight, setTareWeight] = useState('')
   const [weighFile, setWeighFile] = useState<string | null>(null)
   const [remark, setRemark] = useState('')
+  const [logisticsNo, setLogisticsNo] = useState('')
+  const [distance, setDistance] = useState('')
+  const [trackOpen, setTrackOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
@@ -591,6 +597,38 @@ function PickupOrderDialog({
             icon={<Truck className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+              <div>
+                <div className="mb-1.5 flex items-center justify-between">
+                  <FieldLabel label="物流单号" className="mb-0" />
+                  {logisticsNo.trim() && (
+                    <button
+                      type="button"
+                      onClick={() => setTrackOpen(true)}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                    >
+                      <MapPin className="size-3.5" />
+                      查看运输轨迹
+                    </button>
+                  )}
+                </div>
+                <input
+                  value={logisticsNo}
+                  onChange={(e) => setLogisticsNo(e.target.value)}
+                  placeholder="如 YD20260820000123"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                />
+              </div>
+              <div>
+                <FieldLabel label="运输距离（km）" />
+                <input
+                  type="number"
+                  min="0"
+                  value={distance}
+                  onChange={(e) => setDistance(e.target.value)}
+                  placeholder="0"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm tabular-nums outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                />
+              </div>
               <InputField label="承运单位" placeholder="请输入承运单位" />
               <InputField label="车牌号" placeholder="如 粤A·12345" />
               <InputField label="司机姓名" placeholder="请输入司机姓名" />
@@ -808,6 +846,169 @@ function PickupOrderDialog({
           </button>
         </div>
       </div>
+
+      <TransportTrackDialog
+        open={trackOpen}
+        logisticsNo={logisticsNo}
+        distance={distance}
+        onClose={() => setTrackOpen(false)}
+      />
+    </div>
+  )
+}
+
+/* ------------------------- 运输轨迹弹窗 ------------------------- */
+
+type TrackNode = {
+  place: string
+  desc: string
+  time: string
+  done: boolean
+}
+
+function TransportTrackDialog({
+  open,
+  logisticsNo,
+  distance,
+  onClose,
+}: {
+  open: boolean
+  logisticsNo: string
+  distance: string
+  onClose: () => void
+}) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
+  if (!open) return null
+
+  const nodes: TrackNode[] = [
+    {
+      place: '中铁物资华南仓',
+      desc: '货物已装车出库，开始运输',
+      time: '2026-08-20 08:12',
+      done: true,
+    },
+    {
+      place: '广州分拨中心',
+      desc: '车辆途经分拨中心，装载校验通过',
+      time: '2026-08-20 10:45',
+      done: true,
+    },
+    {
+      place: '佛山中转站',
+      desc: '干线运输中，预计准点到达',
+      time: '2026-08-20 13:20',
+      done: true,
+    },
+    {
+      place: '项目现场收货点',
+      desc: '运抵目的地，等待卸货签收',
+      time: '2026-08-20 15:38',
+      done: false,
+    },
+  ]
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="实际运输轨迹"
+    >
+      <button
+        type="button"
+        aria-label="关闭弹窗"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default bg-foreground/40 backdrop-blur-sm"
+      />
+
+      <div className="relative flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+        <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
+          <div className="flex items-center gap-2">
+            <Navigation className="size-4 text-primary" />
+            <h2 className="text-base font-semibold text-foreground">
+              实际运输轨迹
+            </h2>
+          </div>
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={onClose}
+            className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="mb-5 flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
+            <div>
+              <span className="text-muted-foreground">物流单号：</span>
+              <span className="font-mono text-xs text-foreground">
+                {logisticsNo}
+              </span>
+            </div>
+            <div>
+              <span className="text-muted-foreground">运输距离：</span>
+              <span className="font-medium tabular-nums text-foreground">
+                {distance ? `${distance} km` : '—'}
+              </span>
+            </div>
+          </div>
+
+          <ol className="relative ml-2">
+            {nodes.map((n, i) => {
+              const isLast = i === nodes.length - 1
+              return (
+                <li key={n.place} className="relative flex gap-4 pb-6 last:pb-0">
+                  {!isLast && (
+                    <span
+                      className={`absolute left-[7px] top-5 h-full w-0.5 ${n.done ? 'bg-primary/40' : 'bg-border'}`}
+                    />
+                  )}
+                  <span className="relative z-10 mt-0.5 shrink-0">
+                    {n.done ? (
+                      <CircleDot className="size-4 text-primary" />
+                    ) : (
+                      <MapPin className="size-4 text-chart-5" />
+                    )}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {n.place}
+                      </span>
+                      <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                        {n.time}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {n.desc}
+                    </p>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
+
+        <div className="flex items-center justify-end border-t border-border bg-secondary/40 px-6 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-input bg-background px-5 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            关闭
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -937,9 +1138,19 @@ function FormSection({
   )
 }
 
-function FieldLabel({ label, required }: { label: string; required?: boolean }) {
+function FieldLabel({
+  label,
+  required,
+  className,
+}: {
+  label: string
+  required?: boolean
+  className?: string
+}) {
   return (
-    <label className="mb-1.5 block text-sm text-muted-foreground">
+    <label
+      className={`mb-1.5 block text-sm text-muted-foreground ${className ?? ''}`}
+    >
       {required && <span className="mr-0.5 text-destructive">*</span>}
       {label}
     </label>
