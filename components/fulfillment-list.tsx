@@ -14,6 +14,7 @@ import {
   Leaf,
   Activity,
   MinusCircle,
+  FileCheck,
 } from 'lucide-react'
 import {
   FulfillmentDetail,
@@ -510,8 +511,16 @@ export function FulfillmentList({
                           onClick={() => openDetail(p)}
                           className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                         >
-                          <Eye className="size-3.5" />
-                          {isProcurement ? '查看' : '管理项目'}
+                          {isProcurement && !isEnded ? (
+                            <FileCheck className="size-3.5" />
+                          ) : (
+                            <Eye className="size-3.5" />
+                          )}
+                          {isProcurement
+                            ? isEnded
+                              ? '查看'
+                              : '履约'
+                            : '管理项目'}
                         </button>
                         {isEnded &&
                           !isProcurement &&
