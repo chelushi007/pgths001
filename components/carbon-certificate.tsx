@@ -295,17 +295,277 @@ const REUSE_ROWS: ReuseRow[] = [
   { name: '可调底座', spec: 'U型', weight: '9.4', factor: '1860', reduction: '17.48' },
 ]
 
+/* ---------------- 处置（转让）数据 ---------------- */
+
+const INFO_FLOW_D: InfoFlowStep[] = [
+  {
+    title: '公告发布',
+    desc: '转让方发布闲置/废旧物资转让公告，公示物资清单与转让条件',
+    time: '2026-05-12 09:00',
+    files: ['物资转让公告.pdf'],
+  },
+  {
+    title: '竞价（网络竞价）',
+    desc: '多家受让方在线报价参与竞价，价高者得',
+    time: '2026-05-15 16:30',
+    files: ['竞价报价单.pdf'],
+  },
+  {
+    title: '成交确认',
+    desc: '确认最高有效报价，确定成交受让方',
+    time: '2026-05-18 11:20',
+    files: ['成交确认单.pdf'],
+  },
+  {
+    title: '订单创建',
+    desc: '受让方提交受让需求，生成电子订单',
+    time: '2026-05-20 09:32',
+  },
+  {
+    title: '合同签订',
+    desc: '双方完成电子转让合同在线签章，货权转移',
+    time: '2026-05-21 10:15',
+    files: ['物资转让合同.pdf'],
+  },
+  {
+    title: '碳数据采集',
+    desc: '采集物资规格、数量、交付运输等核算要素',
+    time: '2026-05-22 14:10',
+  },
+  {
+    title: '碳量核算',
+    desc: '依据 GB/T 51366 完成碳足迹核算',
+    time: '2026-05-22 15:40',
+  },
+  {
+    title: '凭证生成',
+    desc: '区块链存证，生成不可篡改碳凭证',
+    time: '2026-05-22 16:05',
+  },
+]
+
+const FUND_FLOW_D: FundFlow[] = [
+  {
+    title: '履约保证金',
+    channel: '线上支付',
+    amount: '¥15,000.00',
+    status: '已缴纳',
+    method: '平台担保支付（微信支付）',
+    time: '2026-05-21 11:20',
+    files: ['保证金支付电子回单.pdf'],
+  },
+  {
+    title: '成交转让款',
+    channel: '线上支付',
+    amount: '¥182,600.00',
+    status: '已支付',
+    method: '平台在线支付（企业网银）',
+    time: '2026-05-22 09:00',
+    files: ['转让款结算单.pdf', '电子发票.pdf'],
+  },
+  {
+    title: '保证金退还',
+    channel: '线上支付',
+    amount: '¥15,000.00',
+    status: '已退还',
+    method: '平台原路退回（微信支付）',
+    time: '2026-05-24 10:00',
+    files: ['保证金退还电子回单.pdf'],
+  },
+]
+
+const LOGISTICS_D: LogisticsItem[] = [
+  {
+    title: '第 1 批次交付',
+    badge: '交付 1/2',
+    desc: '转让方仓库 → 受让方指定地点 · 交付 48.0 吨（1 车次），已签收',
+    orderNo: 'THD20260522000041',
+    time: '2026-05-22 08:00',
+    files: [
+      '提货单（THD20260522000041）.pdf',
+      '出库单（第1批）.pdf',
+      '过磅单（第1批·48.0吨）.jpg',
+      '签收单（第1批）.pdf',
+    ],
+    track: true,
+    tone: 'ship',
+  },
+  {
+    title: '第 2 批次交付',
+    badge: '交付 2/2',
+    desc: '转让方仓库 → 受让方指定地点 · 交付 38.4 吨（1 车次），已签收',
+    orderNo: 'THD20260526000053',
+    time: '2026-05-26 08:20',
+    files: [
+      '提货单（THD20260526000053）.pdf',
+      '出库单（第2批）.pdf',
+      '过磅单（第2批·38.4吨）.jpg',
+      '签收单（第2批）.pdf',
+    ],
+    track: true,
+    tone: 'ship',
+  },
+  {
+    title: '货权转移完成',
+    desc: '物资全部交付受让方，货权正式转移，由受让方循环再利用',
+    time: '2026-05-26 至今',
+    files: [],
+    tone: 'use',
+  },
+]
+
+const TRANSPORT_ROWS_D: TransportRow[] = [
+  {
+    stage: '出库交付（转让方→受让方）',
+    mode: '陆运',
+    vehicle: '电动重卡 粤A·D8856（比亚迪 T7）',
+    energy: '新能源',
+    energyTone: 'new',
+    amount: '86.4',
+    distance: '68',
+    factor: '0.0418',
+    emission: '0.25',
+    baseline: '0.57',
+    reduction: '0.32',
+  },
+  {
+    stage: '干线运输（转让方→受让方）',
+    mode: '水运',
+    vehicle: '内河货船 珠航货0231',
+    energy: '燃油',
+    energyTone: 'fuel',
+    amount: '86.4',
+    distance: '120',
+    factor: '0.0156',
+    emission: '0.16',
+    baseline: '—',
+    reduction: '—',
+  },
+]
+
+const REUSE_ROWS_D: ReuseRow[] = [
+  { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '46.2', factor: '2340', reduction: '108.11' },
+  { name: '扣件', spec: '直角扣件', weight: '13.6', factor: '1120', reduction: '15.23' },
+  { name: '钢跳板', spec: '2.0m', weight: '18.2', factor: '2340', reduction: '42.59' },
+  { name: '型钢废料', spec: 'H型钢', weight: '8.4', factor: '2100', reduction: '17.64' },
+]
+
+type CertConfig = {
+  certTitle: string
+  ownerLabel: string
+  ownerValue: string
+  counterpartyLabel: string
+  counterpartyValue: string
+  infoFlow: InfoFlowStep[]
+  fundFlow: FundFlow[]
+  logistics: LogisticsItem[]
+  transportRows: TransportRow[]
+  reuseRows: ReuseRow[]
+  flowLabel: string
+  reuseTitle: string
+  transportTitle: string
+  scopeText: string
+  materialWeight: string
+  reuseTotal: string
+  transportTotal: string
+  transportNewReduction: string
+  netReduction: string
+  netRate: string
+  flow: {
+    ownerTitle: string
+    ownerSub: string
+    counterpartyTitle: string
+    counterpartySub: string
+    forwardLabel: string
+    forwardNote: string
+    reuseSub: string
+    hasReturn: boolean
+  }
+}
+
+const CERT_CONFIG: Record<'rental' | 'disposal', CertConfig> = {
+  rental: {
+    certTitle: '绿色循环碳减排凭证',
+    ownerLabel: '出租单位',
+    ownerValue: '中铁物资/华南公司',
+    counterpartyLabel: '承租单位',
+    counterpartyValue: '广州帝隆科技股份有限公司',
+    infoFlow: INFO_FLOW,
+    fundFlow: FUND_FLOW,
+    logistics: LOGISTICS,
+    transportRows: TRANSPORT_ROWS,
+    reuseRows: REUSE_ROWS,
+    flowLabel: '租赁',
+    reuseTitle: '本次租赁循环利用减排明细',
+    transportTitle: '本次租赁运输碳排放',
+    scopeText:
+      '（订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排与运输碳排放，不含历史周转累计减碳量。',
+    materialWeight: '86.40 吨',
+    reuseTotal: '182.05',
+    transportTotal: '0.97',
+    transportNewReduction: '0.32',
+    netReduction: '181.08',
+    netRate: '99.5',
+    flow: {
+      ownerTitle: '出租方',
+      ownerSub: '中铁物资/华南公司',
+      counterpartyTitle: '承租方',
+      counterpartySub: '广州帝隆科技股份有限公司',
+      forwardLabel: '出库发运',
+      forwardNote: '物资运输至承租方',
+      reuseSub: '检修入库 · 再次出租',
+      hasReturn: true,
+    },
+  },
+  disposal: {
+    certTitle: '资源转让循环利用碳减排凭证',
+    ownerLabel: '转让单位',
+    ownerValue: '中铁物资/华南公司',
+    counterpartyLabel: '受让单位',
+    counterpartyValue: '广州资源回收有限公司',
+    infoFlow: INFO_FLOW_D,
+    fundFlow: FUND_FLOW_D,
+    logistics: LOGISTICS_D,
+    transportRows: TRANSPORT_ROWS_D,
+    reuseRows: REUSE_ROWS_D,
+    flowLabel: '转让',
+    reuseTitle: '本次转让循环利用减排明细',
+    transportTitle: '本次转让运输碳排放',
+    scopeText:
+      '（订单 ZRDD20260520002），仅统计与本次转让直接相关的资源循环利用减排与单程交付运输碳排放，货权转移后不含受让方后续使用排放。',
+    materialWeight: '86.40 吨',
+    reuseTotal: '183.57',
+    transportTotal: '0.41',
+    transportNewReduction: '0.32',
+    netReduction: '183.16',
+    netRate: '99.8',
+    flow: {
+      ownerTitle: '转让方',
+      ownerSub: '中铁物资/华南公司',
+      counterpartyTitle: '受让方',
+      counterpartySub: '广州资源回收有限公司',
+      forwardLabel: '出库交付',
+      forwardNote: '货权转移至受让方',
+      reuseSub: '拆解检修 · 循环再利用',
+      hasReturn: false,
+    },
+  },
+}
+
 /* ---------------- 组件 ---------------- */
 
 export function CarbonCertificate({
   open,
   project,
+  mode = 'rental',
   onClose,
 }: {
   open: boolean
   project: CarbonCertProject | null
+  mode?: 'rental' | 'disposal'
   onClose: () => void
 }) {
+  const cfg = CERT_CONFIG[mode]
   const [tab, setTab] = useState<'cert' | 'account'>('cert')
 
   useEffect(() => {
@@ -338,7 +598,7 @@ export function CarbonCertificate({
             <ShieldCheck className="size-5" />
             <span className="text-base font-semibold">碳凭证</span>
             <span className="rounded bg-primary-foreground/20 px-2 py-0.5 font-mono text-xs">
-              ZLDD20260520002
+              {mode === 'disposal' ? 'ZRDD20260520002' : 'ZLDD20260520002'}
             </span>
           </div>
           <button
@@ -363,7 +623,7 @@ export function CarbonCertificate({
 
         {/* 内容区 */}
         <div className="max-h-[calc(100vh-11rem)] overflow-y-auto bg-muted/30 px-6 py-5">
-          {tab === 'cert' ? <CertTab /> : <AccountTab />}
+          {tab === 'cert' ? <CertTab cfg={cfg} /> : <AccountTab cfg={cfg} />}
         </div>
 
         {/* 底部 */}
@@ -390,7 +650,7 @@ export function CarbonCertificate({
 
 /* ---------------- 凭证 Tab ---------------- */
 
-function CertTab() {
+function CertTab({ cfg }: { cfg: CertConfig }) {
   return (
     <div className="flex flex-col gap-6">
       {/* 凭证头卡 */}
@@ -398,7 +658,7 @@ function CertTab() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-5 text-primary" />
-            <span className="font-semibold text-foreground">绿色循环碳减排凭证</span>
+            <span className="font-semibold text-foreground">{cfg.certTitle}</span>
           </div>
           <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
             已核发
@@ -406,11 +666,17 @@ function CertTab() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4">
           <KV label="凭证编号" value="TC20260520002" mono />
-          <KV label="关联订单" value="ZLDD20260520002" mono />
+          <KV
+            label="关联订单"
+            value={
+              cfg.flowLabel === '转让' ? 'ZRDD20260520002' : 'ZLDD20260520002'
+            }
+            mono
+          />
           <KV label="物资数量" value="86.40 吨" strong />
           <KV label="核算减碳量" value="181.08 tCO₂e" strong accent />
-          <KV label="出租单位" value="中铁物资/华南公司" />
-          <KV label="承租单位" value="广州帝隆科技股份有限公司" span2 />
+          <KV label={cfg.ownerLabel} value={cfg.ownerValue} />
+          <KV label={cfg.counterpartyLabel} value={cfg.counterpartyValue} span2 />
           <KV label="核发日期" value="2026-05-22 14:10" />
           <KV label="核算依据" value="GB/T 51366" />
           <KV label="存证方式" value="区块链存证" />
@@ -423,10 +689,10 @@ function CertTab() {
       {/* 信息流 */}
       <SectionCard icon={FileText} title="信息流" iconTone="chart-4">
         <ol className="flex flex-col">
-          {INFO_FLOW.map((step, i) => (
+          {cfg.infoFlow.map((step, i) => (
             <TimelineItem
               key={step.title}
-              last={i === INFO_FLOW.length - 1}
+              last={i === cfg.infoFlow.length - 1}
               dotTone="chart-4"
             >
               <div className="flex items-start justify-between gap-4">
@@ -453,10 +719,10 @@ function CertTab() {
       {/* 资金流 */}
       <SectionCard icon={Wallet} title="资金流" iconTone="chart-5">
         <ol className="flex flex-col">
-          {FUND_FLOW.map((item, i) => (
+          {cfg.fundFlow.map((item, i) => (
             <TimelineItem
               key={item.title}
-              last={i === FUND_FLOW.length - 1}
+              last={i === cfg.fundFlow.length - 1}
               dotTone="chart-5"
             >
               <div className="flex items-start justify-between gap-4">
@@ -491,10 +757,10 @@ function CertTab() {
       {/* 物流 */}
       <SectionCard icon={Truck} title="物流" iconTone="primary">
         <ol className="flex flex-col">
-          {LOGISTICS.map((item, i) => (
+          {cfg.logistics.map((item, i) => (
             <TimelineItem
               key={item.title}
-              last={i === LOGISTICS.length - 1}
+              last={i === cfg.logistics.length - 1}
               dotTone="primary"
             >
               <div className="flex items-start justify-between gap-4">

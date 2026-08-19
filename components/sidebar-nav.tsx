@@ -36,7 +36,16 @@ const NAV_GROUPS: NavGroup[] = [
     label: '资源盘活',
     icon: Recycle,
     children: [
-      { key: 'disposal', label: '资源处置', icon: PackageOpen },
+      {
+        key: 'disposal',
+        label: '资源处置',
+        icon: PackageOpen,
+        children: [
+          { key: 'd-publish', label: '发布公告', icon: FileText },
+          { key: 'd-perform', label: '履约', icon: FileCheck },
+          { key: 'd-perform-end', label: '履约结束', icon: CheckCircle2 },
+        ],
+      },
       {
         key: 'rental',
         label: '资源出租',
@@ -150,7 +159,10 @@ export function SidebarNav({
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV_GROUPS.map((g) => g.key),
   )
-  const [openChildren, setOpenChildren] = useState<string[]>(['rental'])
+  const [openChildren, setOpenChildren] = useState<string[]>([
+    'disposal',
+    'rental',
+  ])
 
   const toggleGroup = (key: string) => {
     setOpenGroups((prev) =>

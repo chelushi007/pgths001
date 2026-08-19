@@ -155,8 +155,38 @@ const STAGE_TONE: Record<ProjectRow['stageTone'], string> = {
   blue: 'bg-chart-4/15 text-chart-4',
 }
 
-export function PublishAnnouncement() {
+const MODE_CONFIG = {
+  rental: {
+    flowLabel: '出租',
+    flowFilterLabel: '流转方式',
+    startBtn: '发起自主出租',
+    dialogTitle: '发起自主出租',
+    dealOptions: ['网络竞价', '协议出租', '定向出租'],
+    priceLabel: '挂牌金额',
+    pricePlaceholder: '挂牌金额（元）',
+  },
+  disposal: {
+    flowLabel: '转让',
+    flowFilterLabel: '处置方式',
+    startBtn: '发起自主转让',
+    dialogTitle: '发起自主转让',
+    dealOptions: ['网络竞价', '协议转让', '定向转让'],
+    priceLabel: '转让底价',
+    pricePlaceholder: '转让底价（元）',
+  },
+} as const
+
+export function PublishAnnouncement({
+  mode = 'rental',
+}: {
+  mode?: 'rental' | 'disposal'
+}) {
   const [rentOpen, setRentOpen] = useState(false)
+  const cfg = MODE_CONFIG[mode]
+  const isDisposal = mode === 'disposal'
+  const projects = PROJECTS.filter((p) =>
+    isDisposal ? p.flowType === '转让' : p.flowType === '出租',
+  )
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -175,11 +205,12 @@ export function PublishAnnouncement() {
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
             />
           </FilterField>
-          <FilterField label="处置方式">
+          <FilterField label={cfg.flowFilterLabel}>
             <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground outline-none">
               <option>全部</option>
-              <option>转让</option>
-              <option>出租</option>
+              {cfg.dealOptions.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
             </select>
           </FilterField>
           <FilterField label="当前环节">
@@ -222,18 +253,11 @@ export function PublishAnnouncement() {
         <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
           <button
             type="button"
-            className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Send className="size-4" />
-            发起自主转让
-          </button>
-          <button
-            type="button"
             onClick={() => setRentOpen(true)}
             className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <Send className="size-4" />
-            发起自主出租
+            {cfg.startBtn}
           </button>
         </div>
 
@@ -252,7 +276,7 @@ export function PublishAnnouncement() {
               </tr>
             </thead>
             <tbody>
-              {PROJECTS.map((p) => (
+              {projects.map((p) => (
                 <tr
                   key={p.code}
                   className="border-t border-border transition-colors hover:bg-accent/30"
@@ -291,7 +315,7 @@ export function PublishAnnouncement() {
 
         {/* 分页 */}
         <div className="flex flex-wrap items-center justify-end gap-4 border-t border-border px-4 py-3 text-sm text-muted-foreground">
-          <span>共 38 条</span>
+          <span>共 {projects.length} 条</span>
           <select className="rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none">
             <option>10条/页</option>
             <option>20条/页</option>
@@ -317,8 +341,12 @@ export function PublishAnnouncement() {
         </div>
       </section>
 
-      {/* 发起自主出租弹窗 */}
-      <RentDialog open={rentOpen} onClose={() => setRentOpen(false)} />
+      {/* 发起流转弹窗 */}
+      <RentDialog
+        open={rentOpen}
+        mode={mode}
+        onClose={() => setRentOpen(false)}
+      />
     </div>
   )
 }
@@ -368,11 +396,15 @@ function PageBtn({
 
 function RentDialog({
   open,
+  mode,
   onClose,
 }: {
   open: boolean
+  mode: 'rental' | 'disposal'
   onClose: () => void
 }) {
+  const cfg = MODE_CONFIG[mode]
+  const isDisposal = mode === 'disposal'
   const [rows, setRows] = useState<ResourceRow[]>(INITIAL_ROWS)
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({})
 
@@ -402,7 +434,7 @@ function RentDialog({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="发起自主出租"
+      aria-label={cfg.dialogTitle}
     >
       {/* 遮罩 */}
       <button
@@ -417,7 +449,7 @@ function RentDialog({
         {/* 标题栏 */}
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <h2 className="text-base font-semibold text-foreground">
-            发起自主出租
+            {cfg.dialogTitle}
           </h2>
           <button
             type="button"
@@ -445,7 +477,7 @@ function RentDialog({
                 className="flex items-center gap-1.5 text-sm text-primary transition-colors hover:text-primary/80"
               >
                 <RotateCw className="size-4" />
-                重新选择
+                重新选���
               </button>
               <button
                 type="button"
@@ -482,7 +514,7 @@ function RentDialog({
                     </th>
                     <th className="px-4 py-3 text-right font-medium">原值</th>
                     <th className="px-4 py-3 text-center font-medium">
-                      处置数量
+                      {isDisposal ? '处置数量' : '出租数量'}
                     </th>
                     <th className="px-4 py-3 font-medium">预估重量</th>
                   </tr>
@@ -656,7 +688,7 @@ function RentDialog({
 
             {/* 提示 */}
             <div className="border-t border-border bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
-              处置数量范围：大于 0
+              {isDisposal ? '处置数量' : '出租数量'}范围：大于 0
               且不超过资源自身可用数量（修改即时校验）；预估重量可结合上传的过磅单据核定。
             </div>
           </section>
@@ -687,48 +719,58 @@ function RentDialog({
 
               <Field label="流转方式" required>
                 <span className="inline-flex items-center rounded-md bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
-                  出租
+                  {cfg.flowLabel}
                 </span>
               </Field>
-              <Field label="出租周期">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-1 items-center rounded-md border border-input bg-background">
-                    <button
-                      type="button"
-                      className="px-3 py-2 text-muted-foreground hover:text-foreground"
-                      aria-label="减少周期"
-                    >
-                      <Minus className="size-4" />
-                    </button>
-                    <input
-                      className="w-full bg-transparent text-center text-sm outline-none"
-                      aria-label="出租周期数值"
-                    />
-                    <button
-                      type="button"
-                      className="px-3 py-2 text-muted-foreground hover:text-foreground"
-                      aria-label="增加周期"
-                    >
-                      <Plus className="size-4" />
-                    </button>
-                  </div>
-                  <select className="w-28 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground outline-none">
-                    <option>单位</option>
-                    <option>天</option>
-                    <option>月</option>
-                    <option>年</option>
+              {isDisposal ? (
+                <Field label="处置方式" required>
+                  <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none">
+                    <option>整体转让</option>
+                    <option>拆分转让</option>
+                    <option>报废处置</option>
                   </select>
-                </div>
-              </Field>
+                </Field>
+              ) : (
+                <Field label="出租周期">
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-1 items-center rounded-md border border-input bg-background">
+                      <button
+                        type="button"
+                        className="px-3 py-2 text-muted-foreground hover:text-foreground"
+                        aria-label="减少周期"
+                      >
+                        <Minus className="size-4" />
+                      </button>
+                      <input
+                        className="w-full bg-transparent text-center text-sm outline-none"
+                        aria-label="出租周期数值"
+                      />
+                      <button
+                        type="button"
+                        className="px-3 py-2 text-muted-foreground hover:text-foreground"
+                        aria-label="增加周期"
+                      >
+                        <Plus className="size-4" />
+                      </button>
+                    </div>
+                    <select className="w-28 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground outline-none">
+                      <option>单位</option>
+                      <option>天</option>
+                      <option>月</option>
+                      <option>年</option>
+                    </select>
+                  </div>
+                </Field>
+              )}
 
               <Field label="交易方式" required>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none">
-                  <option>网络竞价</option>
-                  <option>协议转让</option>
-                  <option>定向出租</option>
+                  {cfg.dealOptions.map((o) => (
+                    <option key={o}>{o}</option>
+                  ))}
                 </select>
               </Field>
-              <Field label="挂牌金额">
+              <Field label={cfg.priceLabel}>
                 <div className="flex items-center rounded-md border border-input bg-background">
                   <button
                     type="button"
@@ -738,9 +780,9 @@ function RentDialog({
                     <Minus className="size-4" />
                   </button>
                   <input
-                    placeholder="挂牌金额（元）"
+                    placeholder={cfg.pricePlaceholder}
                     className="w-full bg-transparent px-3 py-2 text-center text-sm outline-none placeholder:text-muted-foreground"
-                    aria-label="挂牌金额"
+                    aria-label={cfg.priceLabel}
                   />
                   <button
                     type="button"

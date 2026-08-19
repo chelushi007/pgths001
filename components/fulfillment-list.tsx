@@ -132,6 +132,84 @@ const ENDED_PROJECTS: ProjectRow[] = [
   },
 ]
 
+const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
+  {
+    code: '2089891097840062464',
+    title: '批量物资处置（5项）',
+    flowType: '转让',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-19 09:33:09',
+    signupEnd: '2026-08-20 00:00:00',
+    carbonState: 'estimating',
+    carbonValue: 62.4,
+  },
+  {
+    code: '2089616559671742464',
+    title: '批量物资处置（3项）',
+    flowType: '转让',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-18 15:31:42',
+    signupEnd: '2026-08-18 17:00:00',
+    carbonState: 'estimating',
+    carbonValue: 28.7,
+  },
+  {
+    code: '2089625006320521216',
+    title: '处置0808（废旧钢材转让）',
+    flowType: '转让',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-18 16:06:19',
+    signupEnd: '2026-08-18 16:24:00',
+    carbonState: 'estimating',
+    carbonValue: 15.3,
+  },
+]
+
+const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
+  {
+    code: '2087742971482083328',
+    title: '常州市鼓楼区综合管廊物资转让',
+    flowType: '转让',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-13 11:25:05',
+    signupEnd: '2026-07-14 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 154.36,
+  },
+  {
+    code: '2086901355420188160',
+    title: '轨枕批量转让（第二批）',
+    flowType: '转让',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-06-28 14:00:00',
+    signupEnd: '2026-06-30 00:00:00',
+    certState: 'generate',
+    pendingItems: [
+      '补充受让方提货运输信息（承运方式、运输距离、能源类型等）',
+      '上传交付批次的过磅单与签收单附件',
+    ],
+    carbonState: 'pending',
+  },
+  {
+    code: '2086331209988110336',
+    title: '废旧设备整体转让一批',
+    flowType: '转让',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-06-15 10:20:00',
+    signupEnd: '2026-06-18 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 88.15,
+  },
+]
+
 const STAGE_TONE: Record<ProjectRow['stageTone'], string> = {
   blue: 'bg-chart-4/15 text-chart-4',
   green: 'bg-primary/12 text-primary',
@@ -139,11 +217,20 @@ const STAGE_TONE: Record<ProjectRow['stageTone'], string> = {
 
 export function FulfillmentList({
   variant,
+  mode = 'rental',
 }: {
   variant: 'active' | 'ended'
+  mode?: 'rental' | 'disposal'
 }) {
   const isEnded = variant === 'ended'
-  const projects = isEnded ? ENDED_PROJECTS : ACTIVE_PROJECTS
+  const isDisposal = mode === 'disposal'
+  const projects = isDisposal
+    ? isEnded
+      ? DISPOSAL_ENDED_PROJECTS
+      : DISPOSAL_ACTIVE_PROJECTS
+    : isEnded
+      ? ENDED_PROJECTS
+      : ACTIVE_PROJECTS
   const stageLabel = isEnded ? '履约结束' : '履约'
 
   const [detailProject, setDetailProject] =
@@ -182,11 +269,22 @@ export function FulfillmentList({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
             />
           </FilterField>
-          <FilterField label="处置方式">
+          <FilterField label={isDisposal ? '处置方式' : '流转方式'}>
             <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground outline-none">
-              <option>全部</option>
-              <option>转让</option>
-              <option>出租</option>
+              {isDisposal ? (
+                <>
+                  <option>全部</option>
+                  <option>整体转让</option>
+                  <option>拆分转让</option>
+                  <option>报废处置</option>
+                </>
+              ) : (
+                <>
+                  <option>全部</option>
+                  <option>网络竞价</option>
+                  <option>定向出租</option>
+                </>
+              )}
             </select>
           </FilterField>
           <FilterField label="当前环节">
@@ -240,14 +338,7 @@ export function FulfillmentList({
               className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Send className="size-4" />
-              发起自主转让
-            </button>
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <Send className="size-4" />
-              发起自主出租
+              {isDisposal ? '发起自主转让' : '发起自主出租'}
             </button>
           </div>
         )}
@@ -376,12 +467,14 @@ export function FulfillmentList({
       <FulfillmentDetail
         open={detailProject !== null}
         project={detailProject}
+        mode={mode}
         onClose={() => setDetailProject(null)}
       />
 
       <CarbonCertificate
         open={certProject !== null}
         project={certProject}
+        mode={mode}
         onClose={() => setCertProject(null)}
       />
 

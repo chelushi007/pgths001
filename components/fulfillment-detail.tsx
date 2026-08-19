@@ -116,12 +116,15 @@ const TONE: Record<string, string> = {
 export function FulfillmentDetail({
   open,
   project,
+  mode = 'rental',
   onClose,
 }: {
   open: boolean
   project: FulfillmentProject | null
+  mode?: 'rental' | 'disposal'
   onClose: () => void
 }) {
+  const isDisposal = mode === 'disposal'
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
@@ -286,7 +289,10 @@ export function FulfillmentDetail({
               <InfoCell label="竞买人名称" value={project.buyer} />
               <InfoCell label="竞买人单位ID" value={project.buyerUnitId} mono />
               <InfoCell label="履约状态" value={project.status} />
-              <InfoCell label="履约期限" value={project.period} />
+              <InfoCell
+                label={isDisposal ? '交付期限' : '履约期限'}
+                value={project.period}
+              />
               <InfoCell label="履约备注" value="无" />
               <InfoCell label="关闭履约备注" value="无" />
             </div>
@@ -294,7 +300,7 @@ export function FulfillmentDetail({
 
           {/* 成交款收取 */}
           <Card
-            title="成交款收取"
+            title={isDisposal ? '转让款收取' : '成交款收取'}
             actions={
               <>
                 <GhostBtn>

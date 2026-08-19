@@ -8,8 +8,8 @@ import { FulfillmentList } from '@/components/fulfillment-list'
 
 export default function Page() {
   const [active, setActive] = useState({
-    key: 'disposal',
-    label: '资源处置',
+    key: 'd-publish',
+    label: '发布公告',
     group: '资源盘活',
   })
 
@@ -60,11 +60,17 @@ export default function Page() {
         {/* 内容区 */}
         <main className="flex-1 overflow-hidden p-6">
           {active.key === 'publish' ? (
-            <PublishAnnouncement />
+            <PublishAnnouncement mode="rental" />
+          ) : active.key === 'd-publish' ? (
+            <PublishAnnouncement mode="disposal" />
           ) : active.key === 'perform' ? (
-            <FulfillmentList variant="active" />
+            <FulfillmentList variant="active" mode="rental" />
           ) : active.key === 'perform-end' ? (
-            <FulfillmentList variant="ended" />
+            <FulfillmentList variant="ended" mode="rental" />
+          ) : active.key === 'd-perform' ? (
+            <FulfillmentList variant="active" mode="disposal" />
+          ) : active.key === 'd-perform-end' ? (
+            <FulfillmentList variant="ended" mode="disposal" />
           ) : (
             <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
               <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
