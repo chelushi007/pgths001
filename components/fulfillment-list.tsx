@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { Search, RefreshCw, Send, Eye, FileText } from 'lucide-react'
+import {
+  FulfillmentDetail,
+  type FulfillmentProject,
+} from '@/components/fulfillment-detail'
 
 type ProjectRow = {
   code: string
@@ -95,6 +99,21 @@ export function FulfillmentList({
   const isEnded = variant === 'ended'
   const projects = isEnded ? ENDED_PROJECTS : ACTIVE_PROJECTS
   const stageLabel = isEnded ? '履约结束' : '履约'
+
+  const [detailProject, setDetailProject] =
+    useState<FulfillmentProject | null>(null)
+
+  const openDetail = (p: ProjectRow) => {
+    setDetailProject({
+      code: p.code,
+      title: p.title,
+      flowType: p.flowType,
+      buyer: '广州资源回收有限公司',
+      buyerUnitId: '2087787291144753153',
+      status: isEnded ? '履约结束' : '履约通过',
+      period: `${p.signupStart} ~ ${p.signupEnd}`,
+    })
+  }
 
   return (
     <div className="flex h-full flex-col gap-4">
@@ -234,6 +253,7 @@ export function FulfillmentList({
                     <td className="px-4 py-3">
                       <button
                         type="button"
+                        onClick={() => openDetail(p)}
                         className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                       >
                         {isEnded ? (
@@ -280,6 +300,12 @@ export function FulfillmentList({
           </div>
         </div>
       </section>
+
+      <FulfillmentDetail
+        open={detailProject !== null}
+        project={detailProject}
+        onClose={() => setDetailProject(null)}
+      />
     </div>
   )
 }
