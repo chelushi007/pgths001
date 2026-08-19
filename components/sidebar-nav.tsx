@@ -41,9 +41,24 @@ const NAV_GROUPS: NavGroup[] = [
         label: '资源处置',
         icon: PackageOpen,
         children: [
-          { key: 'd-publish', label: '发布公告', icon: FileText },
-          { key: 'd-perform', label: '履约', icon: FileCheck },
-          { key: 'd-perform-end', label: '履约结束', icon: CheckCircle2 },
+          {
+            key: 'transferor',
+            label: '转让方',
+            icon: Users,
+            children: [
+              { key: 'd-publish', label: '发布公告', icon: FileText },
+              { key: 'd-perform', label: '履约', icon: FileCheck },
+              { key: 'd-perform-end', label: '履约结束', icon: CheckCircle2 },
+            ],
+          },
+          {
+            key: 'transferee',
+            label: '受让方',
+            icon: Store,
+            children: [
+              { key: 'transferee-perform', label: '履约', icon: FileCheck },
+            ],
+          },
         ],
       },
       {
@@ -178,6 +193,8 @@ export function SidebarNav({
   )
   const [openChildren, setOpenChildren] = useState<string[]>([
     'disposal',
+    'transferor',
+    'transferee',
     'rental',
     'buyer',
     'seller',
