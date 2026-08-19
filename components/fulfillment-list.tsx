@@ -38,7 +38,7 @@ type ProjectRow = {
   // 'issued' 已核发碳凭证，可直接查看；'generate' 待生成，需先补充信息
   certState?: 'issued' | 'generate'
   pendingItems?: string[]
-  // 碳减排：estimating 履约中累计预估；accounted 已核算实际值；pending 信息不全待核算
+  // 碳减排：estimating 本条项目预估中；accounted 已核算实际值；pending 信息不全待核算
   carbonState: CarbonState
   carbonValue?: number // tCO₂e
 }
@@ -788,7 +788,7 @@ function CarbonCell({
           </span>
         </div>
         <span className="inline-flex w-fit items-center rounded bg-chart-4/15 px-1.5 py-0.5 text-[11px] font-medium text-chart-4">
-          预估中 · 累计
+          预估中
         </span>
       </div>
     )
