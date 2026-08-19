@@ -541,6 +541,7 @@ export function FulfillmentDetail({
       <PickupOrderDialog
         open={pickupOpen}
         project={project}
+        isBuyer={isBuyer}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
       />
@@ -567,11 +568,13 @@ type DetailLine = {
 function PickupOrderDialog({
   open,
   project,
+  isBuyer = false,
   onClose,
   onSave,
 }: {
   open: boolean
   project: FulfillmentProject
+  isBuyer?: boolean
   onClose: () => void
   onSave: (buyer: string) => void
 }) {
@@ -623,7 +626,7 @@ function PickupOrderDialog({
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="录入提货单"
+      aria-label={isBuyer ? '确认收货单' : '录入提货单'}
     >
       <button
         type="button"
@@ -634,7 +637,9 @@ function PickupOrderDialog({
 
       <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
-          <h2 className="text-base font-semibold text-foreground">录入提货单</h2>
+          <h2 className="text-base font-semibold text-foreground">
+            {isBuyer ? '确认收货单' : '录入提货单'}
+          </h2>
           <button
             type="button"
             aria-label="关闭"
@@ -654,16 +659,20 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 提货方信息 */}
-          <FormSection title="提货方信息">
+          {/* 提货方 / 供货方信息 */}
+          <FormSection title={isBuyer ? '供货方信息' : '提货方信息'}>
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-              <ReadonlyField label="竞买人" value={project.buyer} required />
+              <ReadonlyField
+                label={isBuyer ? '供货方' : '竞买人'}
+                value={project.buyer}
+                required
+              />
             </div>
           </FormSection>
 
           {/* 物流信息登记 */}
           <FormSection
-            title="物流信息登记"
+            title={isBuyer ? '到货物流登记' : '物流信息登记'}
             icon={<Truck className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
@@ -704,7 +713,7 @@ function PickupOrderDialog({
               <InputField label="司机姓名" placeholder="请输入司机姓名" />
               <InputField label="联系电话" placeholder="请输入联系电话" />
               <div className="md:col-span-2">
-                <FieldLabel label="发货时间" />
+                <FieldLabel label={isBuyer ? '收货时间' : '发货时间'} />
                 <input
                   type="datetime-local"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
@@ -715,7 +724,7 @@ function PickupOrderDialog({
 
           {/* 重量信息 */}
           <FormSection
-            title="重量信息"
+            title={isBuyer ? '收货过磅' : '重量信息'}
             icon={<Scale className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
@@ -752,7 +761,7 @@ function PickupOrderDialog({
               </div>
             </div>
             <div className="mt-4">
-              <FieldLabel label="过磅单" required />
+              <FieldLabel label={isBuyer ? '收货过磅单' : '过磅单'} required />
               <input
                 ref={fileRef}
                 type="file"
@@ -788,14 +797,16 @@ function PickupOrderDialog({
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
                 >
                   <Upload className="size-4" />
-                  上传过磅单（支持图片 / PDF）
+                  {isBuyer
+                    ? '上传收货过磅单（支持图片 / PDF）'
+                    : '上传过磅单（支持图片 / PDF）'}
                 </button>
               )}
             </div>
           </FormSection>
 
-          {/* 提货明细 */}
-          <FormSection title="提货明细">
+          {/* 提货 / 收货明细 */}
+          <FormSection title={isBuyer ? '收货明细' : '提货明细'}>
             <div className="overflow-hidden rounded-lg border border-border">
               <table className="w-full border-collapse text-sm">
                 <thead className="bg-muted/60 text-left text-muted-foreground">
@@ -912,7 +923,7 @@ function PickupOrderDialog({
             onClick={() => onSave(project.buyer)}
             className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            保存
+            {isBuyer ? '确认收货' : '保存'}
           </button>
         </div>
       </div>
