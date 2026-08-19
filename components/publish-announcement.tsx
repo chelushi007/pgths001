@@ -554,10 +554,10 @@ function RentDialog({
                           {row.available}
                         </td>
                         <td className="px-4 py-4 text-right tabular-nums text-foreground">
-                          ¥{row.taxPrice.toLocaleString()}
+                          ¥{row.taxPrice.toLocaleString('en-US')}
                         </td>
                         <td className="px-4 py-4 text-right tabular-nums text-foreground">
-                          ¥{row.originalValue.toLocaleString()}
+                          ¥{row.originalValue.toLocaleString('en-US')}
                         </td>
                         {/* 处置数量 */}
                         <td className="px-4 py-4">
@@ -795,7 +795,7 @@ function RentDialog({
                 <p className="mt-1.5 text-xs text-muted-foreground">
                   当前关联资源原值：
                   <span className="font-medium text-primary">
-                    {totalOriginalValue.toLocaleString()} 元
+                    {totalOriginalValue.toLocaleString('en-US')} 元
                   </span>
                 </p>
               </Field>
