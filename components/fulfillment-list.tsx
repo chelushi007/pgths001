@@ -511,7 +511,7 @@ export function FulfillmentList({
                           className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                         >
                           <Eye className="size-3.5" />
-                          管理项目
+                          {isProcurement ? '查看' : '管理项目'}
                         </button>
                         {isEnded &&
                           !isProcurement &&
