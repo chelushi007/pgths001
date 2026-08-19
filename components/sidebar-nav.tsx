@@ -6,13 +6,13 @@ import {
   ShoppingCart,
   PackageOpen,
   KeyRound,
-  Megaphone,
-  ClipboardCheck,
   ChevronDown,
   Leaf,
   FileText,
   FileCheck,
   CheckCircle2,
+  Users,
+  Store,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -63,8 +63,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: '资源采购',
     icon: ShoppingCart,
     children: [
-      { key: 'announcement', label: '发布采购公告', icon: Megaphone },
-      { key: 'fulfillment', label: '订单履约', icon: ClipboardCheck },
+      { key: 'buyer', label: '采购方', icon: Users },
+      { key: 'seller', label: '出售方', icon: Store },
     ],
   },
 ]
