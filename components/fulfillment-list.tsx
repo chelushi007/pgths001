@@ -11,6 +11,9 @@ import {
   X,
   AlertTriangle,
   CircleCheck,
+  Leaf,
+  Activity,
+  MinusCircle,
 } from 'lucide-react'
 import {
   FulfillmentDetail,
@@ -20,6 +23,8 @@ import {
   CarbonCertificate,
   type CarbonCertProject,
 } from '@/components/carbon-certificate'
+
+type CarbonState = 'estimating' | 'accounted' | 'pending'
 
 type ProjectRow = {
   code: string
@@ -32,6 +37,9 @@ type ProjectRow = {
   // 'issued' 已核发碳凭证，可直接查看；'generate' 待生成，需先补充信息
   certState?: 'issued' | 'generate'
   pendingItems?: string[]
+  // 碳减排：estimating 履约中累计预估；accounted 已核算实际值；pending 信息不全待核算
+  carbonState: CarbonState
+  carbonValue?: number // tCO₂e
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -43,6 +51,8 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     stageTone: 'blue',
     signupStart: '2026-08-18 15:31:42',
     signupEnd: '2026-08-18 17:00:00',
+    carbonState: 'estimating',
+    carbonValue: 45.2,
   },
   {
     code: '2089230162376921088',
@@ -52,6 +62,8 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     stageTone: 'blue',
     signupStart: '2026-08-17 00:00:00',
     signupEnd: '2026-08-17 14:29:00',
+    carbonState: 'estimating',
+    carbonValue: 12.8,
   },
   {
     code: '2088517041526018048',
@@ -61,6 +73,8 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     stageTone: 'blue',
     signupStart: '2026-08-15 00:00:00',
     signupEnd: '2026-08-16 00:00:00',
+    carbonState: 'estimating',
+    carbonValue: 8.6,
   },
 ]
 
@@ -73,6 +87,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     stageTone: 'green',
     signupStart: '2026-07-13 11:25:05',
     signupEnd: '2026-07-14 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 181.08,
   },
   {
     code: '2087111470823018400',
@@ -87,6 +104,7 @@ const ENDED_PROJECTS: ProjectRow[] = [
       '补充各批次运输信息（承运方式、运输距离、能源类型等）',
       '上传对应批次的过磅单附件',
     ],
+    carbonState: 'pending',
   },
   {
     code: '2086901355420188160',
@@ -98,6 +116,7 @@ const ENDED_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-06-30 00:00:00',
     certState: 'generate',
     pendingItems: ['补充开具发票信息（发票抬头、税号、开票金额等）'],
+    carbonState: 'pending',
   },
   {
     code: '2086331209988110336',
@@ -107,6 +126,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     stageTone: 'green',
     signupStart: '2026-06-15 10:20:00',
     signupEnd: '2026-06-18 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 96.42,
   },
 ]
 
@@ -241,6 +263,7 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">当前环节</th>
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
+                <th className="px-4 py-3 font-medium">碳减排量</th>
                 <th className="px-4 py-3 font-medium">操作</th>
               </tr>
             </thead>
@@ -248,7 +271,7 @@ export function FulfillmentList({
               {projects.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
                     暂无符合条件的项目
@@ -277,6 +300,12 @@ export function FulfillmentList({
                     </td>
                     <td className="px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupEnd}
+                    </td>
+                    <td className="px-4 py-3">
+                      <CarbonCell
+                        state={p.carbonState}
+                        value={p.carbonValue}
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
@@ -454,6 +483,66 @@ function GenerateCertPrompt({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function CarbonCell({
+  state,
+  value,
+}: {
+  state: CarbonState
+  value?: number
+}) {
+  const fmt = (v: number) =>
+    v.toLocaleString('zh-CN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+
+  if (state === 'accounted') {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-baseline gap-1 font-medium text-primary">
+          <Leaf className="size-3.5 shrink-0 translate-y-0.5" />
+          <span className="tabular-nums">{fmt(value ?? 0)}</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            tCO₂e
+          </span>
+        </div>
+        <span className="inline-flex w-fit items-center rounded bg-primary/12 px-1.5 py-0.5 text-[11px] font-medium text-primary">
+          已核算
+        </span>
+      </div>
+    )
+  }
+
+  if (state === 'estimating') {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-baseline gap-1 font-medium text-chart-4">
+          <Activity className="size-3.5 shrink-0 translate-y-0.5" />
+          <span className="tabular-nums">≈ {fmt(value ?? 0)}</span>
+          <span className="text-xs font-normal text-muted-foreground">
+            tCO₂e
+          </span>
+        </div>
+        <span className="inline-flex w-fit items-center rounded bg-chart-4/15 px-1.5 py-0.5 text-[11px] font-medium text-chart-4">
+          预估中 · 累计
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1 text-muted-foreground">
+        <MinusCircle className="size-3.5 shrink-0" />
+        <span className="text-sm">待核算</span>
+      </div>
+      <span className="inline-flex w-fit items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+        待补充信息
+      </span>
     </div>
   )
 }
