@@ -52,6 +52,8 @@ type ContractRow = {
 type PickupRow = {
   no: string
   buyer: string
+  logisticsNo: string
+  distance: string
   createdAt: string
   pickupAt: string
   status: string
@@ -87,6 +89,8 @@ const INITIAL_PICKUPS: PickupRow[] = [
   {
     no: '2089619994710070400',
     buyer: '广州资源回收有限公司',
+    logisticsNo: 'YD20260818000041',
+    distance: '68',
     createdAt: '2026-08-18 15:46:33',
     pickupAt: '2026-08-18 15:46:51',
     status: '已完成',
@@ -95,6 +99,8 @@ const INITIAL_PICKUPS: PickupRow[] = [
   {
     no: '2089620399548665000',
     buyer: '广州资源回收有限公司',
+    logisticsNo: 'YD20260818000053',
+    distance: '120',
     createdAt: '2026-08-18 15:48:21',
     pickupAt: '-',
     status: '待提货',
@@ -119,11 +125,12 @@ export function FulfillmentDetail({
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
+  const [trackRow, setTrackRow] = useState<PickupRow | null>(null)
 
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !pickupOpen) onClose()
+      if (e.key === 'Escape' && !pickupOpen && !trackRow) onClose()
     }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -131,7 +138,7 @@ export function FulfillmentDetail({
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  }, [open, onClose, pickupOpen])
+  }, [open, onClose, pickupOpen, trackRow])
 
   if (!open || !project) return null
 
@@ -142,6 +149,8 @@ export function FulfillmentDetail({
       {
         no: String(Math.floor(Math.random() * 9e18 + 1e18)),
         buyer,
+        logisticsNo: `YD${stamp.replace(/[-: ]/g, '').slice(0, 8)}${String(Math.floor(Math.random() * 900000 + 100000))}`,
+        distance: '',
         createdAt: stamp,
         pickupAt: '-',
         status: '待提货',
@@ -412,6 +421,7 @@ export function FulfillmentDetail({
               headers={[
                 '提货单编号',
                 '竞买人名称',
+                '物流单号',
                 '创建时间',
                 '提货时间',
                 '状态',
@@ -425,6 +435,16 @@ export function FulfillmentDetail({
                 >
                   <td className="px-3 py-3 font-mono text-xs">{r.no}</td>
                   <td className="px-3 py-3">{r.buyer}</td>
+                  <td className="px-3 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setTrackRow(r)}
+                      className="inline-flex items-center gap-1 font-mono text-xs font-medium text-primary underline-offset-2 transition-colors hover:underline"
+                    >
+                      <MapPin className="size-3.5" />
+                      {r.logisticsNo}
+                    </button>
+                  </td>
                   <td className="px-3 py-3 tabular-nums text-muted-foreground">
                     {r.createdAt}
                   </td>
@@ -480,6 +500,13 @@ export function FulfillmentDetail({
         project={project}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
+      />
+
+      <TransportTrackDialog
+        open={trackRow !== null}
+        logisticsNo={trackRow?.logisticsNo ?? ''}
+        distance={trackRow?.distance ?? ''}
+        onClose={() => setTrackRow(null)}
       />
     </div>
   )
