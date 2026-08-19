@@ -11,6 +11,8 @@ import {
   ChevronDown,
   Leaf,
   FileText,
+  FileCheck,
+  CheckCircle2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -39,7 +41,11 @@ const NAV_GROUPS: NavGroup[] = [
         key: 'rental',
         label: '资源出租',
         icon: KeyRound,
-        children: [{ key: 'publish', label: '发布公告', icon: FileText }],
+        children: [
+          { key: 'publish', label: '发布公告', icon: FileText },
+          { key: 'perform', label: '履约', icon: FileCheck },
+          { key: 'perform-end', label: '履约结束', icon: CheckCircle2 },
+        ],
       },
     ],
   },
