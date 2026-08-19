@@ -455,7 +455,9 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">当前环节</th>
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
-                <th className="px-4 py-3 font-medium">碳减排量</th>
+                {!isProcurement && (
+                  <th className="px-4 py-3 font-medium">碳减排量</th>
+                )}
                 <th className="px-4 py-3 font-medium">操作</th>
               </tr>
             </thead>
@@ -463,7 +465,7 @@ export function FulfillmentList({
               {projects.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={isProcurement ? 7 : 8}
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
                     暂无符合条件的项目
@@ -493,12 +495,14 @@ export function FulfillmentList({
                     <td className="px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupEnd}
                     </td>
-                    <td className="px-4 py-3">
-                      <CarbonCell
-                        state={p.carbonState}
-                        value={p.carbonValue}
-                      />
-                    </td>
+                    {!isProcurement && (
+                      <td className="px-4 py-3">
+                        <CarbonCell
+                          state={p.carbonState}
+                          value={p.carbonValue}
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <button
@@ -510,6 +514,7 @@ export function FulfillmentList({
                           管理项目
                         </button>
                         {isEnded &&
+                          !isProcurement &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
