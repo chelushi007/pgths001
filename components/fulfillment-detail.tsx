@@ -121,11 +121,12 @@ export function FulfillmentDetail({
 }: {
   open: boolean
   project: FulfillmentProject | null
-  mode?: 'rental' | 'disposal' | 'procurement'
+  mode?: 'rental' | 'disposal' | 'procurement' | 'procurement-buyer'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
-  const isProcurement = mode === 'procurement'
+  const isBuyer = mode === 'procurement-buyer'
+  const isProcurement = mode === 'procurement' || isBuyer
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
@@ -187,7 +188,13 @@ export function FulfillmentDetail({
               项目管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-              {project.flowType === '出租' ? '自主出租' : '自主转让'}
+              {isBuyer
+                ? '采购收货'
+                : isProcurement
+                  ? '采购供货'
+                  : project.flowType === '出租'
+                    ? '自主出租'
+                    : '自主转让'}
             </span>
             <span className="rounded bg-chart-4/15 px-2 py-0.5 text-xs font-medium text-chart-4">
               履约阶段
@@ -275,11 +282,11 @@ export function FulfillmentDetail({
               <>
                 <PrimaryBtn>
                   <FileText className="size-3.5" />
-                  查看履约单
+                  {isBuyer ? '查看验收单' : '查看履约单'}
                 </PrimaryBtn>
                 <PrimaryBtn>
                   <Check className="size-3.5" />
-                  完成履约单
+                  {isBuyer ? '确认验收' : '完成履约单'}
                 </PrimaryBtn>
               </>
             }
@@ -288,11 +295,23 @@ export function FulfillmentDetail({
               <InfoCell label="项目编号" value={project.code} mono />
               <InfoCell label="项目标题" value={project.title} />
               <InfoCell
-                label={isProcurement ? '采购方名称' : '竞买人名称'}
+                label={
+                  isBuyer
+                    ? '供货方名称'
+                    : isProcurement
+                      ? '采购方名称'
+                      : '竞买人名称'
+                }
                 value={project.buyer}
               />
               <InfoCell
-                label={isProcurement ? '采购方单位ID' : '竞买人单位ID'}
+                label={
+                  isBuyer
+                    ? '供货方单位ID'
+                    : isProcurement
+                      ? '采购方单位ID'
+                      : '竞买人单位ID'
+                }
                 value={project.buyerUnitId}
                 mono
               />
@@ -306,10 +325,16 @@ export function FulfillmentDetail({
             </div>
           </Card>
 
-          {/* 成交款收取 */}
+          {/* 款项 */}
           <Card
             title={
-              isProcurement ? '货款收取' : isDisposal ? '转让款收取' : '成交款收取'
+              isBuyer
+                ? '货款支付'
+                : isProcurement
+                  ? '货款收取'
+                  : isDisposal
+                    ? '转让款收取'
+                    : '成交款收取'
             }
             actions={
               <>
@@ -319,21 +344,21 @@ export function FulfillmentDetail({
                 </GhostBtn>
                 <PrimaryBtn>
                   <Plus className="size-3.5" />
-                  新增收款
+                  {isBuyer ? '新增付款' : '新增收款'}
                 </PrimaryBtn>
               </>
             }
           >
             <TableShell
               headers={[
-                '收款编号',
+                isBuyer ? '付款编号' : '收款编号',
                 '金额',
                 '付款方',
                 '收款方',
                 '付款方式',
                 '状态',
                 '发起时间',
-                '收款备注',
+                isBuyer ? '付款备注' : '收款备注',
                 '操作',
               ]}
             >
@@ -412,14 +437,14 @@ export function FulfillmentDetail({
             <MiniPager total={CONTRACTS.length} />
           </Card>
 
-          {/* 提货情况 */}
+          {/* 提货 / 收货情况 */}
           <Card
-            title="提货情况"
+            title={isBuyer ? '收货情况' : '提货情况'}
             actions={
               <>
                 <select className="rounded-md border border-input bg-background px-2 py-1.5 text-xs text-muted-foreground outline-none">
                   <option>状态筛选</option>
-                  <option>待提货</option>
+                  <option>{isBuyer ? '待收货' : '待提货'}</option>
                   <option>已完成</option>
                 </select>
                 <GhostBtn>
@@ -428,18 +453,18 @@ export function FulfillmentDetail({
                 </GhostBtn>
                 <PrimaryBtn onClick={() => setPickupOpen(true)}>
                   <Plus className="size-3.5" />
-                  录入提货单
+                  {isBuyer ? '确认收货' : '录入提货单'}
                 </PrimaryBtn>
               </>
             }
           >
             <TableShell
               headers={[
-                '提货单编号',
-                '竞买人名称',
+                isBuyer ? '收货单编号' : '提货单编号',
+                isBuyer ? '供货方名称' : '竞买人名称',
                 '物流单号',
                 '创建时间',
-                '提货时间',
+                isBuyer ? '收货时间' : '提货时间',
                 '状态',
                 '操作',
               ]}
@@ -450,7 +475,9 @@ export function FulfillmentDetail({
                   className="border-t border-border hover:bg-accent/30"
                 >
                   <td className="px-3 py-3 font-mono text-xs">{r.no}</td>
-                  <td className="px-3 py-3">{r.buyer}</td>
+                  <td className="px-3 py-3">
+                    {isBuyer ? '中铁物资物流集团华南有限公司' : r.buyer}
+                  </td>
                   <td className="px-3 py-3">
                     <button
                       type="button"

@@ -74,6 +74,10 @@ export default function Page() {
             <FulfillmentList variant="ended" mode="disposal" />
           ) : active.key === 'p-publish' ? (
             <ProcurementAnnouncement />
+          ) : active.key === 'p-perform' ? (
+            <FulfillmentList variant="active" mode="procurement-buyer" />
+          ) : active.key === 'p-perform-end' ? (
+            <FulfillmentList variant="ended" mode="procurement-buyer" />
           ) : active.key === 's-perform' ? (
             <FulfillmentList variant="active" mode="procurement" />
           ) : active.key === 's-perform-end' ? (

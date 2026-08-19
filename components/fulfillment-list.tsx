@@ -299,11 +299,12 @@ export function FulfillmentList({
   mode = 'rental',
 }: {
   variant: 'active' | 'ended'
-  mode?: 'rental' | 'disposal' | 'procurement'
+  mode?: 'rental' | 'disposal' | 'procurement' | 'procurement-buyer'
 }) {
   const isEnded = variant === 'ended'
   const isDisposal = mode === 'disposal'
-  const isProcurement = mode === 'procurement'
+  const isBuyer = mode === 'procurement-buyer'
+  const isProcurement = mode === 'procurement' || isBuyer
   const projects = isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
@@ -329,12 +330,16 @@ export function FulfillmentList({
       code: p.code,
       title: p.title,
       flowType: p.flowType,
-      buyer: isProcurement
-        ? '葫芦再生资源有限公司'
-        : '广州资源回收有限公司',
-      buyerUnitId: isProcurement
-        ? '2089900011456320011'
-        : '2087787291144753153',
+      buyer: isBuyer
+        ? '中铁物资物流集团华南有限公司'
+        : isProcurement
+          ? '葫芦再生资源有限公司'
+          : '广州资源回收有限公司',
+      buyerUnitId: isBuyer
+        ? '2085512034789001120'
+        : isProcurement
+          ? '2089900011456320011'
+          : '2087787291144753153',
       status: isEnded ? '履约结束' : '履约通过',
       period: `${p.signupStart} ~ ${p.signupEnd}`,
     })
@@ -519,7 +524,9 @@ export function FulfillmentList({
                           {isProcurement
                             ? isEnded
                               ? '查看'
-                              : '履约'
+                              : isBuyer
+                                ? '收货'
+                                : '履约'
                             : '管理项目'}
                         </button>
                         {isEnded &&
@@ -589,7 +596,7 @@ export function FulfillmentList({
       <CarbonCertificate
         open={certProject !== null}
         project={certProject}
-        mode={mode}
+        mode={isBuyer ? 'procurement' : mode}
         onClose={() => setCertProject(null)}
       />
 

@@ -69,6 +69,8 @@ const NAV_GROUPS: NavGroup[] = [
         icon: Users,
         children: [
           { key: 'p-publish', label: '发布采购公告', icon: FileText },
+          { key: 'p-perform', label: '履约', icon: FileCheck },
+          { key: 'p-perform-end', label: '履约结束', icon: CheckCircle2 },
         ],
       },
       {
