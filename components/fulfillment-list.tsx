@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, RefreshCw, Send, Eye, FileText } from 'lucide-react'
+import { Search, RefreshCw, Send, Eye, ShieldCheck } from 'lucide-react'
 import {
   FulfillmentDetail,
   type FulfillmentProject,
 } from '@/components/fulfillment-detail'
+import {
+  CarbonCertificate,
+  type CarbonCertProject,
+} from '@/components/carbon-certificate'
 
 type ProjectRow = {
   code: string
@@ -102,6 +106,7 @@ export function FulfillmentList({
 
   const [detailProject, setDetailProject] =
     useState<FulfillmentProject | null>(null)
+  const [certProject, setCertProject] = useState<CarbonCertProject | null>(null)
 
   const openDetail = (p: ProjectRow) => {
     setDetailProject({
@@ -251,23 +256,28 @@ export function FulfillmentList({
                       {p.signupEnd}
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        type="button"
-                        onClick={() => openDetail(p)}
-                        className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                      >
-                        {isEnded ? (
-                          <>
-                            <FileText className="size-3.5" />
-                            履约详情
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="size-3.5" />
-                            管理项目
-                          </>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => openDetail(p)}
+                          className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                        >
+                          <Eye className="size-3.5" />
+                          管理项目
+                        </button>
+                        {isEnded && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCertProject({ code: p.code, title: p.title })
+                            }
+                            className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                          >
+                            <ShieldCheck className="size-3.5" />
+                            碳凭证
+                          </button>
                         )}
-                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -305,6 +315,12 @@ export function FulfillmentList({
         open={detailProject !== null}
         project={detailProject}
         onClose={() => setDetailProject(null)}
+      />
+
+      <CarbonCertificate
+        open={certProject !== null}
+        project={certProject}
+        onClose={() => setCertProject(null)}
       />
     </div>
   )
