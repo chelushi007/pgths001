@@ -14,6 +14,7 @@ import {
   MapPin,
   Navigation,
   CircleDot,
+  Recycle,
 } from 'lucide-react'
 
 export type FulfillmentProject = {
@@ -585,6 +586,9 @@ function PickupOrderDialog({
   const [remark, setRemark] = useState('')
   const [logisticsNo, setLogisticsNo] = useState('')
   const [distance, setDistance] = useState('')
+  const [reuseMethod, setReuseMethod] = useState('')
+  const [recycleCompany, setRecycleCompany] = useState('')
+  const [reuseRemark, setReuseRemark] = useState('')
   const [trackOpen, setTrackOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -908,6 +912,62 @@ function PickupOrderDialog({
               </div>
             </div>
           </FormSection>
+
+          {/* 物资去向（收货方视角）：补充回收利用去向信息 */}
+          {isBuyer && (
+            <FormSection
+              title="物资去向"
+              icon={<Recycle className="size-4 text-primary" />}
+            >
+              <p className="mb-4 text-xs text-muted-foreground">
+                请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。
+              </p>
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+                <div>
+                  <FieldLabel label="再利用方式" required />
+                  <select
+                    value={reuseMethod}
+                    onChange={(e) => setReuseMethod(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  >
+                    <option value="">请选择再利用方式</option>
+                    <option value="回炉再生">回炉再生（再生钢材）</option>
+                    <option value="拆解再制造">拆解再制造</option>
+                    <option value="检修复用">检修复用</option>
+                    <option value="降级利用">降级利用</option>
+                    <option value="其他">其他</option>
+                  </select>
+                </div>
+                <div>
+                  <FieldLabel label="回收企业" required />
+                  <input
+                    value={recycleCompany}
+                    onChange={(e) => setRecycleCompany(e.target.value)}
+                    placeholder="请输入回收 / 再利用企业名称"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  />
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
+                <label className="pt-2 text-right text-sm text-muted-foreground">
+                  去向说明
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={reuseRemark}
+                    maxLength={255}
+                    onChange={(e) => setReuseRemark(e.target.value)}
+                    placeholder="可补充物资去向、再利用比例、处置方式等说明，长度 0-255 字"
+                    rows={3}
+                    className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  />
+                  <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-muted-foreground">
+                    {reuseRemark.length} / 255
+                  </span>
+                </div>
+              </div>
+            </FormSection>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 border-t border-border bg-secondary/40 px-6 py-4">
