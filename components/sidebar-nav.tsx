@@ -18,6 +18,7 @@ type NavChild = {
   key: string
   label: string
   icon: React.ComponentType<{ className?: string }>
+  children?: NavChild[]
 }
 
 type NavGroup = {
@@ -34,8 +35,12 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Recycle,
     children: [
       { key: 'disposal', label: '资源处置', icon: PackageOpen },
-      { key: 'rental', label: '资源出租', icon: KeyRound },
-      { key: 'publish', label: '发布公告', icon: FileText },
+      {
+        key: 'rental',
+        label: '资源出租',
+        icon: KeyRound,
+        children: [{ key: 'publish', label: '发布公告', icon: FileText }],
+      },
     ],
   },
   {
@@ -49,6 +54,86 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
+function ChildNode({
+  child,
+  depth,
+  activeKey,
+  groupLabel,
+  openKeys,
+  onToggle,
+  onSelect,
+}: {
+  child: NavChild
+  depth: number
+  activeKey: string
+  groupLabel: string
+  openKeys: string[]
+  onToggle: (key: string) => void
+  onSelect: (key: string, label: string, groupLabel: string) => void
+}) {
+  const ChildIcon = child.icon
+  const hasChildren = !!child.children?.length
+  const isActive = activeKey === child.key
+  const isOpen = openKeys.includes(child.key)
+
+  if (hasChildren) {
+    return (
+      <li>
+        <button
+          type="button"
+          onClick={() => onToggle(child.key)}
+          aria-expanded={isOpen}
+          className="flex w-full items-center gap-3 rounded-md py-2 pl-5 pr-3 text-sm text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <ChildIcon className="size-4 shrink-0" />
+          <span className="flex-1 text-left">{child.label}</span>
+          <ChevronDown
+            className={cn(
+              'size-3.5 shrink-0 transition-transform duration-200',
+              isOpen ? 'rotate-0' : '-rotate-90',
+            )}
+          />
+        </button>
+        {isOpen && (
+          <ul className="mt-0.5 flex flex-col gap-0.5 border-l border-sidebar-border/60 pl-3">
+            {child.children!.map((grandchild) => (
+              <ChildNode
+                key={grandchild.key}
+                child={grandchild}
+                depth={depth + 1}
+                activeKey={activeKey}
+                groupLabel={groupLabel}
+                openKeys={openKeys}
+                onToggle={onToggle}
+                onSelect={onSelect}
+              />
+            ))}
+          </ul>
+        )}
+      </li>
+    )
+  }
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => onSelect(child.key, child.label, groupLabel)}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'relative flex w-full items-center gap-3 rounded-md py-2 pl-5 pr-3 text-sm transition-colors',
+          isActive
+            ? 'bg-sidebar-primary font-medium text-sidebar-primary-foreground'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        )}
+      >
+        <ChildIcon className="size-4 shrink-0" />
+        <span>{child.label}</span>
+      </button>
+    </li>
+  )
+}
+
 export function SidebarNav({
   activeKey,
   onSelect,
@@ -59,9 +144,16 @@ export function SidebarNav({
   const [openGroups, setOpenGroups] = useState<string[]>(
     NAV_GROUPS.map((g) => g.key),
   )
+  const [openChildren, setOpenChildren] = useState<string[]>(['rental'])
 
   const toggleGroup = (key: string) => {
     setOpenGroups((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    )
+  }
+
+  const toggleChild = (key: string) => {
+    setOpenChildren((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     )
   }
@@ -107,30 +199,18 @@ export function SidebarNav({
 
                 {isOpen && (
                   <ul className="mt-1 flex flex-col gap-0.5 pl-4">
-                    {group.children.map((child) => {
-                      const ChildIcon = child.icon
-                      const isActive = activeKey === child.key
-                      return (
-                        <li key={child.key}>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              onSelect(child.key, child.label, group.label)
-                            }
-                            aria-current={isActive ? 'page' : undefined}
-                            className={cn(
-                              'relative flex w-full items-center gap-3 rounded-md py-2 pl-5 pr-3 text-sm transition-colors',
-                              isActive
-                                ? 'bg-sidebar-primary font-medium text-sidebar-primary-foreground'
-                                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-                            )}
-                          >
-                            <ChildIcon className="size-4 shrink-0" />
-                            <span>{child.label}</span>
-                          </button>
-                        </li>
-                      )
-                    })}
+                    {group.children.map((child) => (
+                      <ChildNode
+                        key={child.key}
+                        child={child}
+                        depth={0}
+                        activeKey={activeKey}
+                        groupLabel={group.label}
+                        openKeys={openChildren}
+                        onToggle={toggleChild}
+                        onSelect={onSelect}
+                      />
+                    ))}
                   </ul>
                 )}
               </li>
