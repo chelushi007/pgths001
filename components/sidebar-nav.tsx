@@ -64,7 +64,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: ShoppingCart,
     children: [
       { key: 'buyer', label: '采购方', icon: Users },
-      { key: 'seller', label: '出售方', icon: Store },
+      { key: 'seller', label: '供应商', icon: Store },
     ],
   },
 ]
