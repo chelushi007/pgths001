@@ -450,6 +450,147 @@ const REUSE_ROWS_D: ReuseRow[] = [
   { name: '型钢废料', spec: 'H型钢', weight: '8.4', factor: '2100', reduction: '17.64' },
 ]
 
+/* ---------------- 采购（供货）数据 ---------------- */
+
+const INFO_FLOW_P: InfoFlowStep[] = [
+  {
+    title: '采购公告发布',
+    desc: '采购方发布废旧物资采购公告，公示采购清单与采购方式',
+    time: '2026-05-12 09:00',
+    files: ['物资采购公告.pdf'],
+  },
+  {
+    title: '询价报价（网上询价）',
+    desc: '多家供应商在线响应报价，采购方择优比选',
+    time: '2026-05-15 16:30',
+    files: ['供应商报价单.pdf'],
+  },
+  {
+    title: '成交确认',
+    desc: '确认中选供应商，锁定成交单价与供货清单',
+    time: '2026-05-18 11:20',
+    files: ['成交确认单.pdf'],
+  },
+  {
+    title: '订单创建',
+    desc: '采购方生成采购订单，明确供货数量与交付要求',
+    time: '2026-05-20 09:32',
+  },
+  {
+    title: '合同签订',
+    desc: '供需双方完成电子采购合同在线签章',
+    time: '2026-05-21 10:15',
+    files: ['物资采购合同.pdf'],
+  },
+  {
+    title: '碳数据采集',
+    desc: '采集供货物资规格、过磅重量、送货运输等核算要素',
+    time: '2026-05-22 14:10',
+  },
+  {
+    title: '碳量核算',
+    desc: '依据 GB/T 51366 完成碳足迹核算',
+    time: '2026-05-22 15:40',
+  },
+  {
+    title: '凭证生成',
+    desc: '区块链存证，生成不可篡改碳凭证',
+    time: '2026-05-22 16:05',
+  },
+]
+
+const FUND_FLOW_P: FundFlow[] = [
+  {
+    title: '履约保证金',
+    channel: '线上支付',
+    amount: '¥15,000.00',
+    status: '已缴纳',
+    method: '平台担保支付（供应商缴纳）',
+    time: '2026-05-21 11:20',
+    files: ['保证金支付电子回单.pdf'],
+  },
+  {
+    title: '采购货款',
+    channel: '线上支付',
+    amount: '¥176,400.00',
+    status: '已收款',
+    method: '采购方在线支付货款（企业网银）',
+    time: '2026-05-27 09:00',
+    files: ['货款结算单.pdf', '电子发票.pdf'],
+  },
+  {
+    title: '保证金退还',
+    channel: '线上支付',
+    amount: '¥15,000.00',
+    status: '已退还',
+    method: '平台原路退回供应商',
+    time: '2026-05-28 10:00',
+    files: ['保证金退还电子回单.pdf'],
+  },
+]
+
+const LOGISTICS_P: LogisticsItem[] = [
+  {
+    title: '第 1 批次供货',
+    badge: '交付 1/2',
+    desc: '供应商仓库 → 采购方指定地点 · 供货 48.0 吨（1 车次），已验收',
+    orderNo: 'SHD20260522000041',
+    time: '2026-05-22 08:00',
+    files: [
+      '送货单（SHD20260522000041）.pdf',
+      '出库单（第1批）.pdf',
+      '过磅单（第1批·48.0吨）.jpg',
+      '验收单（第1批）.pdf',
+    ],
+    track: true,
+    tone: 'ship',
+  },
+  {
+    title: '第 2 批次供货',
+    badge: '交付 2/2',
+    desc: '供应商仓库 → 采购方指定地点 · 供货 38.4 吨（1 车次），已验收',
+    orderNo: 'SHD20260526000053',
+    time: '2026-05-26 08:20',
+    files: [
+      '送货单（SHD20260526000053）.pdf',
+      '出库单（第2批）.pdf',
+      '过磅单（第2批·38.4吨）.jpg',
+      '验收单（第2批）.pdf',
+    ],
+    track: true,
+    tone: 'ship',
+  },
+  {
+    title: '验收入库完成',
+    desc: '物资全部交付采购方并完成验收入库，进入循环再利用',
+    time: '2026-05-26 至今',
+    files: [],
+    tone: 'use',
+  },
+]
+
+const TRANSPORT_ROWS_P: TransportRow[] = [
+  {
+    stage: '送货运输（供应商→采购方）',
+    mode: '陆运',
+    vehicle: '电动重卡 粤A·D8856（比亚迪 T7）',
+    energy: '新能源',
+    energyTone: 'new',
+    amount: '86.4',
+    distance: '75',
+    factor: '0.0418',
+    emission: '0.27',
+    baseline: '0.62',
+    reduction: '0.35',
+  },
+]
+
+const REUSE_ROWS_P: ReuseRow[] = [
+  { name: '废旧钢轨', spec: '50kg/m 重废', weight: '52.4', factor: '2340', reduction: '122.62' },
+  { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '18.6', factor: '2340', reduction: '43.52' },
+  { name: '型钢废料', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
+]
+
 type CertConfig = {
   certTitle: string
   ownerLabel: string
@@ -471,6 +612,7 @@ type CertConfig = {
   transportNewReduction: string
   netReduction: string
   netRate: string
+  orderNo: string
   flow: {
     ownerTitle: string
     ownerSub: string
@@ -483,7 +625,7 @@ type CertConfig = {
   }
 }
 
-const CERT_CONFIG: Record<'rental' | 'disposal', CertConfig> = {
+const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
   rental: {
     certTitle: '绿色循环碳减排凭证',
     ownerLabel: '出租单位',
@@ -506,6 +648,7 @@ const CERT_CONFIG: Record<'rental' | 'disposal', CertConfig> = {
     transportNewReduction: '0.32',
     netReduction: '181.08',
     netRate: '99.5',
+    orderNo: 'ZLDD20260520002',
     flow: {
       ownerTitle: '出租方',
       ownerSub: '中铁物资/华南公司',
@@ -539,6 +682,7 @@ const CERT_CONFIG: Record<'rental' | 'disposal', CertConfig> = {
     transportNewReduction: '0.32',
     netReduction: '183.16',
     netRate: '99.8',
+    orderNo: 'ZRDD20260520002',
     flow: {
       ownerTitle: '转让方',
       ownerSub: '中铁物资/华南公司',
@@ -547,6 +691,40 @@ const CERT_CONFIG: Record<'rental' | 'disposal', CertConfig> = {
       forwardLabel: '出库交付',
       forwardNote: '货权转移至受让方',
       reuseSub: '拆解检修 · 循环再利用',
+      hasReturn: false,
+    },
+  },
+  procurement: {
+    certTitle: '资源回收利用碳减排凭证',
+    ownerLabel: '供货单位',
+    ownerValue: '中铁物资/华南公司',
+    counterpartyLabel: '采购单位',
+    counterpartyValue: '葫芦再生资源有限公司',
+    infoFlow: INFO_FLOW_P,
+    fundFlow: FUND_FLOW_P,
+    logistics: LOGISTICS_P,
+    transportRows: TRANSPORT_ROWS_P,
+    reuseRows: REUSE_ROWS_P,
+    flowLabel: '采购供货',
+    reuseTitle: '本次采购供货循环利用减排明细',
+    transportTitle: '本次采购供货运输碳排放',
+    scopeText:
+      '（订单 CGDD20260520002），仅统计与本次采购供货直接相关的资源回收利用减排与单程送货运输碳排放，验收入库后不含采购方后续加工排放。',
+    materialWeight: '86.40 吨',
+    reuseTotal: '198.48',
+    transportTotal: '0.27',
+    transportNewReduction: '0.35',
+    netReduction: '198.21',
+    netRate: '99.9',
+    orderNo: 'CGDD20260520002',
+    flow: {
+      ownerTitle: '供应商',
+      ownerSub: '中铁物资/华南公司',
+      counterpartyTitle: '采购方',
+      counterpartySub: '葫芦再生资源有限公司',
+      forwardLabel: '送货交付',
+      forwardNote: '供货至采购方',
+      reuseSub: '验收入库 · 循环再利用',
       hasReturn: false,
     },
   },
@@ -562,7 +740,7 @@ export function CarbonCertificate({
 }: {
   open: boolean
   project: CarbonCertProject | null
-  mode?: 'rental' | 'disposal'
+  mode?: 'rental' | 'disposal' | 'procurement'
   onClose: () => void
 }) {
   const cfg = CERT_CONFIG[mode]
@@ -598,7 +776,7 @@ export function CarbonCertificate({
             <ShieldCheck className="size-5" />
             <span className="text-base font-semibold">碳凭证</span>
             <span className="rounded bg-primary-foreground/20 px-2 py-0.5 font-mono text-xs">
-              {mode === 'disposal' ? 'ZRDD20260520002' : 'ZLDD20260520002'}
+              {cfg.orderNo}
             </span>
           </div>
           <button
@@ -666,15 +844,14 @@ function CertTab({ cfg }: { cfg: CertConfig }) {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4">
           <KV label="凭证编号" value="TC20260520002" mono />
+          <KV label="关联订单" value={cfg.orderNo} mono />
+          <KV label="物资数量" value={cfg.materialWeight} strong />
           <KV
-            label="关联订单"
-            value={
-              cfg.flowLabel === '转让' ? 'ZRDD20260520002' : 'ZLDD20260520002'
-            }
-            mono
+            label="核算减碳量"
+            value={`${cfg.netReduction} tCO₂e`}
+            strong
+            accent
           />
-          <KV label="物资数量" value="86.40 吨" strong />
-          <KV label="核算减碳量" value="181.08 tCO₂e" strong accent />
           <KV label={cfg.ownerLabel} value={cfg.ownerValue} />
           <KV label={cfg.counterpartyLabel} value={cfg.counterpartyValue} span2 />
           <KV label="核发日期" value="2026-05-22 14:10" />

@@ -210,6 +210,84 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
   },
 ]
 
+const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
+  {
+    code: '2089901220553201664',
+    title: '葫芦再生资源采购项目标段02（废旧钢轨）',
+    flowType: '网上询价',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-19 10:12:33',
+    signupEnd: '2026-08-20 12:00:00',
+    carbonState: 'estimating',
+    carbonValue: 52.6,
+  },
+  {
+    code: '2089733048921640960',
+    title: '废旧周转材料回收采购（第一批）',
+    flowType: '公开招标',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-18 09:00:00',
+    signupEnd: '2026-08-19 18:00:00',
+    carbonState: 'estimating',
+    carbonValue: 33.9,
+  },
+  {
+    code: '2089610033982070784',
+    title: '拆解废钢定向采购',
+    flowType: '定向采购',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-17 14:20:00',
+    signupEnd: '2026-08-18 14:20:00',
+    carbonState: 'estimating',
+    carbonValue: 18.4,
+  },
+]
+
+const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
+  {
+    code: '2087760012480083200',
+    title: '综合管廊废旧物资回收采购',
+    flowType: '网上询价',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-12 10:00:00',
+    signupEnd: '2026-07-13 12:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 168.72,
+  },
+  {
+    code: '2087009471823018100',
+    title: '废旧钢材竞争性谈判采购',
+    flowType: '竞争性谈判',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-04 09:10:00',
+    signupEnd: '2026-07-06 00:00:00',
+    certState: 'generate',
+    pendingItems: [
+      '补充供货方过磅信息（供货重量、过磅单、验收单等）',
+      '补充送货运输信息（承运方式、运输距离、能源类型等）',
+    ],
+    carbonState: 'pending',
+  },
+  {
+    code: '2086208209988110300',
+    title: '再生金属集中采购一批',
+    flowType: '公开招标',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-06-14 10:20:00',
+    signupEnd: '2026-06-17 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 102.35,
+  },
+]
+
 const STAGE_TONE: Record<ProjectRow['stageTone'], string> = {
   blue: 'bg-chart-4/15 text-chart-4',
   green: 'bg-primary/12 text-primary',
@@ -220,17 +298,22 @@ export function FulfillmentList({
   mode = 'rental',
 }: {
   variant: 'active' | 'ended'
-  mode?: 'rental' | 'disposal'
+  mode?: 'rental' | 'disposal' | 'procurement'
 }) {
   const isEnded = variant === 'ended'
   const isDisposal = mode === 'disposal'
-  const projects = isDisposal
+  const isProcurement = mode === 'procurement'
+  const projects = isProcurement
     ? isEnded
-      ? DISPOSAL_ENDED_PROJECTS
-      : DISPOSAL_ACTIVE_PROJECTS
-    : isEnded
-      ? ENDED_PROJECTS
-      : ACTIVE_PROJECTS
+      ? PROCUREMENT_ENDED_PROJECTS
+      : PROCUREMENT_ACTIVE_PROJECTS
+    : isDisposal
+      ? isEnded
+        ? DISPOSAL_ENDED_PROJECTS
+        : DISPOSAL_ACTIVE_PROJECTS
+      : isEnded
+        ? ENDED_PROJECTS
+        : ACTIVE_PROJECTS
   const stageLabel = isEnded ? '履约结束' : '履约'
 
   const [detailProject, setDetailProject] =
@@ -245,8 +328,12 @@ export function FulfillmentList({
       code: p.code,
       title: p.title,
       flowType: p.flowType,
-      buyer: '广州资源回收有限公司',
-      buyerUnitId: '2087787291144753153',
+      buyer: isProcurement
+        ? '葫芦再生资源有限公司'
+        : '广州资源回收有限公司',
+      buyerUnitId: isProcurement
+        ? '2089900011456320011'
+        : '2087787291144753153',
       status: isEnded ? '履约结束' : '履约通过',
       period: `${p.signupStart} ~ ${p.signupEnd}`,
     })
@@ -269,9 +356,21 @@ export function FulfillmentList({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
             />
           </FilterField>
-          <FilterField label={isDisposal ? '处置方式' : '流转方式'}>
+          <FilterField
+            label={
+              isProcurement ? '采购方式' : isDisposal ? '处置方式' : '流转方式'
+            }
+          >
             <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground outline-none">
-              {isDisposal ? (
+              {isProcurement ? (
+                <>
+                  <option>全部</option>
+                  <option>网上询价</option>
+                  <option>公开招标</option>
+                  <option>竞争性谈判</option>
+                  <option>定向采购</option>
+                </>
+              ) : isDisposal ? (
                 <>
                   <option>全部</option>
                   <option>整体转让</option>
@@ -331,7 +430,7 @@ export function FulfillmentList({
       {/* 列表区 */}
       <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card shadow-sm">
         {/* 操作按钮 */}
-        {!isEnded && (
+        {!isEnded && !isProcurement && (
           <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
             <button
               type="button"
@@ -350,7 +449,9 @@ export function FulfillmentList({
               <tr className="text-left text-muted-foreground">
                 <th className="px-4 py-3 font-medium">项目编号</th>
                 <th className="px-4 py-3 font-medium">项目标题</th>
-                <th className="px-4 py-3 font-medium">流转方式</th>
+                <th className="px-4 py-3 font-medium">
+                  {isProcurement ? '采购方式' : isDisposal ? '处置方式' : '流转方式'}
+                </th>
                 <th className="px-4 py-3 font-medium">当前环节</th>
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>

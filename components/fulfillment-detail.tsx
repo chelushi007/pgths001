@@ -121,10 +121,11 @@ export function FulfillmentDetail({
 }: {
   open: boolean
   project: FulfillmentProject | null
-  mode?: 'rental' | 'disposal'
+  mode?: 'rental' | 'disposal' | 'procurement'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
+  const isProcurement = mode === 'procurement'
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
@@ -286,11 +287,18 @@ export function FulfillmentDetail({
             <div className="grid grid-cols-1 overflow-hidden rounded-lg border border-border md:grid-cols-2">
               <InfoCell label="项目编号" value={project.code} mono />
               <InfoCell label="项目标题" value={project.title} />
-              <InfoCell label="竞买人名称" value={project.buyer} />
-              <InfoCell label="竞买人单位ID" value={project.buyerUnitId} mono />
+              <InfoCell
+                label={isProcurement ? '采购方名称' : '竞买人名称'}
+                value={project.buyer}
+              />
+              <InfoCell
+                label={isProcurement ? '采购方单位ID' : '竞买人单位ID'}
+                value={project.buyerUnitId}
+                mono
+              />
               <InfoCell label="履约状态" value={project.status} />
               <InfoCell
-                label={isDisposal ? '交付期限' : '履约期限'}
+                label={isDisposal || isProcurement ? '交付期限' : '履约期限'}
                 value={project.period}
               />
               <InfoCell label="履约备注" value="无" />
@@ -300,7 +308,9 @@ export function FulfillmentDetail({
 
           {/* 成交款收取 */}
           <Card
-            title={isDisposal ? '转让款收取' : '成交款收取'}
+            title={
+              isProcurement ? '货款收取' : isDisposal ? '转让款收取' : '成交款收取'
+            }
             actions={
               <>
                 <GhostBtn>

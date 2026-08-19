@@ -71,7 +71,15 @@ const NAV_GROUPS: NavGroup[] = [
           { key: 'p-publish', label: '发布采购公告', icon: FileText },
         ],
       },
-      { key: 'seller', label: '供应商', icon: Store },
+      {
+        key: 'seller',
+        label: '供应商',
+        icon: Store,
+        children: [
+          { key: 's-perform', label: '履约', icon: FileCheck },
+          { key: 's-perform-end', label: '履约结束', icon: CheckCircle2 },
+        ],
+      },
     ],
   },
 ]
@@ -170,6 +178,7 @@ export function SidebarNav({
     'disposal',
     'rental',
     'buyer',
+    'seller',
   ])
 
   const toggleGroup = (key: string) => {
