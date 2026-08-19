@@ -305,6 +305,9 @@ export function FulfillmentList({
   const isDisposal = mode === 'disposal'
   const isBuyer = mode === 'procurement-buyer'
   const isProcurement = mode === 'procurement' || isBuyer
+  // 仅供应商（供货方）隐藏碳信息；采购方（收货方）需展示碳核算
+  const isSupplier = mode === 'procurement'
+  const hideCarbon = isSupplier
   const projects = isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
@@ -461,7 +464,7 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">当前环节</th>
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
-                {!isProcurement && (
+                {!hideCarbon && (
                   <th className="px-4 py-3 font-medium">碳减排量</th>
                 )}
                 <th className="px-4 py-3 font-medium">操作</th>
@@ -471,7 +474,7 @@ export function FulfillmentList({
               {projects.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={isProcurement ? 7 : 8}
+                    colSpan={hideCarbon ? 7 : 8}
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
                     暂无符合条件的项目
@@ -501,7 +504,7 @@ export function FulfillmentList({
                     <td className="px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupEnd}
                     </td>
-                    {!isProcurement && (
+                    {!hideCarbon && (
                       <td className="px-4 py-3">
                         <CarbonCell
                           state={p.carbonState}
@@ -511,24 +514,26 @@ export function FulfillmentList({
                     )}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => openDetail(p)}
-                          className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                        >
-                          {isProcurement && !isEnded ? (
-                            <FileCheck className="size-3.5" />
-                          ) : (
-                            <Eye className="size-3.5" />
-                          )}
-                          {isProcurement
-                            ? isEnded
-                              ? '查看'
-                              : isBuyer
-                                ? '收货'
+                        {/* 采购方履约结束仅展示碳凭证，不再有查看入口 */}
+                        {!(isBuyer && isEnded) && (
+                          <button
+                            type="button"
+                            onClick={() => openDetail(p)}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                          >
+                            {isProcurement && !isEnded ? (
+                              <FileCheck className="size-3.5" />
+                            ) : (
+                              <Eye className="size-3.5" />
+                            )}
+                            {isProcurement
+                              ? isEnded
+                                ? '查看'
                                 : '履约'
-                            : '管理项目'}
-                        </button>
+                              : '管理项目'}
+                          </button>
+                        )}
+                        {/* 出租 / 处置履约结束的碳凭证入口 */}
                         {isEnded &&
                           !isProcurement &&
                           (p.certState === 'generate' ? (
@@ -552,6 +557,19 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
+                        {/* 采购方（收货方）履约结束的碳凭证入口 */}
+                        {isEnded && isBuyer && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setCertProject({ code: p.code, title: p.title })
+                            }
+                            className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                          >
+                            <ShieldCheck className="size-3.5" />
+                            碳凭证
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
