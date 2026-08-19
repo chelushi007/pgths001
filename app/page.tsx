@@ -5,6 +5,7 @@ import { LayoutDashboard, Bell, Search } from 'lucide-react'
 import { SidebarNav } from '@/components/sidebar-nav'
 import { PublishAnnouncement } from '@/components/publish-announcement'
 import { FulfillmentList } from '@/components/fulfillment-list'
+import { ProcurementAnnouncement } from '@/components/procurement-announcement'
 
 export default function Page() {
   const [active, setActive] = useState({
@@ -71,6 +72,8 @@ export default function Page() {
             <FulfillmentList variant="active" mode="disposal" />
           ) : active.key === 'd-perform-end' ? (
             <FulfillmentList variant="ended" mode="disposal" />
+          ) : active.key === 'p-publish' ? (
+            <ProcurementAnnouncement />
           ) : (
             <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
               <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">

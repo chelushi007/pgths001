@@ -63,7 +63,14 @@ const NAV_GROUPS: NavGroup[] = [
     label: '资源采购',
     icon: ShoppingCart,
     children: [
-      { key: 'buyer', label: '采购方', icon: Users },
+      {
+        key: 'buyer',
+        label: '采购方',
+        icon: Users,
+        children: [
+          { key: 'p-publish', label: '发布采购公告', icon: FileText },
+        ],
+      },
       { key: 'seller', label: '供应商', icon: Store },
     ],
   },
@@ -162,6 +169,7 @@ export function SidebarNav({
   const [openChildren, setOpenChildren] = useState<string[]>([
     'disposal',
     'rental',
+    'buyer',
   ])
 
   const toggleGroup = (key: string) => {
