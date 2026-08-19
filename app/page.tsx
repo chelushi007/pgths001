@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { LayoutDashboard, Bell, Search } from 'lucide-react'
 import { SidebarNav } from '@/components/sidebar-nav'
+import { PublishAnnouncement } from '@/components/publish-announcement'
 
 export default function Page() {
   const [active, setActive] = useState({
@@ -55,19 +56,23 @@ export default function Page() {
           </div>
         </header>
 
-        {/* 内容占位区 - 待设计 */}
-        <main className="flex-1 p-6">
-          <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
-            <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
-              <LayoutDashboard className="size-8" />
+        {/* 内容区 */}
+        <main className="flex-1 overflow-hidden p-6">
+          {active.key === 'publish' ? (
+            <PublishAnnouncement />
+          ) : (
+            <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
+              <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+                <LayoutDashboard className="size-8" />
+              </div>
+              <h2 className="mt-5 text-lg font-semibold text-foreground text-balance">
+                {active.label}
+              </h2>
+              <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
+                该模块内容区待设计，可在此处继续搭建业务功能。
+              </p>
             </div>
-            <h2 className="mt-5 text-lg font-semibold text-foreground text-balance">
-              {active.label}
-            </h2>
-            <p className="mt-1.5 text-sm text-muted-foreground text-pretty">
-              该模块内容区待设计，可在此处继续搭建业务功能。
-            </p>
-          </div>
+          )}
         </main>
       </div>
     </div>

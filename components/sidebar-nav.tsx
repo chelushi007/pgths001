@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   ChevronDown,
   Leaf,
+  FileText,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ const NAV_GROUPS: NavGroup[] = [
     children: [
       { key: 'disposal', label: '资源处置', icon: PackageOpen },
       { key: 'rental', label: '资源出租', icon: KeyRound },
+      { key: 'publish', label: '发布公告', icon: FileText },
     ],
   },
   {
