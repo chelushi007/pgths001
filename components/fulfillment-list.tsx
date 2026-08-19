@@ -249,6 +249,22 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
 
 const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
   {
+    code: '2088521470033289216',
+    title: '轨道拆换废旧钢轨集中采购（第二批）',
+    flowType: '公开招标',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-20 09:30:00',
+    signupEnd: '2026-07-22 12:00:00',
+    certState: 'generate',
+    pendingItems: [
+      '补充供货方过磅信息（供货重量、过磅单、验收单等）',
+      '补充送货运输信息（承运方式、运输距离、能源类型等）',
+      '补充物资回收利用去向信息（再利用方式、回收企业等）',
+    ],
+    carbonState: 'pending',
+  },
+  {
     code: '2087760012480083200',
     title: '综合管廊废旧物资回收采购',
     flowType: '网上询价',
@@ -558,18 +574,29 @@ export function FulfillmentList({
                             </button>
                           ))}
                         {/* 采购方（收货方）履约结束的碳凭证入口 */}
-                        {isEnded && isBuyer && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setCertProject({ code: p.code, title: p.title })
-                            }
-                            className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
-                          >
-                            <ShieldCheck className="size-3.5" />
-                            碳凭证
-                          </button>
-                        )}
+                        {isEnded &&
+                          isBuyer &&
+                          (p.certState === 'generate' ? (
+                            <button
+                              type="button"
+                              onClick={() => setGenerateProject(p)}
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-5 transition-colors hover:text-chart-5/80"
+                            >
+                              <FilePlus2 className="size-3.5" />
+                              生成碳凭证
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCertProject({ code: p.code, title: p.title })
+                              }
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                            >
+                              <ShieldCheck className="size-3.5" />
+                              碳凭证
+                            </button>
+                          ))}
                       </div>
                     </td>
                   </tr>
