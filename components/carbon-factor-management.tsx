@@ -124,28 +124,28 @@ export function CarbonFactorManagement() {
       </div>
 
       <section className="bg-card p-4">
-        <div className="flex flex-wrap items-center gap-x-12 gap-y-4 px-4 py-1">
+        <div className="flex items-center gap-4 px-1 py-1">
           <FilterField label={tab === '资源因子' ? '物资类别' : '运输方式'}>
-            <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-12 w-60 rounded-lg border bg-background px-4 text-muted-foreground outline-none focus:border-[#086de0]">
+            <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-10 w-44 rounded-lg border bg-background px-3 text-muted-foreground outline-none focus:border-[#086de0]">
               {categories.map((item) => <option key={item} value={item}>{item === '全部' ? (tab === '资源因子' ? '全部类别' : '全部方式') : item}</option>)}
             </select>
           </FilterField>
           <FilterField label={tab === '资源因子' ? '物资名称' : '运输工具'}>
-            <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} className="h-12 w-60" placeholder={tab === '资源因子' ? '请输入物资名称' : '请输入运输工具/车型'} />
+            <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} className="h-10 w-44" placeholder={tab === '资源因子' ? '请输入物资名称' : '请输入运输工具/车型'} />
           </FilterField>
           <FilterField label="状态">
-            <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-12 w-60 rounded-lg border bg-background px-4 text-muted-foreground outline-none focus:border-[#086de0]">
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-10 w-40 rounded-lg border bg-background px-3 text-muted-foreground outline-none focus:border-[#086de0]">
               <option value="全部">全部状态</option><option value="启用">启用</option><option value="停用">停用</option>
             </select>
           </FilterField>
-          <div className="flex gap-3">
-            <Button className="h-12 bg-[#086de0] px-6 hover:bg-[#075fc5]" onClick={() => setFilters({ category, keyword, status })}><Search data-icon="inline-start" />查询</Button>
-            <Button variant="outline" className="h-12 px-6" onClick={reset}><RotateCcw data-icon="inline-start" />重置</Button>
+          <div className="ml-auto flex gap-3">
+            <Button className="h-10 bg-[#086de0] px-5 hover:bg-[#075fc5]" onClick={() => setFilters({ category, keyword, status })}><Search data-icon="inline-start" />查询</Button>
+            <Button variant="outline" className="h-10 px-5" onClick={reset}><RotateCcw data-icon="inline-start" />重置</Button>
           </div>
         </div>
-        <div className="mt-5 flex gap-3">
-          <Button className="h-12 bg-[#086de0] px-5 hover:bg-[#075fc5]" onClick={openCreate}><Plus data-icon="inline-start" />新增因子</Button>
-          <Button variant="outline" className="h-12 px-5"><Download data-icon="inline-start" />导出</Button>
+        <div className="mt-4 flex gap-3">
+          <Button className="h-10 bg-[#086de0] px-5 hover:bg-[#075fc5]" onClick={openCreate}><Plus data-icon="inline-start" />新增因子</Button>
+          <Button variant="outline" className="h-10 px-5"><Download data-icon="inline-start" />导出</Button>
         </div>
 
         <div className="mt-5 overflow-x-auto rounded-lg border">
@@ -161,29 +161,29 @@ export function CarbonFactorManagement() {
 }
 
 function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
-  return <label className="flex items-center gap-4 text-sm font-medium"><span className="whitespace-nowrap">{label}</span>{children}</label>
+  return <label className="flex items-center gap-2 text-sm font-medium"><span className="whitespace-nowrap">{label}</span>{children}</label>
 }
 
 function ResourceTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) {
-  return <table className="w-full min-w-[1280px] text-sm">
-    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '物资类别', '物资名称', '规格型号', '计量单位', '单位重量(吨)', '产品碳因子', '因子单位', '数据来源', '生效日期', '状态', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-4 py-4 font-semibold">{item}</th>)}</tr></thead>
+  return <table className="w-full min-w-[1180px] whitespace-nowrap text-sm">
+    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '物资类别', '物资名称', '规格型号', '计量单位', '单位重量(吨)', '产品碳因子', '因子单位', '数据来源', '生效日期', '状态', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-3 py-3 font-semibold">{item}</th>)}</tr></thead>
     <tbody>{rows.map((row, index) => <tr key={row.id} className="border-t hover:bg-muted/30">
-      <td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4"><span className="rounded bg-[#e7f1ff] px-2 py-1 text-[#086de0]">{row.category}</span></td><td className="px-4 py-4 font-semibold">{row.name}</td><td className="px-4 py-4 text-muted-foreground">{row.model}</td><td className="px-4 py-4 text-center">{row.measureUnit}</td><td className="px-4 py-4 text-right tabular-nums">{row.unitWeight}</td><td className="px-4 py-4 text-right text-base font-semibold tabular-nums">{row.value.toLocaleString()}</td><td className="px-4 py-4 text-muted-foreground">{row.unit}</td><td className="px-4 py-4 text-muted-foreground">{row.source}</td><td className="px-4 py-4 text-muted-foreground">{row.date}</td><Status active={row.active} /><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
+      <td className="px-3 py-3">{index + 1}</td><td className="px-3 py-3"><span className="rounded bg-[#e7f1ff] px-2 py-1 text-[#086de0]">{row.category}</span></td><td className="px-3 py-3 font-semibold">{row.name}</td><td className="px-3 py-3 text-muted-foreground">{row.model}</td><td className="px-3 py-3 text-center">{row.measureUnit}</td><td className="px-3 py-3 text-right tabular-nums">{row.unitWeight}</td><td className="px-3 py-3 text-right text-base font-semibold tabular-nums">{row.value.toLocaleString()}</td><td className="px-3 py-3 text-muted-foreground">{row.unit}</td><td className="px-3 py-3 text-muted-foreground">{row.source}</td><td className="px-3 py-3 text-muted-foreground">{row.date}</td><Status active={row.active} /><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
     </tr>)}</tbody>
   </table>
 }
 
 function TransportTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) {
-  return <table className="w-full min-w-[1180px] text-sm">
-    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '运输方式', '运输工具/车型', '能源类型', '碳排放因子(kgCO₂e/吨·公里)', '数据来源', '状态', '更新日期', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-4 py-4 font-semibold">{item}</th>)}</tr></thead>
+  return <table className="w-full min-w-[1080px] whitespace-nowrap text-sm">
+    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '运输方式', '运输工具/车型', '能源类型', '碳排放因子(kgCO₂e/吨·公里)', '数据来源', '状态', '更新日期', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-3 py-3 font-semibold">{item}</th>)}</tr></thead>
     <tbody>{rows.map((row, index) => <tr key={row.id} className="border-t hover:bg-muted/30">
-      <td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4 font-medium"><span className={cn('inline-flex items-center gap-2', BLUE)}>{row.category === '陆运' ? <Truck className="size-4" /> : <Ship className="size-4" />}<span className="text-foreground">{row.category}</span></span></td><td className="px-4 py-4 font-medium">{row.name}</td><td className="px-4 py-4 text-muted-foreground">{row.energy === '电力' ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-emerald-600"><Zap className="size-3" />电力</span> : row.energy}</td><td className="px-4 py-4 text-right text-base font-semibold tabular-nums">{row.value.toFixed(4)}</td><td className="px-4 py-4 text-muted-foreground">{row.source}</td><Status active={row.active} /><td className="px-4 py-4 text-muted-foreground">{row.date}</td><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
+      <td className="px-3 py-3">{index + 1}</td><td className="px-3 py-3 font-medium"><span className={cn('inline-flex items-center gap-2', BLUE)}>{row.category === '陆运' ? <Truck className="size-4" /> : <Ship className="size-4" />}<span className="text-foreground">{row.category}</span></span></td><td className="px-3 py-3 font-medium">{row.name}</td><td className="px-3 py-3 text-muted-foreground">{row.energy === '电力' ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-emerald-600"><Zap className="size-3" />电力</span> : row.energy}</td><td className="px-3 py-3 text-right text-base font-semibold tabular-nums">{row.value.toFixed(4)}</td><td className="px-3 py-3 text-muted-foreground">{row.source}</td><Status active={row.active} /><td className="px-3 py-3 text-muted-foreground">{row.date}</td><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
     </tr>)}</tbody>
   </table>
 }
 
-function Status({ active }: { active: boolean }) { return <td className="px-4 py-4"><span className={cn('rounded px-2 py-1 text-xs font-medium', active ? 'bg-emerald-100 text-emerald-600' : 'bg-muted text-muted-foreground')}>{active ? '启用' : '停用'}</span></td> }
-function Actions({ row, onEdit, onToggle }: { row: Factor; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) { return <td className="px-4 py-4"><div className="flex whitespace-nowrap"><Button variant="ghost" size="sm" className="text-[#086de0]" onClick={() => onEdit(row)}><Pencil data-icon="inline-start" />编辑</Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => onToggle(row.id)}><Power data-icon="inline-start" />{row.active ? '停用' : '启用'}</Button></div></td> }
+function Status({ active }: { active: boolean }) { return <td className="px-3 py-3"><span className={cn('rounded px-2 py-1 text-xs font-medium', active ? 'bg-emerald-100 text-emerald-600' : 'bg-muted text-muted-foreground')}>{active ? '启用' : '停用'}</span></td> }
+function Actions({ row, onEdit, onToggle }: { row: Factor; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) { return <td className="px-3 py-3"><div className="flex whitespace-nowrap"><Button variant="ghost" size="sm" className="text-[#086de0]" onClick={() => onEdit(row)}><Pencil data-icon="inline-start" />编辑</Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => onToggle(row.id)}><Power data-icon="inline-start" />{row.active ? '停用' : '启用'}</Button></div></td> }
 
 function FactorDialog({ editing, setEditing, onSave }: { editing: Factor | null; setEditing: (row: Factor | null) => void; onSave: () => void }) {
   const isResource = editing?.type === '资源因子'
