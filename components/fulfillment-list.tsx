@@ -553,12 +553,12 @@ export function FulfillmentList({
                     key={p.code}
                     className="border-t border-border transition-colors hover:bg-accent/30"
                   >
-                    <td className="px-4 py-3 font-mono text-xs text-foreground">
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-foreground">
                       {p.code}
                     </td>
-                    <td className="px-4 py-3 text-foreground">{p.title}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-foreground">{p.title}</td>
                     {showResourceCol && (
-                      <td className="px-4 py-3 text-foreground">
+                      <td className="whitespace-nowrap px-4 py-3 text-foreground">
                         <span className="inline-flex items-center gap-1.5">
                           {p.resourceName ?? '—'}
                           {p.isNewProduct && !isScrap && (
@@ -573,22 +573,22 @@ export function FulfillmentList({
                         </span>
                       </td>
                     )}
-                    <td className="px-4 py-3 text-foreground">{p.flowType}</td>
-                    <td className="px-4 py-3">
+                    <td className="whitespace-nowrap px-4 py-3 text-foreground">{p.flowType}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
                       <span
                         className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-medium ${STAGE_TONE[p.stageTone]}`}
                       >
                         {p.stage}
                       </span>
                     </td>
-                    <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                    <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupStart}
                     </td>
-                    <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                    <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupEnd}
                     </td>
                     {!hideCarbon && (
-                      <td className="px-4 py-3">
+                      <td className="whitespace-nowrap px-4 py-3">
                         {p.isNewProduct && !isScrap ? (
                           <span className="inline-flex w-fit items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                             新品 · 不核算
@@ -601,7 +601,7 @@ export function FulfillmentList({
                         )}
                       </td>
                     )}
-                    <td className="px-4 py-3">
+                    <td className="whitespace-nowrap px-4 py-3">
                       <div className="flex items-center gap-3">
                         {/* 采购方履约结束仅展示碳凭证，不再有查看入口 */}
                         {!(isBuyer && isEnded) && (
