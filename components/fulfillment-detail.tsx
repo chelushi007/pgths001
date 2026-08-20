@@ -281,7 +281,7 @@ export function FulfillmentDetail({
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-foreground">
-              项���管理 — {project.title}
+              项�����管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
               {isLessee
@@ -766,9 +766,6 @@ function PickupOrderDialog({
   const [remark, setRemark] = useState('')
   const [logistics, setLogistics] = useState<LogisticsRow[]>([])
   const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
-  const [reuseMethod, setReuseMethod] = useState('')
-  const [recycleCompany, setRecycleCompany] = useState('')
-  const [reuseRemark, setReuseRemark] = useState('')
   const [isNewProduct, setIsNewProduct] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -787,30 +784,55 @@ function PickupOrderDialog({
     setLogistics((current) =>
       current.length > 0
         ? current
-        : [
-            {
-              id: crypto.randomUUID(),
-              type: '陆运',
-              logisticsNo: '',
-              carrier: '',
-              contact: '',
-              phone: '',
-              distance: '',
-              departureAt: '',
-              arrivalAt: '',
-              plateNo: '',
-              driverName: '',
-              vesselName: '',
-              vesselId: '',
-            },
-          ],
+        : isBuyer
+          ? [
+              // 收货单：反显发货方（提货单）已登记的物流信息
+              {
+                id: crypto.randomUUID(),
+                type: '陆运',
+                logisticsNo: 'YD20260820000123',
+                carrier: '中铁物流华南分公司',
+                contact: '李国强',
+                phone: '138 0013 8000',
+                distance: '120',
+                departureAt: '2026-08-20T08:12',
+                arrivalAt: '2026-08-20T15:40',
+                plateNo: '粤A·8H63Z',
+                driverName: '陈志明',
+                vesselName: '',
+                vesselId: '',
+              },
+            ]
+          : [
+              {
+                id: crypto.randomUUID(),
+                type: '陆运',
+                logisticsNo: '',
+                carrier: '',
+                contact: '',
+                phone: '',
+                distance: '',
+                departureAt: '',
+                arrivalAt: '',
+                plateNo: '',
+                driverName: '',
+                vesselName: '',
+                vesselId: '',
+              },
+            ],
     )
+    // 收货单：反显发货方过磅结果与过磅单附件（净重 = 毛重 - 皮重）
+    if (isBuyer) {
+      setGrossWeight((v) => v || '64.45')
+      setTareWeight((v) => v || '0.25')
+      setWeighFile((v) => v || '发货过磅单-YD20260820000123.pdf')
+    }
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !trackLogistics) onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open, onClose, trackLogistics])
+  }, [open, onClose, trackLogistics, isBuyer])
 
   if (!open) return null
 
@@ -973,13 +995,15 @@ function PickupOrderDialog({
                           item.id === row.id ? { ...item, ...patch } : item,
                         ),
                       )
-                    const inputClass =
-                      'w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20'
+                    const inputClass = isBuyer
+                      ? 'w-full rounded-md border border-input bg-muted px-2 py-1.5 text-sm text-muted-foreground outline-none cursor-default'
+                      : 'w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20'
                     return (
                       <tr key={row.id} className="border-t border-border align-top">
                         <td className="w-28 px-2 py-2">
                           <select
                             value={row.type}
+                            disabled={isBuyer}
                             onChange={(event) =>
                               update({
                                 type: event.target.value as TransportType,
@@ -997,22 +1021,24 @@ function PickupOrderDialog({
                           </select>
                         </td>
                         <td className="w-44 px-2 py-2">
-                          <input value={row.logisticsNo} onChange={(e) => update({ logisticsNo: e.target.value })} placeholder={row.type === '陆运' ? '如 YD20260820000123' : '如 SY20260820000123'} className={inputClass} />
+                          <input value={row.logisticsNo} readOnly={isBuyer} onChange={(e) => update({ logisticsNo: e.target.value })} placeholder={row.type === '陆运' ? '如 YD20260820000123' : '如 SY20260820000123'} className={inputClass} />
                         </td>
-                        <td className="w-44 px-2 py-2"><input value={row.carrier} onChange={(e) => update({ carrier: e.target.value })} placeholder="承运单位" className={inputClass} /></td>
-                        <td className="w-32 px-2 py-2"><input value={row.contact} onChange={(e) => update({ contact: e.target.value })} placeholder="联系人" className={inputClass} /></td>
-                        <td className="w-36 px-2 py-2"><input value={row.phone} onChange={(e) => update({ phone: e.target.value })} placeholder="联系电话" className={inputClass} /></td>
-                        <td className="w-28 px-2 py-2"><input type="number" min="0" value={row.distance} onChange={(e) => update({ distance: e.target.value })} placeholder="0" className={inputClass} /></td>
-                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.plateNo : row.vesselName} onChange={(e) => update(row.type === '陆运' ? { plateNo: e.target.value } : { vesselName: e.target.value })} placeholder={row.type === '陆运' ? '车牌号' : '船名'} className={inputClass} /></td>
-                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.driverName : row.vesselId} onChange={(e) => update(row.type === '陆运' ? { driverName: e.target.value } : { vesselId: e.target.value })} placeholder={row.type === '陆运' ? '司机姓名' : '船舶识别号'} className={inputClass} /></td>
-                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.departureAt} onChange={(e) => update({ departureAt: e.target.value })} className={inputClass} /></td>
-                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.arrivalAt} onChange={(e) => update({ arrivalAt: e.target.value })} className={inputClass} /></td>
+                        <td className="w-44 px-2 py-2"><input value={row.carrier} readOnly={isBuyer} onChange={(e) => update({ carrier: e.target.value })} placeholder="承运单位" className={inputClass} /></td>
+                        <td className="w-32 px-2 py-2"><input value={row.contact} readOnly={isBuyer} onChange={(e) => update({ contact: e.target.value })} placeholder="联系人" className={inputClass} /></td>
+                        <td className="w-36 px-2 py-2"><input value={row.phone} readOnly={isBuyer} onChange={(e) => update({ phone: e.target.value })} placeholder="联系电话" className={inputClass} /></td>
+                        <td className="w-28 px-2 py-2"><input type="number" min="0" value={row.distance} readOnly={isBuyer} onChange={(e) => update({ distance: e.target.value })} placeholder="0" className={inputClass} /></td>
+                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.plateNo : row.vesselName} readOnly={isBuyer} onChange={(e) => update(row.type === '陆运' ? { plateNo: e.target.value } : { vesselName: e.target.value })} placeholder={row.type === '陆运' ? '车牌号' : '船名'} className={inputClass} /></td>
+                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.driverName : row.vesselId} readOnly={isBuyer} onChange={(e) => update(row.type === '陆运' ? { driverName: e.target.value } : { vesselId: e.target.value })} placeholder={row.type === '陆运' ? '司机姓名' : '船舶识别号'} className={inputClass} /></td>
+                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.departureAt} readOnly={isBuyer} onChange={(e) => update({ departureAt: e.target.value })} className={inputClass} /></td>
+                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.arrivalAt} readOnly={isBuyer} onChange={(e) => update({ arrivalAt: e.target.value })} className={inputClass} /></td>
                         <td className="w-28 px-2 py-2">
                           <div className="flex items-center gap-2">
                             {row.logisticsNo.trim() && (
                               <button type="button" onClick={() => setTrackLogistics(row)} className="text-primary" aria-label={`查看第 ${index + 1} 条运输轨迹`}><MapPin className="size-4" /></button>
                             )}
-                            <button type="button" disabled={logistics.length === 1} onClick={() => setLogistics((current) => current.filter((item) => item.id !== row.id))} className="text-destructive disabled:cursor-not-allowed disabled:opacity-30" aria-label={`删除第 ${index + 1} 条物流信息`}><Trash2 className="size-4" /></button>
+                            {!isBuyer && (
+                              <button type="button" disabled={logistics.length === 1} onClick={() => setLogistics((current) => current.filter((item) => item.id !== row.id))} className="text-destructive disabled:cursor-not-allowed disabled:opacity-30" aria-label={`删除第 ${index + 1} 条物流信息`}><Trash2 className="size-4" /></button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -1182,16 +1208,18 @@ function PickupOrderDialog({
                     <th className="px-3 py-2.5 font-medium">资源</th>
                     <th className="px-3 py-2.5 font-medium">资源名称</th>
                     <th className="px-3 py-2.5 text-right font-medium">数量</th>
-                    <th className="w-20 px-3 py-2.5 text-center font-medium">
-                      操作
-                    </th>
+                    {!isBuyer && (
+                      <th className="w-20 px-3 py-2.5 text-center font-medium">
+                        操作
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
                   {lines.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={4}
+                        colSpan={isBuyer ? 3 : 4}
                         className="px-3 py-8 text-center text-sm text-muted-foreground"
                       >
                         暂无数据
@@ -1203,21 +1231,23 @@ function PickupOrderDialog({
                         <td className="px-3 py-2">
                           <input
                             value={l.resource}
+                            readOnly={isBuyer}
                             onChange={(e) =>
                               updateLine(l.id, { resource: e.target.value })
                             }
                             placeholder="资源编码"
-                            className="w-full rounded border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-ring"
+                            className={`w-full rounded border border-input px-2 py-1.5 text-sm outline-none ${isBuyer ? 'bg-muted text-muted-foreground cursor-default' : 'bg-background focus:border-ring'}`}
                           />
                         </td>
                         <td className="px-3 py-2">
                           <input
                             value={l.resourceName}
+                            readOnly={isBuyer}
                             onChange={(e) =>
                               updateLine(l.id, { resourceName: e.target.value })
                             }
                             placeholder="资源名称"
-                            className="w-full rounded border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-ring"
+                            className={`w-full rounded border border-input px-2 py-1.5 text-sm outline-none ${isBuyer ? 'bg-muted text-muted-foreground cursor-default' : 'bg-background focus:border-ring'}`}
                           />
                         </td>
                         <td className="px-3 py-2">
@@ -1225,37 +1255,70 @@ function PickupOrderDialog({
                             type="number"
                             min="0"
                             value={l.quantity}
+                            readOnly={isBuyer}
                             onChange={(e) =>
                               updateLine(l.id, { quantity: e.target.value })
                             }
                             placeholder="0"
-                            className="w-full rounded border border-input bg-background px-2 py-1.5 text-right text-sm tabular-nums outline-none focus:border-ring"
+                            className={`w-full rounded border border-input px-2 py-1.5 text-right text-sm tabular-nums outline-none ${isBuyer ? 'bg-muted text-muted-foreground cursor-default' : 'bg-background focus:border-ring'}`}
                           />
                         </td>
-                        <td className="px-3 py-2 text-center">
-                          <button
-                            type="button"
-                            onClick={() => removeLine(l.id)}
-                            className="text-muted-foreground transition-colors hover:text-destructive"
-                            aria-label="删除明细行"
-                          >
-                            <Trash2 className="size-4" />
-                          </button>
-                        </td>
+                        {!isBuyer && (
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeLine(l.id)}
+                              className="text-muted-foreground transition-colors hover:text-destructive"
+                              aria-label="删除明细行"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
             </div>
-            <button
-              type="button"
-              onClick={addLine}
-              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
-            >
-              <Plus className="size-4" />
-              新增明细行
-            </button>
+            {isBuyer ? (
+              /* 收货单：附发货方过磅单附件与过磅结果，供收货方核对 */
+              <div className="mt-3 rounded-md border border-border bg-secondary/40 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText className="size-4 text-primary" />
+                    <span className="font-medium text-foreground">过磅单附件</span>
+                    <span className="text-muted-foreground">{weighFile ?? '—'}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-muted-foreground">
+                      过磅净重{' '}
+                      <b className="tabular-nums text-foreground">
+                        {netWeight || '—'}
+                      </b>{' '}
+                      吨
+                    </span>
+                    {weighFile && (
+                      <button
+                        type="button"
+                        className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
+                      >
+                        查看
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={addLine}
+                className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+              >
+                <Plus className="size-4" />
+                新增明细行
+              </button>
+            )}
 
             <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
               <label className="pt-2 text-right text-sm text-muted-foreground">
@@ -1265,10 +1328,11 @@ function PickupOrderDialog({
                 <textarea
                   value={remark}
                   maxLength={255}
+                  readOnly={isBuyer}
                   onChange={(e) => setRemark(e.target.value)}
-                  placeholder="长度 0-255 字"
+                  placeholder={isBuyer ? '发货方未填写备注' : '长度 0-255 字'}
                   rows={3}
-                  className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  className={`w-full resize-y rounded-md border border-input px-3 py-2 text-sm outline-none ${isBuyer ? 'bg-muted text-muted-foreground cursor-default' : 'bg-background focus:border-ring focus:ring-2 focus:ring-ring/20'}`}
                 />
                 <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-muted-foreground">
                   {remark.length} / 255
@@ -1277,108 +1341,6 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 物资去向（收货方视角）：补充回收利用 / 使用去向信息 */}
-          {isBuyer && (
-            <FormSection
-              title={
-                isLessee ? '资源用途' : isTransferee ? '资源去向' : '物资去向'
-              }
-              icon={<Recycle className="size-4 text-primary" />}
-            >
-              <p className="mb-4 text-xs text-muted-foreground">
-                {isLessee
-                  ? '请注明本次承租资源的使用去向信息（使用用途、使用项目 / 场所等），用于资源周转追溯与碳减排核算。'
-                  : isTransferee
-                    ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
-                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
-              </p>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-                <div>
-                  <FieldLabel
-                    label={isLessee ? '使用用途' : '再利用方式'}
-                    required
-                  />
-                  <select
-                    value={reuseMethod}
-                    onChange={(e) => setReuseMethod(e.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                  >
-                    <option value="">
-                      {isLessee ? '请选择使用用途' : '请选择再利用方式'}
-                    </option>
-                    {isLessee ? (
-                      <>
-                        <option value="项目施工">项目施工</option>
-                        <option value="生产运营">生产运营</option>
-                        <option value="临时周转">临时周转</option>
-                        <option value="应急保障">应急保障</option>
-                        <option value="其他">其他</option>
-                      </>
-                    ) : isTransferee ? (
-                      <>
-                        <option value="整机复用">整机复用</option>
-                        <option value="拆解利用">拆解利用</option>
-                        <option value="再制造">再制造</option>
-                        <option value="回炉再生">回炉再生</option>
-                        <option value="报废处理">报废处理</option>
-                        <option value="其他">其他</option>
-                      </>
-                    ) : (
-                      <>
-                        <option value="回炉再生">回炉再生（再生钢材）</option>
-                        <option value="拆解再制造">拆解再制造</option>
-                        <option value="检修复用">检修复用</option>
-                        <option value="降级利用">降级利用</option>
-                        <option value="其他">其他</option>
-                      </>
-                    )}
-                  </select>
-                </div>
-                <div>
-                  <FieldLabel
-                    label={
-                      isLessee
-                        ? '使用项目 / 场所'
-                        : isTransferee
-                          ? '资源流向企业'
-                          : '回收企业'
-                    }
-                    required
-                  />
-                  <input
-                    value={recycleCompany}
-                    onChange={(e) => setRecycleCompany(e.target.value)}
-                    placeholder={
-                      isLessee
-                        ? '请输入使用项目 / 场所名称'
-                        : isTransferee
-                          ? '请输入资源流向 / 再利用企业名称'
-                          : '请输入回收 / 再利用企业名称'
-                    }
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
-                <label className="pt-2 text-right text-sm text-muted-foreground">
-                  {isLessee ? '用途说明' : '去向说明'}
-                </label>
-                <div className="relative">
-                  <textarea
-                    value={reuseRemark}
-                    maxLength={255}
-                    onChange={(e) => setReuseRemark(e.target.value)}
-                    placeholder="可补充物资去向、再利用比例、处置方式等说明，长度 0-255 字"
-                    rows={3}
-                    className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                  />
-                  <span className="pointer-events-none absolute bottom-2 right-3 text-xs text-muted-foreground">
-                    {reuseRemark.length} / 255
-                  </span>
-                </div>
-              </div>
-            </FormSection>
-          )}
         </div>
 
         <div className="flex items-center justify-end gap-3 border-t border-border bg-secondary/40 px-6 py-4">
