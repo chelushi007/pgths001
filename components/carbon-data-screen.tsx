@@ -1,17 +1,161 @@
 'use client'
 import { useRef, useState } from 'react'
-import { Activity, Factory, Leaf, Maximize2, Minimize2, Recycle, Route, X } from 'lucide-react'
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from 'recharts'
+import { Boxes, Factory, Leaf, Maximize2, Minimize2, Recycle, TrendingUp, X } from 'lucide-react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
-const trend=[{m:'3月',v:1478},{m:'4月',v:1792},{m:'5月',v:2149},{m:'6月',v:2607},{m:'7月',v:3054},{m:'8月',v:3816}]
-const biz=[{n:'处置',v:3180},{n:'出租',v:1460},{n:'采购',v:680},{n:'钢厂直收',v:4720}]
-const org=[{n:'华南钢铁',v:1860},{n:'珠江基地',v:1492},{n:'东部制造',v:1218},{n:'新港资源',v:986}]
-const config={v:{label:'净减排量',color:'var(--chart-1)'}} satisfies ChartConfig
-export function CarbonDataScreen({onClose}:{onClose?:()=>void}){const screenRef=useRef<HTMLElement>(null);const [fullscreen,setFullscreen]=useState(false);const toggleFullscreen=async()=>{if(!document.fullscreenElement){await screenRef.current?.requestFullscreen();setFullscreen(true)}else{await document.exitFullscreen();setFullscreen(false)}};return <main ref={screenRef} className="min-h-screen overflow-y-auto bg-foreground p-4 font-sans text-background lg:p-6">
- <header className="mb-5 flex items-center justify-between border-b border-background/15 pb-4"><div className="flex items-center gap-3"><div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground"><Leaf className="size-5"/></div><div><h1 className="text-xl font-semibold tracking-wide">循环资源碳绩效数据中心</h1><p className="mt-1 text-xs text-background/55">CARBON PERFORMANCE COMMAND CENTER · 数据更新 2026-08-20 16:30</p></div></div><div className="flex items-center gap-2"><button type="button" onClick={toggleFullscreen} className="flex items-center gap-2 rounded-md border border-background/20 px-3 py-2 text-sm text-background/70 transition-colors hover:bg-background/10">{fullscreen?<Minimize2 className="size-4"/>:<Maximize2 className="size-4"/>}{fullscreen?'退出全屏':'全屏展示'}</button>{onClose&&<button type="button" onClick={onClose} className="flex items-center gap-2 rounded-md border border-background/20 px-3 py-2 text-sm text-background/70 transition-colors hover:bg-background/10"><X className="size-4"/>关闭大屏</button>}</div></header>
- <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><ScreenKpi icon={Leaf} label="累计净减排" value="10,040.26" unit="tCO₂e"/><ScreenKpi icon={Recycle} label="循环资源总量" value="5,628.4" unit="吨"/><ScreenKpi icon={Route} label="物流运输里程" value="186,420" unit="km"/><ScreenKpi icon={Factory} label="覆盖组织" value="36" unit="家"/></section>
- <section className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)_minmax(0,1fr)]"><Panel title="净减排月度趋势"><ChartContainer config={config} className="h-72 w-full"><AreaChart data={trend}><defs><linearGradient id="carbon" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="var(--color-v)" stopOpacity={.7}/><stop offset="95%" stopColor="var(--color-v)" stopOpacity={.05}/></linearGradient></defs><CartesianGrid stroke="currentColor" opacity={.1} vertical={false}/><XAxis dataKey="m" tick={{fill:'currentColor'}}/><YAxis tick={{fill:'currentColor'}}/><ChartTooltip content={<ChartTooltipContent/>}/><Area dataKey="v" stroke="var(--color-v)" fill="url(#carbon)" strokeWidth={3}/></AreaChart></ChartContainer></Panel><Panel title="业务贡献结构"><ChartContainer config={config} className="h-48 w-full"><PieChart><Pie data={biz} dataKey="v" nameKey="n" innerRadius={42} outerRadius={68}>{biz.map((_,i)=><Cell key={i} fill={`var(--chart-${i+1})`}/>)}</Pie><ChartTooltip content={<ChartTooltipContent nameKey="n"/>}/></PieChart></ChartContainer><div className="grid grid-cols-2 gap-2">{biz.map((item,i)=><div key={item.n} className="flex min-w-0 items-center gap-2 rounded-md border border-background/10 bg-background/[.04] px-2 py-2"><span className="size-2 shrink-0 rounded-full" style={{background:`var(--chart-${i+1})`}}/><div className="min-w-0"><p className="truncate text-xs text-background/60">{item.n}</p><p className="text-sm font-semibold tabular-nums">{item.v.toLocaleString()} <span className="text-[10px] font-normal text-background/50">tCO₂e</span></p></div></div>)}</div></Panel><Panel title="实时核算动态"><div className="flex flex-col gap-4">{[['16:26','钢厂直收','废钢 128.6t','+229.18 tCO₂e'],['16:10','资源处置','边角料 42.8t','+75.62 tCO₂e'],['15:46','资源出租','钢模板 18.5t','+21.67 tCO₂e'],['15:32','钢厂直收','废钢 206.4t','+367.81 tCO₂e']].map(x=><div key={x[0]} className="border-b border-background/10 pb-3"><div className="flex justify-between text-xs text-background/50"><span>{x[0]} · {x[1]}</span><Activity className="size-3 text-primary"/></div><div className="mt-1 flex justify-between text-sm"><span>{x[2]}</span><b className="text-primary">{x[3]}</b></div></div>)}</div></Panel></section>
- <section className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr]"><Panel title="组织减排贡献排行"><ChartContainer config={config} className="h-64 w-full"><BarChart data={org} layout="vertical" margin={{left:25}}><CartesianGrid stroke="currentColor" opacity={.1} horizontal={false}/><XAxis type="number" hide/><YAxis dataKey="n" type="category" width={85} tick={{fill:'currentColor'}}/><Bar dataKey="v" fill="var(--color-v)" radius={[0,5,5,0]}/><ChartTooltip content={<ChartTooltipContent/>}/></BarChart></ChartContainer></Panel><Panel title="核算质量监测"><div className="grid h-64 grid-cols-2 gap-3">{[['98.7%','数据完整率'],['100%','有效因子引用'],['96.4%','物流信息完整率'],['17','待复核记录']].map(x=><div key={x[1]} className="flex flex-col items-center justify-center rounded-lg border border-background/10 bg-background/[.04]"><b className="text-2xl text-primary">{x[0]}</b><span className="mt-2 text-xs text-background/55">{x[1]}</span></div>)}</div></Panel></section>
- </main>}
-function Panel({title,children}:{title:string;children:React.ReactNode}){return <div className="min-w-0 overflow-hidden rounded-xl border border-background/15 bg-background/[.05] p-4 shadow-xl"><h2 className="mb-4 border-l-2 border-primary pl-3 text-sm font-medium tracking-wide">{title}</h2>{children}</div>}
-function ScreenKpi({icon:Icon,label,value,unit}:{icon:typeof Leaf;label:string;value:string;unit:string}){return <div className="flex items-center gap-4 rounded-xl border border-background/15 bg-background/[.05] p-5"><div className="flex size-11 items-center justify-center rounded-lg bg-primary/20 text-primary"><Icon className="size-5"/></div><div><p className="text-xs text-background/55">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{value} <span className="text-xs font-normal text-background/55">{unit}</span></p></div></div>}
+
+const BLUE = '#3b9bff'
+const ORANGE = '#ff9d4d'
+const GREEN = '#2fd699'
+const TEAL = '#22c1c9'
+
+const monthly = [
+  { m: '1月', reduce: 42.0, emit: 7.0 }, { m: '2月', reduce: 40.0, emit: 8.0 }, { m: '3月', reduce: 54.0, emit: 8.0 },
+  { m: '4月', reduce: 61.2, emit: 10.4 }, { m: '5月', reduce: 90.0, emit: 13.0 }, { m: '6月', reduce: 73.0, emit: 11.0 },
+]
+// 业务类型（保持不变）：资源出租/资源采购/资源处置/钢厂直收
+const bizPie = [
+  { n: '租赁', v: 42.26, color: BLUE }, { n: '买卖', v: 13.92, color: ORANGE },
+  { n: '处置', v: 34.70, color: GREEN }, { n: '直收', v: 28.40, color: TEAL },
+]
+const orgRank = [
+  { n: '十五局', v: 268.4 }, { n: '十二局', v: 241.2 }, { n: '二十局', v: 226.6 },
+  { n: '十八局', v: 213.1 }, { n: '十一局', v: 198.6 }, { n: '二十三局', v: 187.4 }, { n: '十六局', v: 175.9 },
+]
+const materialRank = [
+  { n: '热轧型钢', v: 286.6 }, { n: '钢板桩', v: 254.2 }, { n: '盘扣式脚手架', v: 231.1 },
+  { n: '钢管脚手架', v: 208.6 }, { n: '周转扣件', v: 187.4 }, { n: '贝雷片', v: 168.9 },
+]
+const feed = [
+  ['16:26', '钢厂直收', '废钢 128.6t', '+229.18'],
+  ['16:10', '资源处置', '边角料 42.8t', '+75.62'],
+  ['15:46', '资源出租', '钢模板 18.5t', '+21.67'],
+  ['15:32', '钢厂直收', '废钢 206.4t', '+367.81'],
+]
+const config = { reduce: { label: '减碳量', color: BLUE }, emit: { label: '碳排放', color: ORANGE } } satisfies ChartConfig
+
+export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
+  const screenRef = useRef<HTMLElement>(null)
+  const [fullscreen, setFullscreen] = useState(false)
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) { await screenRef.current?.requestFullscreen(); setFullscreen(true) }
+    else { await document.exitFullscreen(); setFullscreen(false) }
+  }
+  return (
+    <main ref={screenRef} className="min-h-screen overflow-y-auto bg-[#0b1a2e] p-4 font-sans text-white lg:p-6">
+      <header className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-[#1bbf7a] text-white"><Leaf className="size-5" /></div>
+          <div>
+            <h1 className="text-xl font-semibold tracking-wide">碳核算管理大屏</h1>
+            <p className="mt-1 text-xs text-white/50">CARBON ACCOUNTING COMMAND CENTER · 数据更新 2026-08-20 16:30</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={toggleFullscreen} className="flex items-center gap-2 rounded-md border border-white/20 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10">{fullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}{fullscreen ? '退出全屏' : '全屏展示'}</button>
+          {onClose && <button type="button" onClick={onClose} className="flex items-center gap-2 rounded-md border border-white/20 px-3 py-2 text-sm text-white/70 transition-colors hover:bg-white/10"><X className="size-4" />关闭大屏</button>}
+        </div>
+      </header>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <ScreenKpi icon={Leaf} tint="text-[#2fd699]" label="净减碳量" value="100.98" unit="tCO₂e" />
+        <ScreenKpi icon={Recycle} tint="text-[#3b9bff]" label="累计减碳量" value="119.28" unit="tCO₂e" />
+        <ScreenKpi icon={TrendingUp} tint="text-[#ff9d4d]" label="累计碳排放" value="18.30" unit="tCO₂e" />
+        <ScreenKpi icon={Boxes} tint="text-[#22c1c9]" label="核算物资总量" value="803.10" unit="吨" />
+      </section>
+
+      <section className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <Panel title="月度减碳趋势">
+          <ChartContainer config={config} className="h-72 w-full [&_.recharts-cartesian-axis-tick_text]:fill-white/60">
+            <AreaChart data={monthly} margin={{ left: 4, right: 8 }}>
+              <defs>
+                <linearGradient id="scr-reduce" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={BLUE} stopOpacity={0.5} /><stop offset="95%" stopColor={BLUE} stopOpacity={0.03} /></linearGradient>
+                <linearGradient id="scr-emit" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor={ORANGE} stopOpacity={0.4} /><stop offset="95%" stopColor={ORANGE} stopOpacity={0.03} /></linearGradient>
+              </defs>
+              <CartesianGrid stroke="#ffffff" opacity={0.08} vertical={false} />
+              <XAxis dataKey="m" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Legend />
+              <Area dataKey="reduce" name="减碳量" stroke={BLUE} strokeWidth={2.5} fill="url(#scr-reduce)" />
+              <Area dataKey="emit" name="碳排放" stroke={ORANGE} strokeWidth={2.5} fill="url(#scr-emit)" />
+            </AreaChart>
+          </ChartContainer>
+        </Panel>
+        <Panel title="减碳量业务占比">
+          <ChartContainer config={config} className="h-48 w-full">
+            <PieChart>
+              <Pie data={bizPie} dataKey="v" nameKey="n" innerRadius={44} outerRadius={70} paddingAngle={2}>{bizPie.map((item) => <Cell key={item.n} fill={item.color} stroke="#0b1a2e" />)}</Pie>
+              <ChartTooltip content={<ChartTooltipContent nameKey="n" />} />
+            </PieChart>
+          </ChartContainer>
+          <div className="grid grid-cols-2 gap-2">
+            {bizPie.map((item) => (
+              <div key={item.n} className="flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[.04] px-2 py-2">
+                <span className="size-2 shrink-0 rounded-full" style={{ background: item.color }} />
+                <div className="min-w-0"><p className="truncate text-xs text-white/60">{item.n}</p><p className="text-sm font-semibold tabular-nums">{item.v.toFixed(2)} <span className="text-[10px] font-normal text-white/50">tCO₂e</span></p></div>
+              </div>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="实时核算动态">
+          <div className="flex flex-col gap-3">
+            {feed.map((x) => (
+              <div key={x[0]} className="border-b border-white/10 pb-3 last:border-0">
+                <div className="flex justify-between text-xs text-white/50"><span>{x[0]} · {x[1]}</span><span className="font-semibold text-[#2fd699]">{x[3]} tCO₂e</span></div>
+                <p className="mt-1 text-sm text-white/80">{x[2]}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </section>
+
+      <section className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+        <Panel title="局级单位碳减排排行">
+          <ChartContainer config={config} className="h-72 w-full [&_.recharts-cartesian-axis-tick_text]:fill-white/60">
+            <BarChart data={orgRank} layout="vertical" margin={{ left: 12, right: 36 }}>
+              <CartesianGrid stroke="#ffffff" opacity={0.08} horizontal={false} />
+              <XAxis type="number" hide />
+              <YAxis dataKey="n" type="category" width={56} tickLine={false} axisLine={false} />
+              <Bar dataKey="v" radius={[0, 4, 4, 0]} maxBarSize={20} label={{ position: 'right', fontSize: 12, fill: '#ffffff' }}>
+                {orgRank.map((_, i) => <Cell key={i} fill={i === 0 ? BLUE : i === 1 ? GREEN : i === 2 ? ORANGE : TEAL} />)}
+              </Bar>
+            </BarChart>
+          </ChartContainer>
+        </Panel>
+        <Panel title="物资减碳量榜单">
+          <ol className="flex flex-col gap-3">
+            {materialRank.map((item, i) => (
+              <li key={item.n} className="flex items-center gap-3">
+                <span className={cn('flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold', i === 0 ? 'bg-[#2fd699] text-[#0b1a2e]' : i === 1 ? 'bg-[#3b9bff] text-[#0b1a2e]' : i === 2 ? 'bg-[#2fd699] text-[#0b1a2e]' : 'bg-white/10 text-white/70')}>{i + 1}</span>
+                <span className="w-24 shrink-0 truncate text-sm">{item.n}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#3b9bff]" style={{ width: `${(item.v / materialRank[0].v) * 100}%` }} /></div>
+                <span className="w-14 shrink-0 text-right text-sm font-semibold tabular-nums">{item.v.toFixed(1)}</span>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      </section>
+    </main>
+  )
+}
+
+function cn(...cls: (string | false | undefined)[]) { return cls.filter(Boolean).join(' ') }
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-white/[.05] p-4 shadow-xl">
+      <h2 className="mb-4 border-l-2 border-[#1bbf7a] pl-3 text-sm font-medium tracking-wide">{title}</h2>
+      {children}
+    </div>
+  )
+}
+
+function ScreenKpi({ icon: Icon, tint, label, value, unit }: { icon: typeof Leaf; tint: string; label: string; value: string; unit: string }) {
+  return (
+    <div className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/[.05] p-5">
+      <div className={cn('flex size-11 items-center justify-center rounded-lg bg-white/10', tint)}><Icon className="size-5" /></div>
+      <div><p className="text-xs text-white/55">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{value} <span className="text-xs font-normal text-white/55">{unit}</span></p></div>
+    </div>
+  )
+}
