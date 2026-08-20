@@ -45,10 +45,10 @@ type ProjectRow = {
   isNewProduct?: boolean
   // 履约结束后展示的资源名称
   resourceName?: string
-  // 出租方履约结束：出租次数，以及每次租期出租/退还的过磅重量（吨），供前后重量比对
-  rentalCount?: number
-  weightOut?: number
-  weightBack?: number
+  // 出租方履约结束：资源规格、该资源第几次出租、本次退还后重新过磅的重量（吨）
+  resourceSpec?: string
+  rentalSeq?: number
+  weight?: number
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -100,9 +100,25 @@ const ENDED_PROJECTS: ProjectRow[] = [
     carbonState: 'accounted',
     carbonValue: 181.08,
     resourceName: '盘扣式脚手架',
-    rentalCount: 3,
-    weightOut: 128.60,
-    weightBack: 126.85,
+    resourceSpec: 'Q355 / Φ60×3.2mm',
+    rentalSeq: 2,
+    weight: 126.85,
+  },
+  {
+    code: '2087441038265520128',
+    title: '南京地铁5号线管廊物资出租',
+    flowType: '出租',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-05-20 10:05:00',
+    signupEnd: '2026-05-21 00:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 172.44,
+    resourceName: '盘扣式脚手架',
+    resourceSpec: 'Q355 / Φ60×3.2mm',
+    rentalSeq: 1,
+    weight: 128.60,
   },
   {
     code: '2087111470823018400',
@@ -119,9 +135,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     ],
     carbonState: 'pending',
     resourceName: '钢管脚手架',
-    rentalCount: 5,
-    weightOut: 86.40,
-    weightBack: 83.72,
+    resourceSpec: 'Φ48×3.5mm',
+    rentalSeq: 5,
+    weight: 83.72,
   },
   {
     code: '2086901355420188160',
@@ -135,9 +151,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     pendingItems: ['补充开具发票信息（发票抬头、税号、开票金额等）'],
     carbonState: 'pending',
     resourceName: '预应力混凝土轨枕',
-    rentalCount: 2,
-    weightOut: 214.00,
-    weightBack: 214.00,
+    resourceSpec: 'Ⅲ型 / 2.6m',
+    rentalSeq: 2,
+    weight: 214.00,
   },
   {
     code: '2086331209988110336',
@@ -151,9 +167,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     carbonState: 'accounted',
     carbonValue: 96.42,
     resourceName: '贝雷片',
-    rentalCount: 4,
-    weightOut: 52.30,
-    weightBack: 51.05,
+    resourceSpec: '321型 / 3.0m',
+    rentalSeq: 4,
+    weight: 51.05,
   },
 ]
 
@@ -555,10 +571,13 @@ export function FulfillmentList({
                 </th>
                 <th className="px-4 py-3 font-medium">当前环节</th>
                 {showRentalCol && (
+                  <th className="px-4 py-3 font-medium">资源规格</th>
+                )}
+                {showRentalCol && (
                   <th className="px-4 py-3 font-medium">出租次数</th>
                 )}
                 {showRentalCol && (
-                  <th className="px-4 py-3 font-medium">过磅重量比对(吨)</th>
+                  <th className="px-4 py-3 font-medium">重量(吨)</th>
                 )}
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
@@ -575,7 +594,7 @@ export function FulfillmentList({
                     colSpan={
                       (hideCarbon ? 7 : 8) +
                       (showResourceCol ? 1 : 0) +
-                      (showRentalCol ? 2 : 0)
+                      (showRentalCol ? 3 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -617,30 +636,20 @@ export function FulfillmentList({
                       </span>
                     </td>
                     {showRentalCol && (
-                      <td className="whitespace-nowrap px-4 py-3 tabular-nums font-medium text-foreground">
-                        {p.rentalCount ?? '—'} 次
+                      <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                        {p.resourceSpec ?? '—'}
                       </td>
                     )}
                     {showRentalCol && (
                       <td className="whitespace-nowrap px-4 py-3">
-                        <div className="flex flex-col gap-1 text-xs">
-                          <span className="inline-flex items-center gap-2">
-                            <span className="inline-flex w-14 items-center justify-center rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
-                              出租过磅
-                            </span>
-                            <span className="tabular-nums font-medium text-foreground">
-                              {p.weightOut?.toFixed(2) ?? '—'}
-                            </span>
-                          </span>
-                          <span className="inline-flex items-center gap-2">
-                            <span className="inline-flex w-14 items-center justify-center rounded bg-chart-2/10 px-1.5 py-0.5 font-medium text-chart-2">
-                              退还过磅
-                            </span>
-                            <span className="tabular-nums font-medium text-foreground">
-                              {p.weightBack?.toFixed(2) ?? '—'}
-                            </span>
-                          </span>
-                        </div>
+                        <span className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          第 {p.rentalSeq ?? '—'} 次
+                        </span>
+                      </td>
+                    )}
+                    {showRentalCol && (
+                      <td className="whitespace-nowrap px-4 py-3 tabular-nums font-medium text-foreground">
+                        {p.weight?.toFixed(2) ?? '—'}
                       </td>
                     )}
                     <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
