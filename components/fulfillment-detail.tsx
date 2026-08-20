@@ -129,11 +129,17 @@ export function FulfillmentDetail({
     | 'procurement-buyer'
     | 'disposal-transferee'
     | 'rental-lessee'
+    | 'procurement-scrap'
+    | 'procurement-scrap-buyer'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
-  const isBuyer = mode === 'procurement-buyer'
-  const isProcurement = mode === 'procurement' || isBuyer
+  // 钢厂直收：实质为采购废钢（再生资源），复用采购模式，供货方不做新品判断
+  const isScrap =
+    mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
+  const isBuyer = mode === 'procurement-buyer' || mode === 'procurement-scrap-buyer'
+  const isProcurement =
+    mode === 'procurement' || mode === 'procurement-scrap' || isBuyer
   // 受让方（处置收货方）：与采购方共用收货视角，但业务字段为处置口径
   const isTransferee = mode === 'disposal-transferee'
   // 承租方（出租收货方）：收货视角，业务字段为出租口径（对手方为出租方、款项为租金）
@@ -599,6 +605,7 @@ export function FulfillmentDetail({
         isTransferee={isTransferee}
         isLessee={isLessee}
         isSupplier={isProcurement && !isBuyer}
+        isScrap={isScrap}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
       />
@@ -629,6 +636,7 @@ function PickupOrderDialog({
   isTransferee = false,
   isLessee = false,
   isSupplier = false,
+  isScrap = false,
   onClose,
   onSave,
 }: {
@@ -638,6 +646,7 @@ function PickupOrderDialog({
   isTransferee?: boolean
   isLessee?: boolean
   isSupplier?: boolean
+  isScrap?: boolean
   onClose: () => void
   onSave: (buyer: string) => void
 }) {
@@ -726,46 +735,63 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 资源属性（供应商视角）：判断是否为新品 */}
+          {/* 资源属性（供应商视角）：判断是否为新品；钢厂直收固定为废钢再生资源 */}
           {isSupplier && (
             <FormSection
               title="资源属性"
               icon={<Recycle className="size-4 text-primary" />}
             >
-              <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex-1">
-                  <FieldLabel label="本次出售资源是否为新品" required />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsNewProduct(false)}
-                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
-                        !isNewProduct
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      再生资源（可回收利用）
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsNewProduct(true)}
-                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
-                        isNewProduct
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      新品
-                    </button>
+              {isScrap ? (
+                <>
+                  <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4">
+                    <FieldLabel label="资源类型" />
+                    <div className="flex w-fit cursor-not-allowed items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+                      <Recycle className="size-4" />
+                      废钢（再生资源）
+                    </div>
                   </div>
-                </div>
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {isNewProduct
-                  ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
-                  : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
-              </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    钢厂直收回收的资源为废钢，属再生资源、不涉及新品，将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4 md:flex-row md:items-start md:justify-between">
+                    <div className="flex-1">
+                      <FieldLabel label="本次出售资源是否为新品" required />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsNewProduct(false)}
+                          className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                            !isNewProduct
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          再生资源（可回收利用）
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsNewProduct(true)}
+                          className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                            isNewProduct
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          新品
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {isNewProduct
+                      ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
+                      : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
+                  </p>
+                </>
+              )}
             </FormSection>
           )}
 
@@ -1050,7 +1076,7 @@ function PickupOrderDialog({
                   ? '请注明本次承租资源的使用去向信息（使用用途、使用项目 / 场所等），用于资源周转追溯与碳减排核算。'
                   : isTransferee
                     ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
-                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
+                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据��'}
               </p>
               <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
                 <div>

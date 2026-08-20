@@ -342,6 +342,8 @@ export function FulfillmentList({
     | 'procurement-buyer'
     | 'disposal-transferee'
     | 'rental-lessee'
+    | 'procurement-scrap'
+    | 'procurement-scrap-buyer'
 }) {
   const isEnded = variant === 'ended'
   // 受让方（处置收货方）：使用处置数据与处置方式筛选，但以收货视角履约
@@ -351,10 +353,13 @@ export function FulfillmentList({
   // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看，展示碳减排量但无碳凭证
   const isSelfReceiver = isTransferee || isLessee
   const isDisposal = mode === 'disposal' || isTransferee
-  const isBuyer = mode === 'procurement-buyer'
-  const isProcurement = mode === 'procurement' || isBuyer
+  // 钢厂直收：实质为采购废钢（再生资源），复用采购模式的全部行为
+  const isScrap =
+    mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
+  const isBuyer = mode === 'procurement-buyer' || mode === 'procurement-scrap-buyer'
   // 仅供应商（供货方）隐藏碳信息；采购方（收货方）需展示碳核算
-  const isSupplier = mode === 'procurement'
+  const isSupplier = mode === 'procurement' || mode === 'procurement-scrap'
+  const isProcurement = isSupplier || isBuyer
   const hideCarbon = isSupplier
   // 采购模式（供应商 / 采购方）履约结束后展示资源名称列
   const showResourceCol = isProcurement && isEnded
@@ -717,7 +722,7 @@ export function FulfillmentList({
         open={certProject !== null}
         project={certProject}
         mode={
-          isBuyer
+          isProcurement
             ? 'procurement'
             : isTransferee
               ? 'disposal'

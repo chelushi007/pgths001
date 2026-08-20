@@ -95,16 +95,16 @@ export default function Page() {
             <ProcurementAnnouncement />
           ) : active.key === 'bid-buyer-perform' ||
             active.key === 'agr-buyer-perform' ? (
-            <FulfillmentList variant="active" mode="procurement-buyer" />
+            <FulfillmentList variant="active" mode="procurement-scrap-buyer" />
           ) : active.key === 'bid-buyer-perform-end' ||
             active.key === 'agr-buyer-perform-end' ? (
-            <FulfillmentList variant="ended" mode="procurement-buyer" />
+            <FulfillmentList variant="ended" mode="procurement-scrap-buyer" />
           ) : active.key === 'bid-supplier-perform' ||
             active.key === 'agr-base-perform' ? (
-            <FulfillmentList variant="active" mode="procurement" />
+            <FulfillmentList variant="active" mode="procurement-scrap" />
           ) : active.key === 'bid-supplier-perform-end' ||
             active.key === 'agr-base-perform-end' ? (
-            <FulfillmentList variant="ended" mode="procurement" />
+            <FulfillmentList variant="ended" mode="procurement-scrap" />
           ) : (
             <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
               <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
