@@ -477,7 +477,7 @@ function RentDialog({
                 className="flex items-center gap-1.5 text-sm text-primary transition-colors hover:text-primary/80"
               >
                 <RotateCw className="size-4" />
-                重新选���
+                重新选择
               </button>
               <button
                 type="button"

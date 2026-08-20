@@ -1003,7 +1003,7 @@ function PickupOrderDialog({
                 />
               </div>
               <div>
-                <FieldLabel label="���重（吨）" />
+                <FieldLabel label="皮重（吨）" />
                 <input
                   type="number"
                   min="0"
@@ -1185,7 +1185,7 @@ function PickupOrderDialog({
                   ? '请注明本次承租资源的使用去向信息（使用用途、使用项目 / 场所等），用于资源周转追溯与碳减排核算。'
                   : isTransferee
                     ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
-                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据��'}
+                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
               </p>
               <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
                 <div>

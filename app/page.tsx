@@ -18,7 +18,7 @@ export default function Page() {
   })
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <SidebarNav
         activeKey={active.key}
         onSelect={(key, label, group) => setActive({ key, label, group })}
@@ -62,7 +62,7 @@ export default function Page() {
         </header>
 
         {/* 内容区 */}
-        <main className="flex-1 overflow-hidden p-6">
+        <main className="flex-1 overflow-y-auto p-6">
           {active.key === 'publish' ? (
             <PublishAnnouncement mode="rental" />
           ) : active.key === 'd-publish' ? (

@@ -314,7 +314,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
     title: '成交确认',
     desc: '确认最高有效报价，确定成交受让方',
     time: '2026-05-18 11:20',
-    files: ['成���确认单.pdf'],
+    files: ['成交确认单.pdf'],
   },
   {
     title: '订单创建',
