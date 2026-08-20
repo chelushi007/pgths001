@@ -13,6 +13,12 @@ import {
   CheckCircle2,
   Users,
   Store,
+  LayoutDashboard,
+  Building2,
+  Gauge,
+  Database,
+  FileSearch,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -32,63 +38,108 @@ type NavGroup = {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    key: 'revitalize',
-    label: '资源盘活',
-    icon: Recycle,
+    key: 'personal-workbench',
+    label: '个人工作台',
+    icon: LayoutDashboard,
     children: [
       {
-        key: 'disposal',
-        label: '资源处置',
-        icon: PackageOpen,
+        key: 'revitalize',
+        label: '资源盘活',
+        icon: Recycle,
         children: [
           {
-            key: 'transferor',
-            label: '转让方',
-            icon: Users,
+            key: 'disposal',
+            label: '资源处置',
+            icon: PackageOpen,
             children: [
-              { key: 'd-publish', label: '发布公告', icon: FileText },
-              { key: 'd-perform', label: '履约', icon: FileCheck },
-              { key: 'd-perform-end', label: '履约结束', icon: CheckCircle2 },
+              {
+                key: 'transferor',
+                label: '转让方',
+                icon: Users,
+                children: [
+                  { key: 'd-publish', label: '发布公告', icon: FileText },
+                  { key: 'd-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'd-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
+              {
+                key: 'transferee',
+                label: '受让方',
+                icon: Store,
+                children: [
+                  { key: 'transferee-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'transferee-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
             ],
           },
           {
-            key: 'transferee',
-            label: '受让方',
-            icon: Store,
+            key: 'rental',
+            label: '资源出租',
+            icon: KeyRound,
             children: [
-              { key: 'transferee-perform', label: '履约', icon: FileCheck },
               {
-                key: 'transferee-perform-end',
-                label: '履约结束',
-                icon: CheckCircle2,
+                key: 'lessor',
+                label: '出租方',
+                icon: Users,
+                children: [
+                  { key: 'publish', label: '发布公告', icon: FileText },
+                  { key: 'perform', label: '履约', icon: FileCheck },
+                  { key: 'perform-end', label: '履约结束', icon: CheckCircle2 },
+                ],
+              },
+              {
+                key: 'lessee',
+                label: '承租方',
+                icon: Store,
+                children: [
+                  { key: 'lessee-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'lessee-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
               },
             ],
           },
         ],
       },
       {
-        key: 'rental',
-        label: '资源出租',
-        icon: KeyRound,
+        key: 'procurement',
+        label: '资源采购',
+        icon: ShoppingCart,
         children: [
           {
-            key: 'lessor',
-            label: '出租方',
+            key: 'buyer',
+            label: '采购方',
             icon: Users,
             children: [
-              { key: 'publish', label: '发布公告', icon: FileText },
-              { key: 'perform', label: '履约', icon: FileCheck },
-              { key: 'perform-end', label: '履约结束', icon: CheckCircle2 },
+              { key: 'p-publish', label: '发布采购公告', icon: FileText },
+              { key: 'p-perform', label: '履约', icon: FileCheck },
+              {
+                key: 'p-perform-end',
+                label: '履约结束',
+                icon: CheckCircle2,
+              },
             ],
           },
           {
-            key: 'lessee',
-            label: '承租方',
+            key: 'seller',
+            label: '供应商',
             icon: Store,
             children: [
-              { key: 'lessee-perform', label: '履约', icon: FileCheck },
+              { key: 's-perform', label: '履约', icon: FileCheck },
               {
-                key: 'lessee-perform-end',
+                key: 's-perform-end',
                 label: '履约结束',
                 icon: CheckCircle2,
               },
@@ -99,27 +150,18 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    key: 'procurement',
-    label: '资源采购',
-    icon: ShoppingCart,
+    key: 'operations-workbench',
+    label: '运营工作台',
+    icon: Building2,
     children: [
       {
-        key: 'buyer',
-        label: '采购方',
-        icon: Users,
+        key: 'carbon-mgmt',
+        label: '碳核算管理',
+        icon: Gauge,
         children: [
-          { key: 'p-publish', label: '发布采购公告', icon: FileText },
-          { key: 'p-perform', label: '履约', icon: FileCheck },
-          { key: 'p-perform-end', label: '履约结束', icon: CheckCircle2 },
-        ],
-      },
-      {
-        key: 'seller',
-        label: '供应商',
-        icon: Store,
-        children: [
-          { key: 's-perform', label: '履约', icon: FileCheck },
-          { key: 's-perform-end', label: '履约结束', icon: CheckCircle2 },
+          { key: 'carbon-factor', label: '碳因子库管理', icon: Database },
+          { key: 'carbon-query', label: '碳核算查询', icon: FileSearch },
+          { key: 'carbon-stats', label: '统计分析', icon: BarChart3 },
         ],
       },
     ],
@@ -217,6 +259,8 @@ export function SidebarNav({
     NAV_GROUPS.map((g) => g.key),
   )
   const [openChildren, setOpenChildren] = useState<string[]>([
+    'revitalize',
+    'procurement',
     'disposal',
     'transferor',
     'transferee',
@@ -225,6 +269,7 @@ export function SidebarNav({
     'lessee',
     'buyer',
     'seller',
+    'carbon-mgmt',
   ])
 
   const toggleGroup = (key: string) => {

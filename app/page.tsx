@@ -11,7 +11,7 @@ export default function Page() {
   const [active, setActive] = useState({
     key: 'd-publish',
     label: '发布公告',
-    group: '资源盘活',
+    group: '个人工作台',
   })
 
   return (
