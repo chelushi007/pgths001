@@ -341,10 +341,15 @@ export function FulfillmentList({
     | 'procurement'
     | 'procurement-buyer'
     | 'disposal-transferee'
+    | 'rental-lessee'
 }) {
   const isEnded = variant === 'ended'
   // 受让方（处置收货方）：使用处置数据与处置方式筛选，但以收货视角履约
   const isTransferee = mode === 'disposal-transferee'
+  // 承租方（出租收货方）：使用出租数据与流转方式筛选，但以收货视角履约
+  const isLessee = mode === 'rental-lessee'
+  // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看，展示碳减排量但无碳凭证
+  const isSelfReceiver = isTransferee || isLessee
   const isDisposal = mode === 'disposal' || isTransferee
   const isBuyer = mode === 'procurement-buyer'
   const isProcurement = mode === 'procurement' || isBuyer
@@ -378,20 +383,24 @@ export function FulfillmentList({
       code: p.code,
       title: p.title,
       flowType: p.flowType,
-      buyer: isTransferee
-        ? '中国铁路广州局集团有限公司'
-        : isBuyer
-          ? '中铁物资物流集团华南有限公司'
-          : isProcurement
-            ? '葫芦再生资源有限公司'
-            : '广州资源回收有限公司',
-      buyerUnitId: isTransferee
-        ? '2083390561200410880'
-        : isBuyer
-          ? '2085512034789001120'
-          : isProcurement
-            ? '2089900011456320011'
-            : '2087787291144753153',
+      buyer: isLessee
+        ? '广州铁路设备租赁有限公司'
+        : isTransferee
+          ? '中国铁路广州局集团有限公司'
+          : isBuyer
+            ? '中铁物资物流集团华南有限公司'
+            : isProcurement
+              ? '葫芦再生资源有限公司'
+              : '广州资源回收有限公司',
+      buyerUnitId: isLessee
+        ? '2084471203355600896'
+        : isTransferee
+          ? '2083390561200410880'
+          : isBuyer
+            ? '2085512034789001120'
+            : isProcurement
+              ? '2089900011456320011'
+              : '2087787291144753153',
       status: isEnded ? '履约结束' : '履约通过',
       period: `${p.signupStart} ~ ${p.signupEnd}`,
     })
@@ -495,7 +504,7 @@ export function FulfillmentList({
               className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Send className="size-4" />
-              {isDisposal ? '发起自主转让' : '���起自主出租'}
+              {isDisposal ? '发起自主转让' : '�����起自主出租'}
             </button>
           </div>
         )}
@@ -596,7 +605,7 @@ export function FulfillmentList({
                             className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                           >
                             {(isProcurement && !isEnded) ||
-                            (isTransferee && !isEnded) ? (
+                            (isSelfReceiver && !isEnded) ? (
                               <FileCheck className="size-3.5" />
                             ) : (
                               <Eye className="size-3.5" />
@@ -605,17 +614,17 @@ export function FulfillmentList({
                               ? isEnded
                                 ? '查看'
                                 : '履约'
-                              : isTransferee
+                              : isSelfReceiver
                                 ? isEnded
                                   ? '查看'
                                   : '履约'
                                 : '管理项目'}
                           </button>
                         )}
-                        {/* 出租 / 处置（转让方）履约结束的碳凭证入口；受让方不出碳凭证 */}
+                        {/* 出租方 / 转让方履约结束的碳凭证入口；受让方 / 承租方（收货方）不出碳凭证 */}
                         {isEnded &&
                           !isProcurement &&
-                          !isTransferee &&
+                          !isSelfReceiver &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
@@ -706,7 +715,15 @@ export function FulfillmentList({
       <CarbonCertificate
         open={certProject !== null}
         project={certProject}
-        mode={isBuyer ? 'procurement' : isTransferee ? 'disposal' : mode}
+        mode={
+          isBuyer
+            ? 'procurement'
+            : isTransferee
+              ? 'disposal'
+              : isLessee
+                ? 'rental'
+                : mode
+        }
         onClose={() => setCertProject(null)}
       />
 

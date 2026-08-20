@@ -76,6 +76,10 @@ export default function Page() {
             <FulfillmentList variant="active" mode="disposal-transferee" />
           ) : active.key === 'transferee-perform-end' ? (
             <FulfillmentList variant="ended" mode="disposal-transferee" />
+          ) : active.key === 'lessee-perform' ? (
+            <FulfillmentList variant="active" mode="rental-lessee" />
+          ) : active.key === 'lessee-perform-end' ? (
+            <FulfillmentList variant="ended" mode="rental-lessee" />
           ) : active.key === 'p-publish' ? (
             <ProcurementAnnouncement />
           ) : active.key === 'p-perform' ? (

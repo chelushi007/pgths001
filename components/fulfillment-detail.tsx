@@ -128,6 +128,7 @@ export function FulfillmentDetail({
     | 'procurement'
     | 'procurement-buyer'
     | 'disposal-transferee'
+    | 'rental-lessee'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
@@ -135,7 +136,9 @@ export function FulfillmentDetail({
   const isProcurement = mode === 'procurement' || isBuyer
   // 受让方（处置收货方）：与采购方共用收货视角，但业务字段为处置口径
   const isTransferee = mode === 'disposal-transferee'
-  const isReceiver = isBuyer || isTransferee
+  // 承租方（出租收货方）：收货视角，业务字段为出租口径（对手方为出租方、款项为租金）
+  const isLessee = mode === 'rental-lessee'
+  const isReceiver = isBuyer || isTransferee || isLessee
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
@@ -197,15 +200,17 @@ export function FulfillmentDetail({
               项目管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-              {isTransferee
-                ? '受让收货'
-                : isBuyer
-                  ? '采购收货'
-                  : isProcurement
-                    ? '采购供货'
-                    : project.flowType === '出租'
-                      ? '自主出租'
-                      : '自主转让'}
+              {isLessee
+                ? '承租收货'
+                : isTransferee
+                  ? '受让收货'
+                  : isBuyer
+                    ? '采购收货'
+                    : isProcurement
+                      ? '采购供货'
+                      : project.flowType === '出租'
+                        ? '自主出租'
+                        : '自主转让'}
             </span>
             <span className="rounded bg-chart-4/15 px-2 py-0.5 text-xs font-medium text-chart-4">
               履约阶段
@@ -293,19 +298,23 @@ export function FulfillmentDetail({
               <>
                 <PrimaryBtn>
                   <FileText className="size-3.5" />
-                  {isTransferee
-                    ? '查看交割单'
-                    : isBuyer
-                      ? '查看验收单'
-                      : '查看履约单'}
+                  {isLessee
+                    ? '查看收货单'
+                    : isTransferee
+                      ? '查看交割单'
+                      : isBuyer
+                        ? '查看验收单'
+                        : '查看履约单'}
                 </PrimaryBtn>
                 <PrimaryBtn>
                   <Check className="size-3.5" />
-                  {isTransferee
-                    ? '确认交割'
-                    : isBuyer
-                      ? '确认验收'
-                      : '完成履约单'}
+                  {isLessee
+                    ? '确认收货'
+                    : isTransferee
+                      ? '确认交割'
+                      : isBuyer
+                        ? '确认验收'
+                        : '完成履约单'}
                 </PrimaryBtn>
               </>
             }
@@ -315,25 +324,29 @@ export function FulfillmentDetail({
               <InfoCell label="项目标题" value={project.title} />
               <InfoCell
                 label={
-                  isTransferee
-                    ? '转让方名称'
-                    : isBuyer
-                      ? '供货方名称'
-                      : isProcurement
-                        ? '采购方名称'
-                        : '竞买人名称'
+                  isLessee
+                    ? '出租方名称'
+                    : isTransferee
+                      ? '转让方名称'
+                      : isBuyer
+                        ? '供货方名称'
+                        : isProcurement
+                          ? '采购方名称'
+                          : '竞买人名称'
                 }
                 value={project.buyer}
               />
               <InfoCell
                 label={
-                  isTransferee
-                    ? '转让方单位ID'
-                    : isBuyer
-                      ? '供货方单位ID'
-                      : isProcurement
-                        ? '采购方单位ID'
-                        : '竞买人单位ID'
+                  isLessee
+                    ? '出租方单位ID'
+                    : isTransferee
+                      ? '转让方单位ID'
+                      : isBuyer
+                        ? '供货方单位ID'
+                        : isProcurement
+                          ? '采购方单位ID'
+                          : '竞买人单位ID'
                 }
                 value={project.buyerUnitId}
                 mono
@@ -341,7 +354,7 @@ export function FulfillmentDetail({
               <InfoCell label="履约状态" value={project.status} />
               <InfoCell
                 label={
-                  isDisposal || isProcurement || isTransferee
+                  isDisposal || isProcurement || isTransferee || isLessee
                     ? '交付期限'
                     : '履约期限'
                 }
@@ -355,15 +368,17 @@ export function FulfillmentDetail({
           {/* 款项 */}
           <Card
             title={
-              isTransferee
-                ? '转让款支付'
-                : isBuyer
-                  ? '货款支付'
-                  : isProcurement
-                    ? '货款收取'
-                    : isDisposal
-                      ? '转让款收取'
-                      : '成交款收取'
+              isLessee
+                ? '租金支付'
+                : isTransferee
+                  ? '转让款支付'
+                  : isBuyer
+                    ? '货款支付'
+                    : isProcurement
+                      ? '货款收取'
+                      : isDisposal
+                        ? '转让款收取'
+                        : '成交款收取'
             }
             actions={
               <>
@@ -490,11 +505,13 @@ export function FulfillmentDetail({
             <TableShell
               headers={[
                 isReceiver ? '收货单编号' : '提货单编号',
-                isTransferee
-                  ? '转让方名称'
-                  : isBuyer
-                    ? '供货方名称'
-                    : '竞买人名称',
+                isLessee
+                  ? '出租方名称'
+                  : isTransferee
+                    ? '转让方名称'
+                    : isBuyer
+                      ? '供货方名称'
+                      : '竞买人名称',
                 '物流单号',
                 '创建时间',
                 isReceiver ? '收货时间' : '提货时间',
@@ -511,7 +528,7 @@ export function FulfillmentDetail({
                   <td className="px-3 py-3">
                     {isBuyer
                       ? '中铁物资物流集团华南有限公司'
-                      : isTransferee
+                      : isTransferee || isLessee
                         ? project.buyer
                         : r.buyer}
                   </td>
@@ -580,6 +597,7 @@ export function FulfillmentDetail({
         project={project}
         isBuyer={isReceiver}
         isTransferee={isTransferee}
+        isLessee={isLessee}
         isSupplier={isProcurement && !isBuyer}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
@@ -609,6 +627,7 @@ function PickupOrderDialog({
   project,
   isBuyer = false,
   isTransferee = false,
+  isLessee = false,
   isSupplier = false,
   onClose,
   onSave,
@@ -617,6 +636,7 @@ function PickupOrderDialog({
   project: FulfillmentProject
   isBuyer?: boolean
   isTransferee?: boolean
+  isLessee?: boolean
   isSupplier?: boolean
   onClose: () => void
   onSave: (buyer: string) => void
@@ -752,16 +772,26 @@ function PickupOrderDialog({
           {/* 提货方 / 供货方信息 */}
           <FormSection
             title={
-              isTransferee
-                ? '转让方信息'
-                : isBuyer
-                  ? '供货方信息'
-                  : '提货方信息'
+              isLessee
+                ? '出租方信息'
+                : isTransferee
+                  ? '转让方信息'
+                  : isBuyer
+                    ? '供货方信息'
+                    : '提货方信息'
             }
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
               <ReadonlyField
-                label={isTransferee ? '转让方' : isBuyer ? '供货方' : '竞买人'}
+                label={
+                  isLessee
+                    ? '出租方'
+                    : isTransferee
+                      ? '转让方'
+                      : isBuyer
+                        ? '供货方'
+                        : '竞买人'
+                }
                 value={project.buyer}
                 required
               />
@@ -1007,27 +1037,44 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 物资去向（收货方视角）：补充回收利用去向信息 */}
+          {/* 物资去向（收货方视角）：补充回收利用 / 使用去向信息 */}
           {isBuyer && (
             <FormSection
-              title={isTransferee ? '资源去向' : '物资去向'}
+              title={
+                isLessee ? '资源用途' : isTransferee ? '资源去向' : '物资去向'
+              }
               icon={<Recycle className="size-4 text-primary" />}
             >
               <p className="mb-4 text-xs text-muted-foreground">
-                {isTransferee
-                  ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
-                  : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
+                {isLessee
+                  ? '请注明本次承租资源的使用去向信息（使用用途、使用项目 / 场所等），用于资源周转追溯与碳减排核算。'
+                  : isTransferee
+                    ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
+                    : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
               </p>
               <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
                 <div>
-                  <FieldLabel label="再利用方式" required />
+                  <FieldLabel
+                    label={isLessee ? '使用用途' : '再利用方式'}
+                    required
+                  />
                   <select
                     value={reuseMethod}
                     onChange={(e) => setReuseMethod(e.target.value)}
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                   >
-                    <option value="">请选择再利用方式</option>
-                    {isTransferee ? (
+                    <option value="">
+                      {isLessee ? '请选择使用用途' : '请选择再利用方式'}
+                    </option>
+                    {isLessee ? (
+                      <>
+                        <option value="项目施工">项目施工</option>
+                        <option value="生产运营">生产运营</option>
+                        <option value="临时周转">临时周转</option>
+                        <option value="应急保障">应急保障</option>
+                        <option value="其他">其他</option>
+                      </>
+                    ) : isTransferee ? (
                       <>
                         <option value="整机复用">整机复用</option>
                         <option value="拆解利用">拆解利用</option>
@@ -1049,16 +1096,24 @@ function PickupOrderDialog({
                 </div>
                 <div>
                   <FieldLabel
-                    label={isTransferee ? '资源流向企业' : '回收企业'}
+                    label={
+                      isLessee
+                        ? '使用项目 / 场所'
+                        : isTransferee
+                          ? '资源流向企业'
+                          : '回收企业'
+                    }
                     required
                   />
                   <input
                     value={recycleCompany}
                     onChange={(e) => setRecycleCompany(e.target.value)}
                     placeholder={
-                      isTransferee
-                        ? '请输入资源流向 / 再利用企业名称'
-                        : '请输入回收 / 再利用企业名称'
+                      isLessee
+                        ? '请输入使用项目 / 场所名称'
+                        : isTransferee
+                          ? '请输入资源流向 / 再利用企业名称'
+                          : '请输入回收 / 再利用企业名称'
                     }
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                   />
@@ -1066,7 +1121,7 @@ function PickupOrderDialog({
               </div>
               <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
                 <label className="pt-2 text-right text-sm text-muted-foreground">
-                  去向说明
+                  {isLessee ? '用途说明' : '去向说明'}
                 </label>
                 <div className="relative">
                   <textarea

@@ -71,9 +71,29 @@ const NAV_GROUPS: NavGroup[] = [
         label: '资源出租',
         icon: KeyRound,
         children: [
-          { key: 'publish', label: '发布公告', icon: FileText },
-          { key: 'perform', label: '履约', icon: FileCheck },
-          { key: 'perform-end', label: '履约结束', icon: CheckCircle2 },
+          {
+            key: 'lessor',
+            label: '出租方',
+            icon: Users,
+            children: [
+              { key: 'publish', label: '发布公告', icon: FileText },
+              { key: 'perform', label: '履约', icon: FileCheck },
+              { key: 'perform-end', label: '履约结束', icon: CheckCircle2 },
+            ],
+          },
+          {
+            key: 'lessee',
+            label: '承租方',
+            icon: Store,
+            children: [
+              { key: 'lessee-perform', label: '履约', icon: FileCheck },
+              {
+                key: 'lessee-perform-end',
+                label: '履约结束',
+                icon: CheckCircle2,
+              },
+            ],
+          },
         ],
       },
     ],
@@ -201,6 +221,8 @@ export function SidebarNav({
     'transferor',
     'transferee',
     'rental',
+    'lessor',
+    'lessee',
     'buyer',
     'seller',
   ])
