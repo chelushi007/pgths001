@@ -488,7 +488,7 @@ export function FulfillmentDetail({
                 '金额',
                 '付款方',
                 '收款方',
-                '付款方式',
+                '付��方式',
                 '状态',
                 '发起时间',
                 isReceiver ? '付款备注' : '收款备注',
@@ -771,6 +771,16 @@ function PickupOrderDialog({
 
   useEffect(() => {
     if (!open) return
+    // 收货 / 提货明细默认带出订单资源数据，便于收货方直接确认
+    setLines((current) =>
+      current.length > 0
+        ? current
+        : [
+            { id: 'line-1', resource: 'WZ-2026-0512-01', resourceName: '热轧型钢', quantity: '32.500' },
+            { id: 'line-2', resource: 'WZ-2026-0512-02', resourceName: '钢板桩', quantity: '18.200' },
+            { id: 'line-3', resource: 'WZ-2026-0512-03', resourceName: '周转扣件', quantity: '13.500' },
+          ],
+    )
     setLogistics((current) =>
       current.length > 0
         ? current
@@ -1008,14 +1018,17 @@ function PickupOrderDialog({
                 </tbody>
               </table>
             </div>
-            <button
-              type="button"
-              onClick={() => setLogistics((current) => [...current, createLogisticsRow()])}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-dashed border-primary/50 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
-            >
-              <Plus className="size-4" />
-              新增物流信息
-            </button>
+            {/* 采购方确认收货：物流由供货方登记，采购方不再新增物流信息 */}
+            {!isBuyer && (
+              <button
+                type="button"
+                onClick={() => setLogistics((current) => [...current, createLogisticsRow()])}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-dashed border-primary/50 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+              >
+                <Plus className="size-4" />
+                新增物流信息
+              </button>
+            )}
           </FormSection>
 
           {/* 重量信息：交付方（提货录入方）过磅；普通收货确认方不再重复过磅；钢厂直收在收货时须过磅并折算矿石 */}
