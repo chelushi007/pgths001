@@ -561,7 +561,7 @@ export function FulfillmentList({
                       <td className="px-4 py-3 text-foreground">
                         <span className="inline-flex items-center gap-1.5">
                           {p.resourceName ?? '—'}
-                          {p.isNewProduct && (
+                          {p.isNewProduct && !isScrap && (
                             <span
                               className="inline-flex size-4 items-center justify-center rounded bg-chart-5/15 text-[10px] font-semibold text-chart-5"
                               title="新品"
@@ -589,7 +589,7 @@ export function FulfillmentList({
                     </td>
                     {!hideCarbon && (
                       <td className="px-4 py-3">
-                        {p.isNewProduct ? (
+                        {p.isNewProduct && !isScrap ? (
                           <span className="inline-flex w-fit items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
                             新品 · 不核算
                           </span>
@@ -655,7 +655,7 @@ export function FulfillmentList({
                         {/* 采购方（收货方）履约结束的碳凭证入口：新品不核算碳，不体现碳凭证 */}
                         {isEnded &&
                           isBuyer &&
-                          !p.isNewProduct &&
+                          (!p.isNewProduct || isScrap) &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"

@@ -735,63 +735,46 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 资源属性（供应商视角）：判断是否为新品；钢厂直收固定为废钢再生资源 */}
-          {isSupplier && (
+          {/* 资源属性（供应商视角）：判断是否为新品；钢厂直收为废钢回收，无新品概念，不展示该区 */}
+          {isSupplier && !isScrap && (
             <FormSection
               title="资源属性"
               icon={<Recycle className="size-4 text-primary" />}
             >
-              {isScrap ? (
-                <>
-                  <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4">
-                    <FieldLabel label="资源类型" />
-                    <div className="flex w-fit cursor-not-allowed items-center gap-2 rounded-md border border-primary bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-                      <Recycle className="size-4" />
-                      废钢（再生资源）
-                    </div>
+              <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex-1">
+                  <FieldLabel label="本次出售资源是否为新品" required />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsNewProduct(false)}
+                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                        !isNewProduct
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      再生资源（可回收利用）
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsNewProduct(true)}
+                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                        isNewProduct
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      新品
+                    </button>
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    钢厂直收回收的资源为废钢，属再生资源、不涉及新品，将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4 md:flex-row md:items-start md:justify-between">
-                    <div className="flex-1">
-                      <FieldLabel label="本次出售资源是否为新品" required />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setIsNewProduct(false)}
-                          className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
-                            !isNewProduct
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-input bg-background text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          再生资源（可回收利用）
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setIsNewProduct(true)}
-                          className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
-                            isNewProduct
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-input bg-background text-muted-foreground hover:text-foreground'
-                          }`}
-                        >
-                          新品
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {isNewProduct
-                      ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
-                      : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
-                  </p>
-                </>
-              )}
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {isNewProduct
+                  ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
+                  : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
+              </p>
             </FormSection>
           )}
 
