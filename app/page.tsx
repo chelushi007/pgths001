@@ -21,13 +21,7 @@ export default function Page() {
     <div className="flex min-h-screen bg-background">
       <SidebarNav
         activeKey={active.key}
-        onSelect={(key, label, group) => {
-          if (key === 'carbon-screen') {
-            window.open('/carbon-screen', '_blank', 'noopener,noreferrer')
-            return
-          }
-          setActive({ key, label, group })
-        }}
+        onSelect={(key, label, group) => setActive({ key, label, group })}
       />
 
       {/* 右侧内容区 */}
