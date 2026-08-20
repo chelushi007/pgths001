@@ -19,6 +19,9 @@ import {
   Database,
   FileSearch,
   BarChart3,
+  Factory,
+  Gavel,
+  Handshake,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -147,6 +150,81 @@ const NAV_GROUPS: NavGroup[] = [
           },
         ],
       },
+      {
+        key: 'steel-direct',
+        label: '钢厂直收',
+        icon: Factory,
+        children: [
+          {
+            key: 'bid-recovery',
+            label: '竞价回收',
+            icon: Gavel,
+            children: [
+              {
+                key: 'bid-buyer',
+                label: '钢厂/回收商',
+                icon: Users,
+                children: [
+                  { key: 'bid-buyer-publish', label: '发布公告', icon: FileText },
+                  { key: 'bid-buyer-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'bid-buyer-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
+              {
+                key: 'bid-supplier',
+                label: '供应商',
+                icon: Store,
+                children: [
+                  { key: 'bid-supplier-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'bid-supplier-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            key: 'agreement-recovery',
+            label: '协议回收',
+            icon: Handshake,
+            children: [
+              {
+                key: 'agr-buyer',
+                label: '钢厂',
+                icon: Users,
+                children: [
+                  { key: 'agr-buyer-publish', label: '发布公告', icon: FileText },
+                  { key: 'agr-buyer-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'agr-buyer-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
+              {
+                key: 'agr-base',
+                label: '回收基地',
+                icon: Store,
+                children: [
+                  { key: 'agr-base-perform', label: '履约', icon: FileCheck },
+                  {
+                    key: 'agr-base-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
     ],
   },
   {
@@ -269,6 +347,13 @@ export function SidebarNav({
     'lessee',
     'buyer',
     'seller',
+    'steel-direct',
+    'bid-recovery',
+    'bid-buyer',
+    'bid-supplier',
+    'agreement-recovery',
+    'agr-buyer',
+    'agr-base',
     'carbon-mgmt',
   ])
 
