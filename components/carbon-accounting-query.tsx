@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils'
 import { CarbonCertificate } from '@/components/carbon-certificate'
 
 const BLUE = '#086de0'
-type Biz = '资源处置' | '资源出租' | '资源采购' | '钢厂直收'
+type Biz = '资源处置' | '资源出租' | '资源采购' | '钢厂回收'
 type Record = {
   id: string
   biz: Biz
@@ -32,17 +32,17 @@ const records: Record[] = [
   { id: 'CZDD20260520002', biz: '资源处置', project: '报废工装及边角料处置', resource: '废钢', spec: 'Q235 / 混合规格', unit: '中铁十一局一公司', weight: 86.4, distance: 68, emission: 2.12, reduction: 13.86, net: 11.74, cert: 'TC-CZ-20260522-0007', date: '2026-05-22 16:05', status: '已核算' },
   { id: 'ZLDD20260518007', biz: '资源出租', project: '工程钢模板循环租赁', resource: '钢模板', spec: '组合式 / 1.5m', unit: '中铁十一局三公司', weight: 142.6, distance: 36, emission: 3.58, reduction: 28.4, net: 24.82, cert: 'TC-ZL-20260519-0012', date: '2026-05-19 10:20', status: '已核算', rentalSeq: 2 },
   { id: 'CGDD20260512021', biz: '资源采购', project: '生产辅材集中采购', resource: '热轧钢板', spec: 'Q355 / 12mm', unit: '中铁十五局一公司', weight: 98.5, distance: 120, emission: 2.36, reduction: 4.32, net: 1.96, cert: 'TC-CG-20260514-0003', date: '2026-05-14 11:40', status: '已核算' },
-  { id: 'GCDD20260510015', biz: '钢厂直收', project: '珠江钢厂废钢协议回收', resource: '废钢', spec: '统料', unit: '中铁二十局四公司', weight: 56.2, distance: 240, emission: 0.88, reduction: 21.5, net: 20.62, cert: 'TC-GC-20260511-0009', date: '2026-05-11 09:15', status: '已核算' },
+  { id: 'GCDD20260510015', biz: '钢厂回收', project: '珠江钢厂废钢协议回收', resource: '废钢', spec: '统料', unit: '中铁二十局四公司', weight: 56.2, distance: 240, emission: 0.88, reduction: 21.5, net: 20.62, cert: 'TC-GC-20260511-0009', date: '2026-05-11 09:15', status: '已核算' },
 ]
 
-const types: Biz[] = ['资源处置', '资源出租', '资源采购', '钢厂直收']
+const types: Biz[] = ['资源处置', '资源出租', '资源采购', '钢厂回收']
 const bizStyle: { [K in Biz]: string } = {
   资源处置: 'bg-[#e8f7ee] text-emerald-600',
   资源出租: 'bg-[#e7f1ff] text-[#086de0]',
   资源采购: 'bg-[#f3ecff] text-violet-600',
-  钢厂直收: 'bg-[#fff1e6] text-orange-600',
+  钢厂回收: 'bg-[#fff1e6] text-orange-600',
 }
-const shortBiz: { [K in Biz]: string } = { 资源处置: '处置', 资源出租: '租赁', 资源采购: '采购', 钢厂直收: '直收' }
+const shortBiz: { [K in Biz]: string } = { 资源处置: '处置', 资源出租: '租赁', 资源采购: '采购', 钢厂回收: '回收' }
 
 function Stat({ icon: Icon, tint, label, value, unit }: { icon: typeof Boxes; tint: string; label: string; value: string; unit: string }) {
   return (

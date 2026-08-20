@@ -10,18 +10,18 @@ const ORANGE = '#ee7c30'
 const GREEN = '#1bbf7a'
 const TEAL = '#12a89d'
 
-// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂直收
+// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂回收
 const bizBar = [
   { name: '资源出租', reduce: 42.26, emit: 5.70 },
   { name: '资源采购', reduce: 13.92, emit: 7.40 },
   { name: '资源处置', reduce: 34.70, emit: 1.40 },
-  { name: '钢厂直收', reduce: 28.40, emit: 3.80 },
+  { name: '钢厂回收', reduce: 28.40, emit: 3.80 },
 ]
 const bizPie = [
   { name: '资源处置', value: 34.70, color: GREEN },
   { name: '资源出租', value: 42.26, color: BLUE },
   { name: '资源采购', value: 13.92, color: ORANGE },
-  { name: '钢厂直收', value: 28.40, color: TEAL },
+  { name: '钢厂回收', value: 28.40, color: TEAL },
 ]
 const monthly = [
   { m: '1月', reduce: 42.0, emit: 7.0 },
@@ -56,7 +56,7 @@ const detail = [
   { name: '资源出租', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56 },
   { name: '资源采购', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52 },
   { name: '资源处置', color: GREEN, orders: 2, tons: 91.0, emit: 1.40, reduce: 34.70, net: 33.30 },
-  { name: '钢厂直收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60 },
+  { name: '钢厂回收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60 },
 ]
 const total = detail.reduce(
   (acc, r) => ({ orders: acc.orders + r.orders, tons: acc.tons + r.tons, emit: acc.emit + r.emit, reduce: acc.reduce + r.reduce, net: acc.net + r.net }),

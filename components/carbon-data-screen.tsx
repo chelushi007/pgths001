@@ -13,10 +13,10 @@ const monthly = [
   { m: '1月', reduce: 42.0, emit: 7.0 }, { m: '2月', reduce: 40.0, emit: 8.0 }, { m: '3月', reduce: 54.0, emit: 8.0 },
   { m: '4月', reduce: 61.2, emit: 10.4 }, { m: '5月', reduce: 90.0, emit: 13.0 }, { m: '6月', reduce: 73.0, emit: 11.0 },
 ]
-// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂直收
+// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂回收
 const bizPie = [
   { n: '资源出租', v: 42.26, color: BLUE }, { n: '资源采购', v: 13.92, color: ORANGE },
-  { n: '资源处置', v: 34.70, color: GREEN }, { n: '钢厂直收', v: 28.40, color: TEAL },
+  { n: '资源处置', v: 34.70, color: GREEN }, { n: '钢厂回收', v: 28.40, color: TEAL },
 ]
 const orgRank = [
   { n: '单位A', v: 268.4 }, { n: '单位B', v: 241.2 }, { n: '单位C', v: 226.6 },
@@ -33,10 +33,10 @@ const oreReplace = [
 ]
 const oreTotal = oreReplace.reduce((sum, item) => sum + item.v, 0)
 const feed = [
-  ['16:26', '钢厂直收', '废钢 128.6t', '+229.18'],
+  ['16:26', '钢厂回收', '废钢 128.6t', '+229.18'],
   ['16:10', '资源处置', '边角料 42.8t', '+75.62'],
   ['15:46', '资源出租', '钢模板 18.5t', '+21.67'],
-  ['15:32', '钢厂直收', '废钢 206.4t', '+367.81'],
+  ['15:32', '钢厂回收', '废钢 206.4t', '+367.81'],
 ]
 const config = { reduce: { label: '减碳量', color: BLUE }, emit: { label: '碳排放', color: ORANGE } } satisfies ChartConfig
 
@@ -120,7 +120,7 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
         <Panel title="废钢替代铁矿石">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,220px)_1fr]">
             <div className="flex flex-col justify-center rounded-lg border border-white/10 bg-white/[.04] p-4">
-              <p className="inline-flex items-center gap-2 text-xs text-white/55"><Factory className="size-4 text-[#2fd699]" />累计替代铁矿石</p>
+              <p className="inline-flex items-center gap-2 text-xs text-white/55"><Factory className="size-4 text-[#2fd699]" />累���替代铁矿石</p>
               <p className="mt-2 text-3xl font-semibold tabular-nums text-[#2fd699]">{oreTotal.toFixed(1)} <span className="text-sm font-normal text-white/55">吨</span></p>
               <p className="mt-1 text-xs text-white/45">废钢等效替代原生铁矿石开采量</p>
             </div>

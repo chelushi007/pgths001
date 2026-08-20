@@ -206,7 +206,7 @@ export function FulfillmentDetail({
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
-  // 钢厂直收：实质为采购废钢（再生资源），复用采购模式，供货方不做新品判断
+  // 钢厂回收：实质为采购废钢（再生资源），复用采购模式，供货方不做新品判断
   const isScrap =
     mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
   const isBuyer = mode === 'procurement-buyer' || mode === 'procurement-scrap-buyer'
@@ -237,7 +237,7 @@ export function FulfillmentDetail({
 
   if (!open || !project) return null
 
-  // 供应商（采购/钢厂直收的供货方，非收货方）
+  // 供应商（采购/钢厂回收的供货方，非收货方）
   const isSupplier = isProcurement && !isBuyer
   // 受让方 / 承租方 / 供应商履约结束：履约单为一张只读详情单，去掉各种确认/新增/录入等操作
   const readOnly =
@@ -281,7 +281,7 @@ export function FulfillmentDetail({
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-foreground">
-              项目管理 — {project.title}
+              项���管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
               {isLessee
@@ -761,7 +761,7 @@ function PickupOrderDialog({
   const [grossWeight, setGrossWeight] = useState('')
   const [tareWeight, setTareWeight] = useState('')
   const [weighFile, setWeighFile] = useState<string | null>(null)
-  // 钢厂直收：按净重自动折算为对应铁矿石类型的等效重量
+  // 钢厂回收：按净重自动折算为对应铁矿石类型的等效重量
   const [oreType, setOreType] = useState<OreType>('磁铁矿')
   const [remark, setRemark] = useState('')
   const [logistics, setLogistics] = useState<LogisticsRow[]>([])
@@ -899,7 +899,7 @@ function PickupOrderDialog({
             </div>
           </FormSection>
 
-          {/* 资源属性（供应商视角）：判断是否为新品；钢厂直收为废钢回收，无新品概念，不展示该区 */}
+          {/* 资源属性（供应商视角）：判断是否为新品；钢厂回收为废钢回收，无新品概念，不展示该区 */}
           {isSupplier && !isScrap && (
             <FormSection
               title="资源属性"

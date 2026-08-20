@@ -438,7 +438,7 @@ export function FulfillmentList({
   // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看，展示碳减排量但无碳凭证
   const isSelfReceiver = isTransferee || isLessee
   const isDisposal = mode === 'disposal' || isTransferee
-  // 钢厂直收：实质为采购废钢（再生资源），复用采购模式的全部行为
+  // 钢厂回收：实质为采购废钢（再生资源），复用采购模式的全部行为
   const isScrap =
     mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
   const isBuyer = mode === 'procurement-buyer' || mode === 'procurement-scrap-buyer'

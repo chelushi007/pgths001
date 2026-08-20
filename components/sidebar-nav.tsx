@@ -152,7 +152,7 @@ const NAV_GROUPS: NavGroup[] = [
       },
       {
         key: 'steel-direct',
-        label: '钢厂直收',
+        label: '钢厂回收',
         icon: Factory,
         children: [
           {
