@@ -806,6 +806,9 @@ function PickupOrderDialog({
   const removeLine = (id: string) =>
     setLines((prev) => prev.filter((l) => l.id !== id))
 
+  // 收货确认方（采购方 / 受让方 / 承租方）：不再重复过磅，重量以交付方过磅单为准，去掉收货过磅单功能
+  const isReceiver = isBuyer || isTransferee || isLessee
+
   const netWeight =
     grossWeight && tareWeight
       ? (parseFloat(grossWeight) - parseFloat(tareWeight)).toFixed(2)
@@ -1003,9 +1006,10 @@ function PickupOrderDialog({
             </button>
           </FormSection>
 
-          {/* 重量信息 */}
+          {/* 重量信息：仅交付方（提货录入方）填写并上传过磅单；收货确认方不再重复过磅 */}
+          {!isReceiver && (
           <FormSection
-            title={isBuyer ? '收货过磅' : '重量信息'}
+            title="重量信息"
             icon={<Scale className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
@@ -1042,7 +1046,7 @@ function PickupOrderDialog({
               </div>
             </div>
             <div className="mt-4">
-              <FieldLabel label={isBuyer ? '收货过磅单' : '过磅单'} required />
+              <FieldLabel label="过磅单" required />
               <input
                 ref={fileRef}
                 type="file"
@@ -1078,13 +1082,12 @@ function PickupOrderDialog({
                   className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
                 >
                   <Upload className="size-4" />
-                  {isBuyer
-                    ? '上传收货过磅单（支持图片 / PDF）'
-                    : '上传过磅单（支持图片 / PDF）'}
+                  上传过磅单（支持图片 / PDF）
                 </button>
               )}
             </div>
           </FormSection>
+          )}
 
           {/* 提货 / 收货明细 */}
           <FormSection title={isBuyer ? '收货明细' : '提货明细'}>

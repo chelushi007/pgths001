@@ -39,10 +39,10 @@ const orgRank = [
 ]
 const orgColor = (i: number) => (i === 0 ? BLUE : i === 1 ? GREEN : i === 2 ? ORANGE : TEAL)
 const materialRank = [
-  { name: '热轧型钢', value: 286.6 }, { name: '钢板桩', value: 254.2 }, { name: '盘扣式脚手架', value: 231.1 },
-  { name: '钢管脚手架', value: 208.6 }, { name: '周转扣件', value: 187.4 }, { name: '贝雷片', value: 168.9 },
-  { name: '钢模板', value: 152.7 }, { name: '周转木方', value: 134.3 }, { name: '二手周转箱', value: 118.4 },
-  { name: '工字钢', value: 102.5 },
+  { name: '热轧型钢', spec: 'Q355 / H型', value: 286.6 }, { name: '钢板桩', spec: 'SP-Ⅳ型', value: 254.2 }, { name: '盘扣式脚手架', spec: 'Φ60×3.2mm', value: 231.1 },
+  { name: '钢管脚手架', spec: 'Φ48×3.5mm', value: 208.6 }, { name: '周转扣件', spec: '直角扣件', value: 187.4 }, { name: '贝雷片', spec: '321型 / 3.0m', value: 168.9 },
+  { name: '钢模板', spec: '组合式 / 1.5m', value: 152.7 }, { name: '周转木方', spec: '100×100mm', value: 134.3 }, { name: '二手周转箱', spec: '通用型', value: 118.4 },
+  { name: '工字钢', spec: 'Q235 / I20', value: 102.5 },
 ]
 // 废钢等效替代的铁矿石（四大类，单位：吨）
 const oreReplace = [
@@ -180,7 +180,10 @@ export function CarbonStatistics() {
             {materialRank.map((item, i) => (
               <li key={item.name} className="flex items-center gap-3">
                 <span className={cn('flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold', i === 0 ? 'bg-[#1bbf7a] text-white' : i === 1 ? 'bg-[#086de0] text-white' : i === 2 ? 'bg-[#1bbf7a] text-white' : 'bg-muted text-muted-foreground')}>{i + 1}</span>
-                <span className="w-24 shrink-0 truncate text-sm font-medium">{item.name}</span>
+                <span className="flex w-28 shrink-0 flex-col leading-tight">
+                  <span className="truncate text-sm font-medium">{item.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">{item.spec}</span>
+                </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                   <div className="h-full rounded-full bg-[#086de0]" style={{ width: `${(item.value / materialRank[0].value) * 100}%` }} />
                 </div>

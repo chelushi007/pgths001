@@ -25,6 +25,11 @@ import {
 export type CarbonCertProject = {
   code: string
   title: string
+  // 由碳核算查询列表带入的业务字段：资源名称、规格、重量、出租次数（缺省则回退凭证默认值）
+  resourceName?: string
+  resourceSpec?: string
+  weight?: number
+  rentalSeq?: number
 }
 
 /* ---------------- 数据 ---------------- */
@@ -801,7 +806,7 @@ export function CarbonCertificate({
 
         {/* 内容区 */}
         <div className="max-h-[calc(100vh-11rem)] overflow-y-auto bg-muted/30 px-6 py-5">
-          {tab === 'cert' ? <CertTab cfg={cfg} /> : <AccountTab cfg={cfg} />}
+          {tab === 'cert' ? <CertTab cfg={cfg} project={project} /> : <AccountTab cfg={cfg} />}
         </div>
 
         {/* 底部 */}
@@ -828,7 +833,7 @@ export function CarbonCertificate({
 
 /* ---------------- 凭证 Tab ---------------- */
 
-function CertTab({ cfg }: { cfg: CertConfig }) {
+function CertTab({ cfg, project }: { cfg: CertConfig; project: CarbonCertProject }) {
   return (
     <div className="flex flex-col gap-6">
       {/* 凭证头卡 */}
@@ -845,7 +850,16 @@ function CertTab({ cfg }: { cfg: CertConfig }) {
         <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-4 md:grid-cols-4">
           <KV label="凭证编号" value="TC20260520002" mono />
           <KV label="关联订单" value={cfg.orderNo} mono />
-          <KV label="物资数量" value={cfg.materialWeight} strong />
+          <KV label="资源名称" value={project.resourceName ?? cfg.reuseRows[0]?.name ?? '—'} strong />
+          <KV label="资源规格" value={project.resourceSpec ?? cfg.reuseRows[0]?.spec ?? '—'} />
+          <KV
+            label="物资数量"
+            value={project.weight != null ? `${project.weight.toFixed(2)} 吨` : cfg.materialWeight}
+            strong
+          />
+          {project.rentalSeq != null && (
+            <KV label="出租次数" value={`第 ${project.rentalSeq} 次`} strong />
+          )}
           <KV
             label="核算减碳量"
             value={`${cfg.netReduction} tCO₂e`}
@@ -1016,7 +1030,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           {cfg.flow.hasReturn ? (
             <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
           ) : (
-            <FlowArrow label="货权转移" note="不再返回转让方" dir="right" />
+            <FlowArrow label="货权转移" note="不再���回转让方" dir="right" />
           )}
           <FlowNode
             icon={Recycle}
