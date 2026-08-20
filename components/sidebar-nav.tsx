@@ -57,6 +57,11 @@ const NAV_GROUPS: NavGroup[] = [
             icon: Store,
             children: [
               { key: 'transferee-perform', label: '履约', icon: FileCheck },
+              {
+                key: 'transferee-perform-end',
+                label: '履约结束',
+                icon: CheckCircle2,
+              },
             ],
           },
         ],

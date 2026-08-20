@@ -495,7 +495,7 @@ export function FulfillmentList({
               className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Send className="size-4" />
-              {isDisposal ? '发起自主转让' : '发起自主出租'}
+              {isDisposal ? '发起自主转让' : '���起自主出租'}
             </button>
           </div>
         )}
@@ -606,13 +606,16 @@ export function FulfillmentList({
                                 ? '查看'
                                 : '履约'
                               : isTransferee
-                                ? '履约'
+                                ? isEnded
+                                  ? '查看'
+                                  : '履约'
                                 : '管理项目'}
                           </button>
                         )}
-                        {/* 出租 / 处置履约结束的碳凭证入口 */}
+                        {/* 出租 / 处置（转让方）履约结束的碳凭证入口；受让方不出碳凭证 */}
                         {isEnded &&
                           !isProcurement &&
+                          !isTransferee &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
