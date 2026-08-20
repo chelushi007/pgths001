@@ -41,6 +41,8 @@ type ProjectRow = {
   // 碳减排：estimating 本条项目预估中；accounted 已核算实际值；pending 信息不全待核算
   carbonState: CarbonState
   carbonValue?: number // tCO₂e
+  // 供应商录入提货单时标记为新品：新品无回收再利用减排，采购方履约结束不体现碳减排量与碳凭证
+  isNewProduct?: boolean
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -248,6 +250,17 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
 ]
 
 const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
+  {
+    code: '2088930561120388096',
+    title: '轨道备品备件新件集中采购',
+    flowType: '网上询价',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-25 09:00:00',
+    signupEnd: '2026-07-26 12:00:00',
+    carbonState: 'pending',
+    isNewProduct: true,
+  },
   {
     code: '2088521470033289216',
     title: '轨道拆换废旧钢轨集中采购（第二批）',
@@ -522,10 +535,16 @@ export function FulfillmentList({
                     </td>
                     {!hideCarbon && (
                       <td className="px-4 py-3">
-                        <CarbonCell
-                          state={p.carbonState}
-                          value={p.carbonValue}
-                        />
+                        {p.isNewProduct ? (
+                          <span className="inline-flex w-fit items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
+                            新品 · 不核算
+                          </span>
+                        ) : (
+                          <CarbonCell
+                            state={p.carbonState}
+                            value={p.carbonValue}
+                          />
+                        )}
                       </td>
                     )}
                     <td className="px-4 py-3">
@@ -573,9 +592,16 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
+                        {/* 采购方（收货方）履约结束：新品不核算碳，不体现碳凭证 */}
+                        {isEnded && isBuyer && p.isNewProduct && (
+                          <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                            新品 · 不核算碳
+                          </span>
+                        )}
                         {/* 采购方（收货方）履约结束的碳凭证入口 */}
                         {isEnded &&
                           isBuyer &&
+                          !p.isNewProduct &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"

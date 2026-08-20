@@ -543,6 +543,7 @@ export function FulfillmentDetail({
         open={pickupOpen}
         project={project}
         isBuyer={isBuyer}
+        isSupplier={isProcurement && !isBuyer}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
       />
@@ -570,12 +571,14 @@ function PickupOrderDialog({
   open,
   project,
   isBuyer = false,
+  isSupplier = false,
   onClose,
   onSave,
 }: {
   open: boolean
   project: FulfillmentProject
   isBuyer?: boolean
+  isSupplier?: boolean
   onClose: () => void
   onSave: (buyer: string) => void
 }) {
@@ -589,6 +592,7 @@ function PickupOrderDialog({
   const [reuseMethod, setReuseMethod] = useState('')
   const [recycleCompany, setRecycleCompany] = useState('')
   const [reuseRemark, setReuseRemark] = useState('')
+  const [isNewProduct, setIsNewProduct] = useState(false)
   const [trackOpen, setTrackOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
@@ -662,6 +666,49 @@ function PickupOrderDialog({
               <ReadonlyField label="项目名称" value={project.title} />
             </div>
           </FormSection>
+
+          {/* 资源属性（供应商视角）：判断是否为新品 */}
+          {isSupplier && (
+            <FormSection
+              title="资源属性"
+              icon={<Recycle className="size-4 text-primary" />}
+            >
+              <div className="flex flex-col gap-3 rounded-md border border-border bg-secondary/40 p-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex-1">
+                  <FieldLabel label="本次出售资源是否为新品" required />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsNewProduct(false)}
+                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                        !isNewProduct
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      再生资源（可回收利用）
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsNewProduct(true)}
+                      className={`flex-1 rounded-md border px-4 py-2 text-sm font-medium transition-colors md:flex-none ${
+                        isNewProduct
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-input bg-background text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      新品
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {isNewProduct
+                  ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
+                  : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
+              </p>
+            </FormSection>
+          )}
 
           {/* 提货方 / 供货方信息 */}
           <FormSection title={isBuyer ? '供货方信息' : '提货方信息'}>
