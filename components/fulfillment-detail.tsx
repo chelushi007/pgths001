@@ -27,6 +27,16 @@ export type FulfillmentProject = {
   period: string
 }
 
+// 废钢等效矿石折算：以磁铁矿 100:80 为基准，按各类矿石平均含铁品位换算等效开采重量
+// 品位越低，等效开采的矿石重量越多（factor = 单位净重废钢对应的矿石吨数）
+const ORE_TYPES = [
+  { type: '磁铁矿', grade: 72, factor: 0.80 },
+  { type: '赤铁矿', grade: 70, factor: 0.82 },
+  { type: '褐铁矿', grade: 58, factor: 0.99 },
+  { type: '菱铁矿', grade: 48, factor: 1.20 },
+] as const
+type OreType = (typeof ORE_TYPES)[number]['type']
+
 const STEPS = ['正式挂牌', '报名审核', '报价', '成交确认', '履约']
 
 type PaymentRow = {
@@ -748,6 +758,8 @@ function PickupOrderDialog({
   const [grossWeight, setGrossWeight] = useState('')
   const [tareWeight, setTareWeight] = useState('')
   const [weighFile, setWeighFile] = useState<string | null>(null)
+  // 钢厂直收：按净重自动折算为对应铁矿石类型的等效重量
+  const [oreType, setOreType] = useState<OreType>('磁铁矿')
   const [remark, setRemark] = useState('')
   const [logistics, setLogistics] = useState<LogisticsRow[]>([])
   const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
@@ -1006,10 +1018,10 @@ function PickupOrderDialog({
             </button>
           </FormSection>
 
-          {/* 重量信息：仅交付方（提货录入方）填写并上传过磅单；收货确认方不再重复过磅 */}
-          {!isReceiver && (
+          {/* 重量信息：交付方（提货录入方）过磅；普通收货确认方不再重复过磅；钢厂直收在收货时须过磅并折算矿石 */}
+          {(!isReceiver || isScrap) && (
           <FormSection
-            title="重量信息"
+            title={isScrap ? '收货过磅' : '重量信息'}
             icon={<Scale className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
@@ -1045,6 +1057,62 @@ function PickupOrderDialog({
                 />
               </div>
             </div>
+            {isScrap && (
+              <div className="mt-4 rounded-lg border border-[#9bc4ff] bg-[#eaf3ff] p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#086de0]">
+                  <Recycle className="size-4" />
+                  废钢等效矿石折算
+                </div>
+                <p className="mt-1 text-xs text-[#086de0]/70">
+                  按收货净重自动折算为对应铁矿石类型的等效开采重量，作为碳减排核算依据。
+                </p>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="sm:w-56">
+                    <FieldLabel label="铁矿石类型" />
+                    <select
+                      value={oreType}
+                      onChange={(e) => setOreType(e.target.value as OreType)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    >
+                      {ORE_TYPES.map((o) => (
+                        <option key={o.type} value={o.type}>
+                          {o.type}（含铁约 {o.grade}%）
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1 rounded-md border border-[#9bc4ff]/60 bg-background/70 px-4 py-2.5">
+                    <span className="text-xs text-muted-foreground">等效 {oreType} 重量</span>
+                    <p className="mt-0.5 flex items-baseline gap-1">
+                      <b className="text-2xl tabular-nums text-[#086de0]">
+                        {netWeight
+                          ? (
+                              parseFloat(netWeight) *
+                              (ORE_TYPES.find((o) => o.type === oreType)?.factor ?? 0)
+                            ).toFixed(2)
+                          : '0.00'}
+                      </b>
+                      <span className="text-sm text-[#086de0]/70">吨</span>
+                    </p>
+                  </div>
+                </div>
+                {netWeight && (
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {ORE_TYPES.map((o) => (
+                      <div
+                        key={o.type}
+                        className={`rounded-md border px-3 py-2 text-xs ${o.type === oreType ? 'border-[#086de0] bg-[#eaf3ff]' : 'border-border bg-background'}`}
+                      >
+                        <span className="text-muted-foreground">{o.type}</span>
+                        <p className="mt-0.5 tabular-nums font-semibold text-foreground">
+                          {(parseFloat(netWeight) * o.factor).toFixed(2)} 吨
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="mt-4">
               <FieldLabel label="过磅单" required />
               <input
