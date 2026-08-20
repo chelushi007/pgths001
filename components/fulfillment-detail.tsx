@@ -281,7 +281,7 @@ export function FulfillmentDetail({
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-foreground">
-              项�����管理 — {project.title}
+              项目管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
               {isLessee
@@ -494,7 +494,7 @@ export function FulfillmentDetail({
                 '付款方式',
                 '状态',
                 '发起时间',
-                isReceiver ? '付��备注' : '收款备注',
+                isReceiver ? '付款备注' : '收款备注',
                 '操作',
               ]}
             >
@@ -936,7 +936,7 @@ function PickupOrderDialog({
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 {isNewProduct
-                  ? '已���记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
+                  ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
                   : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
               </p>
             </FormSection>
