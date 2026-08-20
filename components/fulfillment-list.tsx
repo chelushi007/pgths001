@@ -450,8 +450,6 @@ export function FulfillmentList({
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
-  // 出租方额外展示「出租次数」（该资源第几次出租），履约与履约结束均展示
-  const showRentalSeq = isLessor
   const rawProjects = isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
@@ -625,9 +623,6 @@ export function FulfillmentList({
                 {showResourceCol && (
                   <th className="px-4 py-3 font-medium">资源规格</th>
                 )}
-                {showRentalSeq && (
-                  <th className="px-4 py-3 font-medium">出租次数</th>
-                )}
                 {showResourceCol && (
                   <th className="px-4 py-3 font-medium">重量(吨)</th>
                 )}
@@ -645,8 +640,7 @@ export function FulfillmentList({
                   <td
                     colSpan={
                       (hideCarbon ? 7 : 8) +
-                      (showResourceCol ? 3 : 0) +
-                      (showRentalSeq ? 1 : 0)
+                      (showResourceCol ? 3 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -690,13 +684,6 @@ export function FulfillmentList({
                     {showResourceCol && (
                       <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                         {p.resourceSpec ?? '—'}
-                      </td>
-                    )}
-                    {showRentalSeq && (
-                      <td className="whitespace-nowrap px-4 py-3">
-                        <span className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                          第 {p.rentalSeq ?? '—'} 次
-                        </span>
                       </td>
                     )}
                     {showResourceCol && (
