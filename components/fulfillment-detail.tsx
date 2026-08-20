@@ -227,6 +227,10 @@ export function FulfillmentDetail({
 
   if (!open || !project) return null
 
+  // 受让方 / 承租方履约结束：履约单为一张只读详情单，去掉各种确认/新增/录入等操作
+  const readOnly =
+    (isTransferee || isLessee) && project.status === '履约结束'
+
   const handleSavePickup = (buyer: string, logistics: LogisticsRow[]) => {
     const now = new Date()
     const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
@@ -280,7 +284,7 @@ export function FulfillmentDetail({
                         : '自主转让'}
             </span>
             <span className="rounded bg-chart-4/15 px-2 py-0.5 text-xs font-medium text-chart-4">
-              履约阶段
+              {readOnly ? '履约结束' : '履约阶段'}
             </span>
           </div>
           <button
@@ -373,16 +377,18 @@ export function FulfillmentDetail({
                         ? '查看验收单'
                         : '查看履约单'}
                 </PrimaryBtn>
-                <PrimaryBtn>
-                  <Check className="size-3.5" />
-                  {isLessee
-                    ? '确认收货'
-                    : isTransferee
-                      ? '确认交割'
-                      : isBuyer
-                        ? '确认验收'
-                        : '完成履约单'}
-                </PrimaryBtn>
+                {!readOnly && (
+                  <PrimaryBtn>
+                    <Check className="size-3.5" />
+                    {isLessee
+                      ? '确认收货'
+                      : isTransferee
+                        ? '确认交割'
+                        : isBuyer
+                          ? '确认验收'
+                          : '完成履约单'}
+                  </PrimaryBtn>
+                )}
               </>
             }
           >
@@ -399,7 +405,9 @@ export function FulfillmentDetail({
                         ? '供货方名称'
                         : isProcurement
                           ? '采购方名称'
-                          : '竞买人名称'
+                          : isDisposal
+                            ? '受让方名称'
+                            : '承租方名称'
                 }
                 value={project.buyer}
               />
@@ -413,7 +421,9 @@ export function FulfillmentDetail({
                         ? '供货方单位ID'
                         : isProcurement
                           ? '采购方单位ID'
-                          : '竞买人单位ID'
+                          : isDisposal
+                            ? '受让方单位ID'
+                            : '承租方单位ID'
                 }
                 value={project.buyerUnitId}
                 mono
@@ -453,10 +463,12 @@ export function FulfillmentDetail({
                   <RefreshCw className="size-3.5" />
                   刷新
                 </GhostBtn>
-                <PrimaryBtn>
-                  <Plus className="size-3.5" />
-                  {isReceiver ? '新增付款' : '新增收款'}
-                </PrimaryBtn>
+                {!readOnly && (
+                  <PrimaryBtn>
+                    <Plus className="size-3.5" />
+                    {isReceiver ? '新增付款' : '新增收款'}
+                  </PrimaryBtn>
+                )}
               </>
             }
           >
@@ -562,10 +574,12 @@ export function FulfillmentDetail({
                   <RefreshCw className="size-3.5" />
                   刷新
                 </GhostBtn>
-                <PrimaryBtn onClick={() => setPickupOpen(true)}>
-                  <Plus className="size-3.5" />
-                  {isReceiver ? '确认收货' : '录入提货单'}
-                </PrimaryBtn>
+                {!readOnly && (
+                  <PrimaryBtn onClick={() => setPickupOpen(true)}>
+                    <Plus className="size-3.5" />
+                    {isReceiver ? '确认收货' : '录入提货单'}
+                  </PrimaryBtn>
+                )}
               </>
             }
           >
@@ -578,7 +592,9 @@ export function FulfillmentDetail({
                     ? '转让方名称'
                     : isBuyer
                       ? '供货方名称'
-                      : '竞买人名称',
+                      : isDisposal
+                        ? '受让方名称'
+                        : '承租方名称',
                 '物流信息',
                 '创建时间',
                 isReceiver ? '收货时间' : '提货时间',
@@ -628,7 +644,7 @@ export function FulfillmentDetail({
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-3">
                       <LinkBtn>查看</LinkBtn>
-                      {r.status === '待提货' && (
+                      {!readOnly && r.status === '待提货' && (
                         <button
                           type="button"
                           onClick={() =>
@@ -897,7 +913,9 @@ function PickupOrderDialog({
                       ? '转让方'
                       : isBuyer
                         ? '供货方'
-                        : '竞买人'
+                        : project.flowType === '出租'
+                          ? '承租方'
+                          : '受让方'
                 }
                 value={project.buyer}
                 required
@@ -1215,7 +1233,7 @@ function PickupOrderDialog({
                         <option value="拆解利用">拆解利用</option>
                         <option value="再制造">再制造</option>
                         <option value="回炉再生">回炉再生</option>
-                        <option value="报废处理">报废处理</option>
+                        <option value="��废处理">报废处理</option>
                         <option value="其他">其他</option>
                       </>
                     ) : (

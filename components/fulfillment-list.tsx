@@ -54,14 +54,18 @@ type ProjectRow = {
 const ACTIVE_PROJECTS: ProjectRow[] = [
   {
     code: '2089616559671742464',
-    title: '批量物资处置（3项）',
-    flowType: '转让',
+    title: '盘扣式脚手架周转出租（第三批）',
+    flowType: '出租',
     stage: '履约',
     stageTone: 'blue',
     signupStart: '2026-08-18 15:31:42',
     signupEnd: '2026-08-18 17:00:00',
     carbonState: 'estimating',
     carbonValue: 45.2,
+    resourceName: '盘扣式脚手架',
+    resourceSpec: 'Q355 / Φ60×3.2mm',
+    rentalSeq: 3,
+    weight: 130.20,
   },
   {
     code: '2089230162376921088',
@@ -73,6 +77,10 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-17 14:29:00',
     carbonState: 'estimating',
     carbonValue: 12.8,
+    resourceName: '贝雷片',
+    resourceSpec: '321型 / 3.0m',
+    rentalSeq: 5,
+    weight: 52.30,
   },
   {
     code: '2088517041526018048',
@@ -84,6 +92,10 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-16 00:00:00',
     carbonState: 'estimating',
     carbonValue: 8.6,
+    resourceName: '钢管脚手架',
+    resourceSpec: 'Φ48×3.5mm',
+    rentalSeq: 6,
+    weight: 85.40,
   },
 ]
 
@@ -184,6 +196,9 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-20 00:00:00',
     carbonState: 'estimating',
     carbonValue: 62.4,
+    resourceName: '废旧钢材',
+    resourceSpec: 'Q235 / 混合规格',
+    weight: 320.50,
   },
   {
     code: '2089616559671742464',
@@ -195,6 +210,9 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-18 17:00:00',
     carbonState: 'estimating',
     carbonValue: 28.7,
+    resourceName: '废旧轨枕',
+    resourceSpec: 'Ⅱ型 / 2.5m',
+    weight: 186.00,
   },
   {
     code: '2089625006320521216',
@@ -206,6 +224,9 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-18 16:24:00',
     carbonState: 'estimating',
     carbonValue: 15.3,
+    resourceName: '废旧钢材',
+    resourceSpec: 'Q235 / 统料',
+    weight: 95.30,
   },
 ]
 
@@ -221,6 +242,9 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     certState: 'issued',
     carbonState: 'accounted',
     carbonValue: 154.36,
+    resourceName: '废旧钢管',
+    resourceSpec: 'Φ60×3.2mm',
+    weight: 142.80,
   },
   {
     code: '2086901355420188160',
@@ -236,6 +260,9 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
       '上传交付批次的过磅单与签收单附件',
     ],
     carbonState: 'pending',
+    resourceName: '废旧轨枕',
+    resourceSpec: 'Ⅲ型 / 2.6m',
+    weight: 208.40,
   },
   {
     code: '2086331209988110336',
@@ -248,6 +275,9 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     certState: 'issued',
     carbonState: 'accounted',
     carbonValue: 88.15,
+    resourceName: '废旧设备',
+    resourceSpec: '综合规格',
+    weight: 76.20,
   },
 ]
 
@@ -262,6 +292,9 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-20 12:00:00',
     carbonState: 'estimating',
     carbonValue: 52.6,
+    resourceName: '废旧钢轨',
+    resourceSpec: '43kg/m',
+    weight: 245.60,
   },
   {
     code: '2089733048921640960',
@@ -273,6 +306,9 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-19 18:00:00',
     carbonState: 'estimating',
     carbonValue: 33.9,
+    resourceName: '废旧周转料',
+    resourceSpec: '混合规格',
+    weight: 132.40,
   },
   {
     code: '2089610033982070784',
@@ -284,6 +320,9 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     signupEnd: '2026-08-18 14:20:00',
     carbonState: 'estimating',
     carbonValue: 18.4,
+    resourceName: '拆解废钢',
+    resourceSpec: '统料',
+    weight: 88.70,
   },
 ]
 
@@ -299,6 +338,8 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     carbonState: 'pending',
     isNewProduct: true,
     resourceName: '轨道备品备件（新件）',
+    resourceSpec: '标准件',
+    weight: 64.20,
   },
   {
     code: '2088521470033289216',
@@ -316,6 +357,8 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     ],
     carbonState: 'pending',
     resourceName: '废旧钢轨',
+    resourceSpec: '50kg/m',
+    weight: 312.50,
   },
   {
     code: '2087760012480083200',
@@ -329,6 +372,8 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     carbonState: 'accounted',
     carbonValue: 168.72,
     resourceName: '废旧金属管材',
+    resourceSpec: 'DN200 混合',
+    weight: 158.30,
   },
   {
     code: '2087009471823018100',
@@ -345,6 +390,8 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     ],
     carbonState: 'pending',
     resourceName: '废旧钢材',
+    resourceSpec: 'Q235 混合',
+    weight: 276.40,
   },
   {
     code: '2086208209988110300',
@@ -358,6 +405,8 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     carbonState: 'accounted',
     carbonValue: 102.35,
     resourceName: '再生金属',
+    resourceSpec: '统料',
+    weight: 189.60,
   },
 ]
 
@@ -399,10 +448,10 @@ export function FulfillmentList({
   const hideCarbon = isSupplier
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
-  // 出租方履约结束：展示出租次数与前后过磅重量比对列
-  const showRentalCol = isLessor && isEnded
-  // 采购模式（供应商 / 采购方）或出租方履约结束后展示资源名称列
-  const showResourceCol = (isProcurement || isLessor) && isEnded
+  // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
+  const showResourceCol = true
+  // 出租方额外展示「出租次数」（该资源第几次出租），履约与履约结束均展示
+  const showRentalSeq = isLessor
   const projects = isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
@@ -570,13 +619,13 @@ export function FulfillmentList({
                   {isProcurement ? '采购方式' : isDisposal ? '处置方式' : '流转方式'}
                 </th>
                 <th className="px-4 py-3 font-medium">当前环节</th>
-                {showRentalCol && (
+                {showResourceCol && (
                   <th className="px-4 py-3 font-medium">资源规格</th>
                 )}
-                {showRentalCol && (
+                {showRentalSeq && (
                   <th className="px-4 py-3 font-medium">出租次数</th>
                 )}
-                {showRentalCol && (
+                {showResourceCol && (
                   <th className="px-4 py-3 font-medium">重量(吨)</th>
                 )}
                 <th className="px-4 py-3 font-medium">报名开始</th>
@@ -593,8 +642,8 @@ export function FulfillmentList({
                   <td
                     colSpan={
                       (hideCarbon ? 7 : 8) +
-                      (showResourceCol ? 1 : 0) +
-                      (showRentalCol ? 3 : 0)
+                      (showResourceCol ? 3 : 0) +
+                      (showRentalSeq ? 1 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -635,19 +684,19 @@ export function FulfillmentList({
                         {p.stage}
                       </span>
                     </td>
-                    {showRentalCol && (
+                    {showResourceCol && (
                       <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                         {p.resourceSpec ?? '—'}
                       </td>
                     )}
-                    {showRentalCol && (
+                    {showRentalSeq && (
                       <td className="whitespace-nowrap px-4 py-3">
                         <span className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                           第 {p.rentalSeq ?? '—'} 次
                         </span>
                       </td>
                     )}
-                    {showRentalCol && (
+                    {showResourceCol && (
                       <td className="whitespace-nowrap px-4 py-3 tabular-nums font-medium text-foreground">
                         {p.weight?.toFixed(2) ?? '—'}
                       </td>
@@ -723,7 +772,7 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
-                        {/* 采购方（收货方）履约结束的碳凭证入口：新���不核算碳，不体现碳凭证 */}
+                        {/* 采购方（收货方）履约结束的碳凭证入口：新品不核算碳，不体现碳凭证 */}
                         {isEnded &&
                           isBuyer &&
                           (!p.isNewProduct || isScrap) &&
