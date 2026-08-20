@@ -27,6 +27,8 @@ type ResourceRow = {
   disposalQty: number
   estimatedWeight: string
   weighFile: string | null
+  // 出租业务：该资源截至目前已完成的出租次数，本次为「第 rentalCount + 1 次」
+  rentalCount: number
 }
 
 const INITIAL_ROWS: ResourceRow[] = [
@@ -43,6 +45,7 @@ const INITIAL_ROWS: ResourceRow[] = [
     disposalQty: 176,
     estimatedWeight: '',
     weighFile: null,
+    rentalCount: 2,
   },
 ]
 
@@ -513,6 +516,11 @@ function RentDialog({
                       含税单价
                     </th>
                     <th className="px-4 py-3 text-right font-medium">原值</th>
+                    {!isDisposal && (
+                      <th className="px-4 py-3 text-center font-medium">
+                        出租次数
+                      </th>
+                    )}
                     <th className="px-4 py-3 text-center font-medium">
                       {isDisposal ? '处置数量' : '出租数量'}
                     </th>
@@ -523,7 +531,7 @@ function RentDialog({
                   {rows.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={10}
+                        colSpan={isDisposal ? 10 : 11}
                         className="px-4 py-16 text-center text-sm text-muted-foreground"
                       >
                         暂无关联资源，请点击「追加资源」添加
@@ -559,6 +567,17 @@ function RentDialog({
                         <td className="px-4 py-4 text-right tabular-nums text-foreground">
                           ¥{row.originalValue.toLocaleString('en-US')}
                         </td>
+                        {/* 出租次数（仅出租业务）：展示已出租次数及本次序号 */}
+                        {!isDisposal && (
+                          <td className="px-4 py-4 text-center">
+                            <span className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                              第 {row.rentalCount + 1} 次
+                            </span>
+                            <p className="mt-1 text-xs text-muted-foreground">
+                              已出租 {row.rentalCount} 次
+                            </p>
+                          </td>
+                        )}
                         {/* 处置数量 */}
                         <td className="px-4 py-4">
                           <div className="mx-auto flex w-32 items-center rounded-md border border-input bg-background">
@@ -806,7 +825,7 @@ function RentDialog({
                   className="w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground outline-none"
                 />
               </Field>
-              <Field label="关联资源数">
+              <Field label="关联���源数">
                 <span className="text-sm text-foreground">
                   {rows.length} 项
                 </span>
