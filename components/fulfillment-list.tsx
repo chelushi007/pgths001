@@ -335,10 +335,17 @@ export function FulfillmentList({
   mode = 'rental',
 }: {
   variant: 'active' | 'ended'
-  mode?: 'rental' | 'disposal' | 'procurement' | 'procurement-buyer'
+  mode?:
+    | 'rental'
+    | 'disposal'
+    | 'procurement'
+    | 'procurement-buyer'
+    | 'disposal-transferee'
 }) {
   const isEnded = variant === 'ended'
-  const isDisposal = mode === 'disposal'
+  // 受让方（处置收货方）：使用处置数据与处置方式筛选，但以收货视角履约
+  const isTransferee = mode === 'disposal-transferee'
+  const isDisposal = mode === 'disposal' || isTransferee
   const isBuyer = mode === 'procurement-buyer'
   const isProcurement = mode === 'procurement' || isBuyer
   // 仅供应商（供货方）隐藏碳信息；采购方（收货方）需展示碳核算
@@ -371,16 +378,20 @@ export function FulfillmentList({
       code: p.code,
       title: p.title,
       flowType: p.flowType,
-      buyer: isBuyer
-        ? '中铁物资物流集团华南有限公司'
-        : isProcurement
-          ? '葫芦再生资源有限公司'
-          : '广州资源回收有限公司',
-      buyerUnitId: isBuyer
-        ? '2085512034789001120'
-        : isProcurement
-          ? '2089900011456320011'
-          : '2087787291144753153',
+      buyer: isTransferee
+        ? '中国铁路广州局集团有限公司'
+        : isBuyer
+          ? '中铁物资物流集团华南有限公司'
+          : isProcurement
+            ? '葫芦再生资源有限公司'
+            : '广州资源回收有限公司',
+      buyerUnitId: isTransferee
+        ? '2083390561200410880'
+        : isBuyer
+          ? '2085512034789001120'
+          : isProcurement
+            ? '2089900011456320011'
+            : '2087787291144753153',
       status: isEnded ? '履约结束' : '履约通过',
       period: `${p.signupStart} ~ ${p.signupEnd}`,
     })
@@ -584,7 +595,8 @@ export function FulfillmentList({
                             onClick={() => openDetail(p)}
                             className="inline-flex items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80"
                           >
-                            {isProcurement && !isEnded ? (
+                            {(isProcurement && !isEnded) ||
+                            (isTransferee && !isEnded) ? (
                               <FileCheck className="size-3.5" />
                             ) : (
                               <Eye className="size-3.5" />
@@ -593,7 +605,9 @@ export function FulfillmentList({
                               ? isEnded
                                 ? '查看'
                                 : '履约'
-                              : '管理项目'}
+                              : isTransferee
+                                ? '履约'
+                                : '管理项目'}
                           </button>
                         )}
                         {/* 出租 / 处置履约结束的碳凭证入口 */}
@@ -689,7 +703,7 @@ export function FulfillmentList({
       <CarbonCertificate
         open={certProject !== null}
         project={certProject}
-        mode={isBuyer ? 'procurement' : mode}
+        mode={isBuyer ? 'procurement' : isTransferee ? 'disposal' : mode}
         onClose={() => setCertProject(null)}
       />
 

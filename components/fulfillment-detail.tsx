@@ -122,12 +122,20 @@ export function FulfillmentDetail({
 }: {
   open: boolean
   project: FulfillmentProject | null
-  mode?: 'rental' | 'disposal' | 'procurement' | 'procurement-buyer'
+  mode?:
+    | 'rental'
+    | 'disposal'
+    | 'procurement'
+    | 'procurement-buyer'
+    | 'disposal-transferee'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
   const isBuyer = mode === 'procurement-buyer'
   const isProcurement = mode === 'procurement' || isBuyer
+  // 受让方（处置收货方）：与采购方共用收货视角，但业务字段为处置口径
+  const isTransferee = mode === 'disposal-transferee'
+  const isReceiver = isBuyer || isTransferee
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
   const [pickupOpen, setPickupOpen] = useState(false)
@@ -189,13 +197,15 @@ export function FulfillmentDetail({
               项目管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-              {isBuyer
-                ? '采购收货'
-                : isProcurement
-                  ? '采购供货'
-                  : project.flowType === '出租'
-                    ? '自主出租'
-                    : '自主转让'}
+              {isTransferee
+                ? '受让收货'
+                : isBuyer
+                  ? '采购收货'
+                  : isProcurement
+                    ? '采购供货'
+                    : project.flowType === '出租'
+                      ? '自主出租'
+                      : '自主转让'}
             </span>
             <span className="rounded bg-chart-4/15 px-2 py-0.5 text-xs font-medium text-chart-4">
               履约阶段
@@ -283,11 +293,19 @@ export function FulfillmentDetail({
               <>
                 <PrimaryBtn>
                   <FileText className="size-3.5" />
-                  {isBuyer ? '查看验收单' : '查看履约单'}
+                  {isTransferee
+                    ? '查看交割单'
+                    : isBuyer
+                      ? '查看验收单'
+                      : '查看履约单'}
                 </PrimaryBtn>
                 <PrimaryBtn>
                   <Check className="size-3.5" />
-                  {isBuyer ? '确认验收' : '完成履约单'}
+                  {isTransferee
+                    ? '确认交割'
+                    : isBuyer
+                      ? '确认验收'
+                      : '完成履约单'}
                 </PrimaryBtn>
               </>
             }
@@ -297,28 +315,36 @@ export function FulfillmentDetail({
               <InfoCell label="项目标题" value={project.title} />
               <InfoCell
                 label={
-                  isBuyer
-                    ? '供货方名称'
-                    : isProcurement
-                      ? '采购方名称'
-                      : '竞买人名称'
+                  isTransferee
+                    ? '转让方名称'
+                    : isBuyer
+                      ? '供货方名称'
+                      : isProcurement
+                        ? '采购方名称'
+                        : '竞买人名称'
                 }
                 value={project.buyer}
               />
               <InfoCell
                 label={
-                  isBuyer
-                    ? '供货方单位ID'
-                    : isProcurement
-                      ? '采购方单位ID'
-                      : '竞买人单位ID'
+                  isTransferee
+                    ? '转让方单位ID'
+                    : isBuyer
+                      ? '供货方单位ID'
+                      : isProcurement
+                        ? '采购方单位ID'
+                        : '竞买人单位ID'
                 }
                 value={project.buyerUnitId}
                 mono
               />
               <InfoCell label="履约状态" value={project.status} />
               <InfoCell
-                label={isDisposal || isProcurement ? '交付期限' : '履约期限'}
+                label={
+                  isDisposal || isProcurement || isTransferee
+                    ? '交付期限'
+                    : '履约期限'
+                }
                 value={project.period}
               />
               <InfoCell label="履约备注" value="无" />
@@ -329,13 +355,15 @@ export function FulfillmentDetail({
           {/* 款项 */}
           <Card
             title={
-              isBuyer
-                ? '货款支付'
-                : isProcurement
-                  ? '货款收取'
-                  : isDisposal
-                    ? '转让款收取'
-                    : '成交款收取'
+              isTransferee
+                ? '转让款支付'
+                : isBuyer
+                  ? '货款支付'
+                  : isProcurement
+                    ? '货款收取'
+                    : isDisposal
+                      ? '转让款收取'
+                      : '成交款收取'
             }
             actions={
               <>
@@ -345,21 +373,21 @@ export function FulfillmentDetail({
                 </GhostBtn>
                 <PrimaryBtn>
                   <Plus className="size-3.5" />
-                  {isBuyer ? '新增付款' : '新增收款'}
+                  {isReceiver ? '新增付款' : '新增收款'}
                 </PrimaryBtn>
               </>
             }
           >
             <TableShell
               headers={[
-                isBuyer ? '付款编号' : '收款编号',
+                isReceiver ? '付款编号' : '收款编号',
                 '金额',
                 '付款方',
                 '收款方',
                 '付款方式',
                 '状态',
                 '发起时间',
-                isBuyer ? '付款备注' : '收款备注',
+                isReceiver ? '付款备注' : '收款备注',
                 '操作',
               ]}
             >
@@ -440,12 +468,12 @@ export function FulfillmentDetail({
 
           {/* 提货 / 收货情况 */}
           <Card
-            title={isBuyer ? '收货情况' : '提货情况'}
+            title={isReceiver ? '收货情况' : '提货情况'}
             actions={
               <>
                 <select className="rounded-md border border-input bg-background px-2 py-1.5 text-xs text-muted-foreground outline-none">
                   <option>状态筛选</option>
-                  <option>{isBuyer ? '待收货' : '待提货'}</option>
+                  <option>{isReceiver ? '待收货' : '待提货'}</option>
                   <option>已完成</option>
                 </select>
                 <GhostBtn>
@@ -454,18 +482,22 @@ export function FulfillmentDetail({
                 </GhostBtn>
                 <PrimaryBtn onClick={() => setPickupOpen(true)}>
                   <Plus className="size-3.5" />
-                  {isBuyer ? '确认收货' : '录入提货单'}
+                  {isReceiver ? '确认收货' : '录入提货单'}
                 </PrimaryBtn>
               </>
             }
           >
             <TableShell
               headers={[
-                isBuyer ? '收货单编号' : '提货单编号',
-                isBuyer ? '供货方名称' : '竞买人名称',
+                isReceiver ? '收货单编号' : '提货单编号',
+                isTransferee
+                  ? '转让方名称'
+                  : isBuyer
+                    ? '供货方名称'
+                    : '竞买人名称',
                 '物流单号',
                 '创建时间',
-                isBuyer ? '收货时间' : '提货时间',
+                isReceiver ? '收货时间' : '提货时间',
                 '状态',
                 '操作',
               ]}
@@ -477,7 +509,11 @@ export function FulfillmentDetail({
                 >
                   <td className="px-3 py-3 font-mono text-xs">{r.no}</td>
                   <td className="px-3 py-3">
-                    {isBuyer ? '中铁物资物流集团华南有限公司' : r.buyer}
+                    {isBuyer
+                      ? '中铁物资物流集团华南有限公司'
+                      : isTransferee
+                        ? project.buyer
+                        : r.buyer}
                   </td>
                   <td className="px-3 py-3">
                     <button
@@ -542,7 +578,8 @@ export function FulfillmentDetail({
       <PickupOrderDialog
         open={pickupOpen}
         project={project}
-        isBuyer={isBuyer}
+        isBuyer={isReceiver}
+        isTransferee={isTransferee}
         isSupplier={isProcurement && !isBuyer}
         onClose={() => setPickupOpen(false)}
         onSave={handleSavePickup}
@@ -571,6 +608,7 @@ function PickupOrderDialog({
   open,
   project,
   isBuyer = false,
+  isTransferee = false,
   isSupplier = false,
   onClose,
   onSave,
@@ -578,6 +616,7 @@ function PickupOrderDialog({
   open: boolean
   project: FulfillmentProject
   isBuyer?: boolean
+  isTransferee?: boolean
   isSupplier?: boolean
   onClose: () => void
   onSave: (buyer: string) => void
@@ -711,10 +750,18 @@ function PickupOrderDialog({
           )}
 
           {/* 提货方 / 供货方信息 */}
-          <FormSection title={isBuyer ? '供货方信息' : '提货方信息'}>
+          <FormSection
+            title={
+              isTransferee
+                ? '转让方信息'
+                : isBuyer
+                  ? '供货方信息'
+                  : '提货方信息'
+            }
+          >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
               <ReadonlyField
-                label={isBuyer ? '供货方' : '竞买人'}
+                label={isTransferee ? '转让方' : isBuyer ? '供货方' : '竞买人'}
                 value={project.buyer}
                 required
               />
@@ -963,11 +1010,13 @@ function PickupOrderDialog({
           {/* 物资去向（收货方视角）：补充回收利用去向信息 */}
           {isBuyer && (
             <FormSection
-              title="物资去向"
+              title={isTransferee ? '资源去向' : '物资去向'}
               icon={<Recycle className="size-4 text-primary" />}
             >
               <p className="mb-4 text-xs text-muted-foreground">
-                请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。
+                {isTransferee
+                  ? '请注明本次受让资源的去向信息（再利用方式、流向企业等），用于资源流转追溯与碳减排核算。'
+                  : '请补充本次收货物资的回收利用去向信息（再利用方式、回收企业等），作为碳减排核算依据。'}
               </p>
               <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
                 <div>
@@ -978,19 +1027,39 @@ function PickupOrderDialog({
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                   >
                     <option value="">请选择再利用方式</option>
-                    <option value="回炉再生">回炉再生（再生钢材）</option>
-                    <option value="拆解再制造">拆解再制造</option>
-                    <option value="检修复用">检修复用</option>
-                    <option value="降级利用">降级利用</option>
-                    <option value="其他">其他</option>
+                    {isTransferee ? (
+                      <>
+                        <option value="整机复用">整机复用</option>
+                        <option value="拆解利用">拆解利用</option>
+                        <option value="再制造">再制造</option>
+                        <option value="回炉再生">回炉再生</option>
+                        <option value="报废处理">报废处理</option>
+                        <option value="其他">其他</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="回炉再生">回炉再生（再生钢材）</option>
+                        <option value="拆解再制造">拆解再制造</option>
+                        <option value="检修复用">检修复用</option>
+                        <option value="降级利用">降级利用</option>
+                        <option value="其他">其他</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div>
-                  <FieldLabel label="回收企业" required />
+                  <FieldLabel
+                    label={isTransferee ? '资源流向企业' : '回收企业'}
+                    required
+                  />
                   <input
                     value={recycleCompany}
                     onChange={(e) => setRecycleCompany(e.target.value)}
-                    placeholder="请输入回收 / 再利用企业名称"
+                    placeholder={
+                      isTransferee
+                        ? '请输入资源流向 / 再利用企业名称'
+                        : '请输入回收 / 再利用企业名称'
+                    }
                     className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                   />
                 </div>
