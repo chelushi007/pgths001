@@ -496,15 +496,16 @@ export function FulfillmentList({
 
       {/* 列表区 */}
       <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card shadow-sm">
-        {/* 操作按钮 */}
-        {!isEnded && !isProcurement && (
+        {/* 操作按钮：仅发起方（出租方 / 转让方 / 采购方）显示发起入口；
+            收货方（受让方 / 承租方 / 供应商）不显示 */}
+        {!isEnded && ((!isProcurement && !isSelfReceiver) || isBuyer) && (
           <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
             <button
               type="button"
               className="flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Send className="size-4" />
-              {isDisposal ? '发起自主转让' : '�����起自主出租'}
+              {isBuyer ? '发起采购' : isDisposal ? '发起自主转让' : '发起自主出租'}
             </button>
           </div>
         )}
