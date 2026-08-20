@@ -64,11 +64,13 @@ const initial: Factor[] = [
   { id: 'TF-003', type: '运输因子', category: '陆运', name: '新能源电动重卡', model: '电力', energy: '电力', value: 0.0418, unit: 'kgCO₂e/(吨·公里)', source: '省级交通碳因子库', date: '2026-05-09', active: true },
   { id: 'TF-004', type: '运输因子', category: '水运', name: '内河货船（1000t级）', model: '燃油', energy: '燃油', value: 0.0285, unit: 'kgCO₂e/(吨·公里)', source: '水运碳排放因子库', date: '2026-05-07', active: true },
   { id: 'TF-005', type: '运输因子', category: '水运', name: '沿海散货船（5000t级）', model: '燃油', energy: '燃油', value: 0.0156, unit: 'kgCO₂e/(吨·公里)', source: '水运碳排放因子库', date: '2026-05-07', active: true },
-  { id: 'EF-001', type: '排放因子', category: '电力', name: '南方区域电网', model: '', energy: '电力', activityUnit: 'kWh', scope: '外购电力（范围二）', value: 0.5271, unit: 'kgCO₂e/kWh', source: '生态环境部电网基准线', date: '2026-05-11', active: true },
-  { id: 'EF-002', type: '排放因子', category: '电力', name: '华东区域电网', model: '', energy: '电力', activityUnit: 'kWh', scope: '外购电力（范围二）', value: 0.5617, unit: 'kgCO₂e/kWh', source: '生态环境部电网基准线', date: '2026-05-11', active: true },
-  { id: 'EF-003', type: '排放因子', category: '化石燃料', name: '柴油', model: '', energy: '柴油', activityUnit: 'kg', scope: '燃料燃烧（范围一）', value: 3.0959, unit: 'kgCO₂e/kg', source: 'GB/T 2589 综合能耗', date: '2026-05-09', active: true },
-  { id: 'EF-004', type: '排放因子', category: '化石燃料', name: '天然气', model: '', energy: '天然气', activityUnit: 'm³', scope: '燃料燃烧（范围一）', value: 2.1622, unit: 'kgCO₂e/m³', source: 'GB/T 2589 综合能耗', date: '2026-05-09', active: true },
-  { id: 'EF-005', type: '排放因子', category: '热力', name: '外购蒸汽', model: '', energy: '蒸汽', activityUnit: 'GJ', scope: '外购热力（范围二）', value: 110.0, unit: 'kgCO₂e/GJ', source: '省级温室气体清单指南', date: '2026-05-07', active: false },
+  { id: 'EF-001', type: '排放因子', category: '炼钢工序', name: '电炉炼钢（废钢短流程）', model: 'EAF 电弧炉', energy: '电力', activityUnit: 't粗钢', scope: '炼钢工序（废钢入炉）', value: 456, unit: 'kgCO₂e/t粗钢', source: '钢铁行业碳排放核算指南', date: '2026-05-11', active: true },
+  { id: 'EF-002', type: '排放因子', category: '炼钢工序', name: '转炉炼钢（铁水长流程）', model: 'BOF 顶底复吹', energy: '铁水', activityUnit: 't粗钢', scope: '炼钢工序（铁水入炉）', value: 1892, unit: 'kgCO₂e/t粗钢', source: '钢铁行业碳排放核算指南', date: '2026-05-11', active: true },
+  { id: 'EF-003', type: '排放因子', category: '炼铁工序', name: '高炉炼铁（铁水）', model: 'BF 高炉', energy: '焦炭', activityUnit: 't铁水', scope: '炼铁工序（范围一）', value: 1612, unit: 'kgCO₂e/t铁水', source: '钢铁行业碳排放核算指南', date: '2026-05-10', active: true },
+  { id: 'EF-004', type: '排放因子', category: '炼铁工序', name: '烧结矿', model: '烧结工序', energy: '焦粉', activityUnit: 't烧结矿', scope: '烧结工序（范围一）', value: 236, unit: 'kgCO₂e/t烧结矿', source: '钢铁行业碳排放核算指南', date: '2026-05-10', active: true },
+  { id: 'EF-005', type: '排放因子', category: '能源介质', name: '冶金焦炭', model: '干基', energy: '焦炭', activityUnit: 't', scope: '燃料燃烧（范围一）', value: 3140, unit: 'kgCO₂e/t', source: 'GB/T 2589 综合能耗', date: '2026-05-09', active: true },
+  { id: 'EF-006', type: '排放因子', category: '能源介质', name: '冶炼用电（华东电网）', model: '', energy: '电力', activityUnit: 'kWh', scope: '外购电力（范围二）', value: 0.5617, unit: 'kgCO₂e/kWh', source: '生态环境部电网基准线', date: '2026-05-09', active: true },
+  { id: 'EF-007', type: '排放因子', category: '能源介质', name: '天然气', model: '', energy: '天然气', activityUnit: 'm³', scope: '燃料燃烧（范围一）', value: 2.1622, unit: 'kgCO₂e/m³', source: 'GB/T 2589 综合能耗', date: '2026-05-07', active: false },
 ]
 
 const BLUE = 'text-[#086de0]'
@@ -93,16 +95,16 @@ export function CarbonFactorManagement() {
     ? ['全部', '支护类', '脚手架类', '拼装类', '轨道类', '型材类', '电线电缆', '房屋建筑类']
     : tab === '运输因子'
       ? ['全部', '陆运', '水运']
-      : ['全部', '电力', '化石燃料', '热力']
+      : ['全部', '炼钢工序', '炼铁工序', '能源介质']
 
   const idPrefix = tab === '资源因子' ? 'RF' : tab === '运输因子' ? 'TF' : 'EF'
   const openCreate = () => setEditing({
     id: `${idPrefix}-${String(rows.length + 1).padStart(3, '0')}`,
     type: tab,
-    category: tab === '资源因子' ? '脚手架类' : tab === '运输因子' ? '陆运' : '电力',
+    category: tab === '资源因子' ? '脚手架类' : tab === '运输因子' ? '陆运' : '炼钢工序',
     name: '', model: '', measureUnit: '吨', unitWeight: 0, energy: tab === '排放因子' ? '电力' : '柴油',
-    activityUnit: 'kWh', scope: '外购电力（范围二）', value: 0,
-    unit: tab === '资源因子' ? 'kgCO₂e/吨' : tab === '运输因子' ? 'kgCO₂e/(吨·公里)' : 'kgCO₂e/kWh',
+    activityUnit: 't粗钢', scope: '炼钢工序（废钢入炉）', value: 0,
+    unit: tab === '资源因子' ? 'kgCO₂e/吨' : tab === '运输因子' ? 'kgCO₂e/(吨·公里)' : 'kgCO₂e/t粗钢',
     source: '', date: '2026-08-20', active: true,
     conversionEnabled: false, conversionTarget: '磁铁矿', scrapBasis: 100, oreEquivalent: 80,
   })
@@ -137,7 +139,7 @@ export function CarbonFactorManagement() {
         {tab === '排放因子' ? <Zap className="size-5 shrink-0" /> : <Package className="size-5 shrink-0" />}
         {tab === '资源因子' && <p>碳因子库覆盖模板类、支护类、脚手架类、拼装类、轨道类、型材类、电线电缆、房屋建筑类共 8 大物资分类；<b className="ml-2">现阶段具体实施物资以钢材类为主</b>，其余分类持续完善中。</p>}
         {tab === '运输因子' && <p>运输因子按陆运、水运两类维护，用于资源回收 / 流转过程的<b className="ml-2">运输环节碳排放</b>核算，因子口径统一为 kgCO₂e/(吨·公里)。</p>}
-        {tab === '排放因子' && <p>排放因子覆盖电力、化石燃料、热力等能源活动，用于资源<b className="ml-2">回收再制造过程</b>的能源消耗碳排放核算；电力 / 热力计入范围二，燃料燃烧计入范围一。</p>}
+        {tab === '排放因子' && <p>排放因子以<b className="mx-1">钢铁冶炼</b>为主，覆盖炼钢工序、炼铁工序、能源介质，用于废钢回收再制造的冶炼环节碳排放核算；<b className="ml-1">电炉短流程（废钢）较转炉长流程可显著降碳</b>。</p>}
       </div>
 
       <section className="bg-card p-4">
@@ -202,9 +204,9 @@ function TransportTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (r
 }
 
 const EMISSION_META: Record<string, { icon: typeof Zap; badge: string }> = {
-  电力: { icon: Zap, badge: 'bg-emerald-50 text-emerald-600' },
-  化石燃料: { icon: Flame, badge: 'bg-amber-50 text-amber-600' },
-  热力: { icon: Factory, badge: 'bg-[#e7f1ff] text-[#086de0]' },
+  炼钢工序: { icon: Factory, badge: 'bg-[#e7f1ff] text-[#086de0]' },
+  炼铁工序: { icon: Flame, badge: 'bg-amber-50 text-amber-600' },
+  能源介质: { icon: Zap, badge: 'bg-emerald-50 text-emerald-600' },
 }
 
 function EmissionTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) {
@@ -236,11 +238,11 @@ function Actions({ row, onEdit, onToggle }: { row: Factor; onEdit: (row: Factor)
 function FactorDialog({ editing, setEditing, onSave }: { editing: Factor | null; setEditing: (row: Factor | null) => void; onSave: () => void }) {
   const isResource = editing?.type === '资源因子'
   const isEmission = editing?.type === '排放因子'
-  const catOptions = isResource ? ['脚手架类', '支护类', '模板类'] : isEmission ? ['电力', '化石燃料', '热力'] : ['陆运', '水运', '铁路']
+  const catOptions = isResource ? ['脚手架类', '支护类', '模板类'] : isEmission ? ['炼钢工序', '炼铁工序', '能源介质'] : ['陆运', '水运', '铁路']
   return <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>{editing?.name ? '编辑因子' : '新增因子'}</DialogTitle><DialogDescription>维护因子基础信息、数据来源和适用边界。</DialogDescription></DialogHeader>{editing && <div className="grid gap-4">
     <div className="grid gap-4 sm:grid-cols-2"><Field label={isResource ? '物资类别' : isEmission ? '能源类别' : '运输方式'}><select value={editing.category} onChange={(event) => setEditing({ ...editing, category: event.target.value })} className="h-10 rounded-md border bg-background px-3">{catOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select></Field><Field label={isResource ? '物资名称' : isEmission ? '能源/活动名称' : '运输工具/车型'}><Input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></Field></div>
-    <div className="grid gap-4 sm:grid-cols-2"><Field label={isResource ? '规格型号' : isEmission ? '活动水平单位' : '能源类型'}>{isEmission ? <Input value={editing.activityUnit || ''} onChange={(event) => setEditing({ ...editing, activityUnit: event.target.value })} placeholder="如 kWh / kg / m³ / GJ" /> : <Input value={editing.model} onChange={(event) => setEditing({ ...editing, model: event.target.value, energy: isResource ? editing.energy : event.target.value })} />}</Field><Field label={isEmission ? '排放因子值' : '碳因子值'}><Input type="number" value={editing.value} onChange={(event) => setEditing({ ...editing, value: Number(event.target.value) })} /></Field></div>
-    {isEmission && <div className="grid gap-4 sm:grid-cols-2"><Field label="因子单位"><Input value={editing.unit} onChange={(event) => setEditing({ ...editing, unit: event.target.value })} placeholder="如 kgCO₂e/kWh" /></Field><Field label="适用范围"><select value={editing.scope || ''} onChange={(event) => setEditing({ ...editing, scope: event.target.value })} className="h-10 rounded-md border bg-background px-3"><option value="燃料燃烧（范围一）">燃料燃烧（范围一）</option><option value="外购电力（范围二）">外购电力（范围二）</option><option value="外购热力（范围二）">外购热力（范围二）</option></select></Field></div>}
+    <div className="grid gap-4 sm:grid-cols-2"><Field label={isResource ? '规格型号' : isEmission ? '活动水平单位' : '能源类型'}>{isEmission ? <Input value={editing.activityUnit || ''} onChange={(event) => setEditing({ ...editing, activityUnit: event.target.value })} placeholder="如 t粗钢 / t铁水 / kWh / t" /> : <Input value={editing.model} onChange={(event) => setEditing({ ...editing, model: event.target.value, energy: isResource ? editing.energy : event.target.value })} />}</Field><Field label={isEmission ? '排放因子值' : '碳因子值'}><Input type="number" value={editing.value} onChange={(event) => setEditing({ ...editing, value: Number(event.target.value) })} /></Field></div>
+    {isEmission && <div className="grid gap-4 sm:grid-cols-2"><Field label="因子单位"><Input value={editing.unit} onChange={(event) => setEditing({ ...editing, unit: event.target.value })} placeholder="如 kgCO₂e/t粗钢" /></Field><Field label="适用范围"><select value={editing.scope || ''} onChange={(event) => setEditing({ ...editing, scope: event.target.value })} className="h-10 rounded-md border bg-background px-3"><option value="炼钢工序（废钢入炉）">炼钢工序（废钢入炉）</option><option value="炼钢工序（铁水入炉）">炼钢工序（铁水入炉）</option><option value="炼铁工序（范围一）">炼铁工序（范围一）</option><option value="烧结工序（范围一）">烧结工序（范围一）</option><option value="燃料燃烧（范围一）">燃料燃烧（范围一）</option><option value="外购电力（范围二）">外购电力（范围二）</option></select></Field></div>}
     {isResource && <section className="rounded-lg border bg-muted/30 p-4"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2 text-sm font-semibold"><Calculator className="size-4 text-[#086de0]" />废钢等效矿石折算</div><p className="mt-1 text-xs text-muted-foreground">默认不折算。仅钢材类资源按需启用。</p></div><Switch checked={editing.conversionEnabled || false} onCheckedChange={(checked) => setEditing({ ...editing, conversionEnabled: checked })} aria-label="启用废钢等效矿石折算" /></div>{editing.conversionEnabled && <div className="mt-4 grid gap-4"><Field label="铁矿石类型"><select value={editing.conversionTarget || '磁铁矿'} onChange={(event) => setEditing({ ...editing, conversionTarget: event.target.value as Factor['conversionTarget'] })} className="h-10 rounded-lg border bg-background px-3 outline-none focus:border-[#086de0]">{['磁铁矿', '赤铁矿', '褐铁矿', '菱铁矿'].map((ore) => <option key={ore} value={ore}>{ore}</option>)}</select></Field><div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3"><Field label="废钢基准量（吨）"><Input type="number" value={editing.scrapBasis || 100} onChange={(event) => setEditing({ ...editing, scrapBasis: Number(event.target.value) })} /></Field><span className="pb-2 text-sm text-muted-foreground">可抵</span><Field label={`${editing.conversionTarget || '磁铁矿'}等效量（吨）`}><Input type="number" value={editing.oreEquivalent || 80} onChange={(event) => setEditing({ ...editing, oreEquivalent: Number(event.target.value) })} /></Field></div><div className="rounded-md border border-[#9bc4ff] bg-[#eaf3ff] p-3 text-sm text-[#086de0]"><Info className="mr-2 inline size-4" />100 吨{editing.name || '废钢'}可折算 {(((editing.oreEquivalent || 0) / (editing.scrapBasis || 1)) * 100).toFixed(2)} 吨{editing.conversionTarget || '磁铁矿'}</div></div>}</section>}
     <Field label="数据来源"><Input value={editing.source} onChange={(event) => setEditing({ ...editing, source: event.target.value })} /></Field>
   </div>}<DialogFooter><Button variant="outline" onClick={() => setEditing(null)}>取消</Button><Button className="bg-[#086de0] hover:bg-[#075fc5]" disabled={!editing?.name} onClick={onSave}>保存</Button></DialogFooter></DialogContent></Dialog>
