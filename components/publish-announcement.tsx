@@ -825,7 +825,7 @@ function RentDialog({
                   className="w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground outline-none"
                 />
               </Field>
-              <Field label="关联���源数">
+              <Field label="关联资源数">
                 <span className="text-sm text-foreground">
                   {rows.length} 项
                 </span>

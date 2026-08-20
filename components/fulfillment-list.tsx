@@ -452,7 +452,7 @@ export function FulfillmentList({
   const showResourceCol = true
   // 出租方额外展示「出租次数」（该资源第几次出租），履约与履约结束均展示
   const showRentalSeq = isLessor
-  const projects = isProcurement
+  const rawProjects = isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
       : PROCUREMENT_ACTIVE_PROJECTS
@@ -463,6 +463,9 @@ export function FulfillmentList({
       : isEnded
         ? ENDED_PROJECTS
         : ACTIVE_PROJECTS
+  // 所有模块统一隐藏指定项目编号的行信息
+  const HIDDEN_CODES = ['2088930561120388096']
+  const projects = rawProjects.filter((p) => !HIDDEN_CODES.includes(p.code))
   const stageLabel = isEnded ? '履约结束' : '履约'
 
   const [detailProject, setDetailProject] =

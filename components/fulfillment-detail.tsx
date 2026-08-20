@@ -491,7 +491,7 @@ export function FulfillmentDetail({
                 '金额',
                 '付款方',
                 '收款方',
-                '付���方式',
+                '付款方式',
                 '状态',
                 '发起时间',
                 isReceiver ? '付款备注' : '收款备注',
@@ -1320,7 +1320,7 @@ function PickupOrderDialog({
                         <option value="拆解利用">拆解利用</option>
                         <option value="再制造">再制造</option>
                         <option value="回炉再生">回炉再生</option>
-                        <option value="��废处理">报废处理</option>
+                        <option value="报废处理">报废处理</option>
                         <option value="其他">其他</option>
                       </>
                     ) : (

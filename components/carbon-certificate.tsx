@@ -1030,7 +1030,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           {cfg.flow.hasReturn ? (
             <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
           ) : (
-            <FlowArrow label="货权转移" note="不再���回转让方" dir="right" />
+            <FlowArrow label="货权转移" note="不再退回转让方" dir="right" />
           )}
           <FlowNode
             icon={Recycle}
@@ -1170,7 +1170,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                 <th className="px-3 py-2.5 font-medium">规格</th>
                 <th className="px-3 py-2.5 text-right font-medium">物资重量(吨)</th>
                 <th className="px-3 py-2.5 text-right font-medium">新品排放因子(kgCO₂e/吨)</th>
-                <th className="px-3 py-2.5 text-right font-medium">循环利用减排(tCO₂e)</th>
+                <th className="px-3 py-2.5 text-right font-medium">循环复用减排(tCO₂e)</th>
               </tr>
             </thead>
             <tbody>
