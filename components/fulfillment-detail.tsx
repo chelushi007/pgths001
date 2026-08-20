@@ -237,9 +237,12 @@ export function FulfillmentDetail({
 
   if (!open || !project) return null
 
-  // 受让方 / 承租方履约结束：履约单为一张只读详情单，去掉各种确认/新增/录入等操作
+  // 供应商（采购/钢厂直收的供货方，非收货方）
+  const isSupplier = isProcurement && !isBuyer
+  // 受让方 / 承租方 / 供应商履约结束：履约单为一张只读详情单，去掉各种确认/新增/录入等操作
   const readOnly =
-    (isTransferee || isLessee) && project.status === '履约结束'
+    (isTransferee || isLessee || isSupplier) &&
+    project.status === '履约结束'
 
   const handleSavePickup = (buyer: string, logistics: LogisticsRow[]) => {
     const now = new Date()
@@ -488,7 +491,7 @@ export function FulfillmentDetail({
                 '金额',
                 '付款方',
                 '收款方',
-                '付��方式',
+                '付���方式',
                 '状态',
                 '发起时间',
                 isReceiver ? '付款备注' : '收款备注',
