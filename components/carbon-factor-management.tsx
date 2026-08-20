@@ -1,31 +1,198 @@
 'use client'
+
 import { useMemo, useState } from 'react'
-import { Calculator, Database, History, Info, Pencil, Plus, Power, Search } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import {
+  Calculator,
+  Download,
+  Info,
+  Package,
+  Pencil,
+  Plus,
+  Power,
+  RotateCcw,
+  Search,
+  Ship,
+  Truck,
+  Zap,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 
-type Factor={id:string;type:'资源因子'|'运输因子';name:string;process:string;value:number;unit:string;source:string;version:string;active:boolean;resourceCategory?:'钢材类'|'其他资源';conversionEnabled?:boolean;conversionTarget?:'磁铁矿'|'赤铁矿'|'铁精粉';scrapBasis?:number;oreEquivalent?:number}
-const initial:Factor[]=[
-{id:'RF-001',type:'资源因子',name:'热轧钢板',process:'高炉—转炉长流程',value:2.18,unit:'tCO₂e/t',source:'中国钢铁工业协会产品碳足迹指南',version:'2026.1',active:true},
-{id:'RF-002',type:'资源因子',name:'螺纹钢',process:'电弧炉短流程（废钢）',value:.62,unit:'tCO₂e/t',source:'GB/T 24067-2024 核算原则',version:'2026.1',active:true},
-{id:'RF-003',type:'资源因子',name:'冷轧钢卷',process:'高炉—转炉—冷轧',value:2.46,unit:'tCO₂e/t',source:'行业平均值（示例口径）',version:'2025.4',active:true},
-{id:'RF-004',type:'资源因子',name:'废钢板桩',process:'回收、分选及预处理',value:.11,unit:'tCO₂e/t',source:'再生钢铁原料行业研究',version:'2026.1',active:true,resourceCategory:'钢材类',conversionEnabled:true,conversionTarget:'磁铁矿',scrapBasis:100,oreEquivalent:80},
-{id:'TF-001',type:'运输因子',name:'重型柴油货车',process:'陆运（载重≥20t）',value:.096,unit:'kgCO₂e/(t·km)',source:'交通运输企业温室气体核算指南',version:'2026.1',active:true},
-{id:'TF-002',type:'运输因子',name:'内河货船',process:'水运（散货）',value:.018,unit:'kgCO₂e/(t·km)',source:'交通运输行业排放因子（示例）',version:'2026.1',active:true},
-]
-export function CarbonFactorManagement(){
- const [rows,setRows]=useState(initial),[tab,setTab]=useState<'资源因子'|'运输因子'>('资源因子'),[q,setQ]=useState(''),[editing,setEditing]=useState<Factor|null>(null)
- const visible=useMemo(()=>rows.filter(r=>r.type===tab&&(r.name+r.process+r.source).includes(q)),[rows,tab,q])
- const save=()=>{if(!editing)return;setRows(v=>v.some(x=>x.id===editing.id)?v.map(x=>x.id===editing.id?editing:x):[editing,...v]);setEditing(null)}
- return <div className="flex flex-col gap-5 p-6">
-  <div className="flex flex-wrap items-end justify-between gap-4"><div><div className="mb-2 flex items-center gap-2 text-sm font-medium text-primary"><Database className="size-4"/>碳核算基础数据</div><h1 className="text-2xl font-semibold tracking-tight">碳因子库管理</h1><p className="mt-1 text-sm text-muted-foreground">统一维护钢材资源与陆运、水运因子，记录来源、版本和适用边界。</p></div><Button onClick={()=>setEditing({id:`${tab==='资源因子'?'RF':'TF'}-${String(rows.length+1).padStart(3,'0')}`,type:tab,name:'',process:'',value:0,unit:tab==='资源因子'?'tCO₂e/t':'kgCO₂e/(t·km)',source:'',version:'2026.1',active:true,resourceCategory:tab==='资源因子'?'钢材类':undefined,conversionEnabled:false,conversionTarget:'磁铁矿',scrapBasis:100,oreEquivalent:80})}><Plus data-icon="inline-start"/>新增{tab}</Button></div>
-  <div className="grid gap-4 md:grid-cols-3"><Metric label="资源因子" value={`${rows.filter(r=>r.type==='资源因子').length} 项`} sub="钢材类为主"/><Metric label="运输因子" value={`${rows.filter(r=>r.type==='运输因子').length} 项`} sub="覆盖陆运与水运"/><Metric label="当前有效" value={`${rows.filter(r=>r.active).length} 项`} sub="最新发布版本"/></div>
-  <Card><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle>因子清单</CardTitle><CardDescription>因子值仅为原型示例，生产环境应以主管部门或经审定数据库为准。</CardDescription></div><div className="flex gap-2"><Button variant={tab==='资源因子'?'default':'outline'} size="sm" onClick={()=>setTab('资源因子')}>资源因子</Button><Button variant={tab==='运输因子'?'default':'outline'} size="sm" onClick={()=>setTab('运输因子')}>运输因子</Button></div></div><div className="relative mt-4 max-w-sm"><Search className="absolute left-3 top-2.5 size-4 text-muted-foreground"/><Input className="pl-9" value={q} onChange={e=>setQ(e.target.value)} placeholder="搜索名称、工艺或来源"/></div></CardHeader><CardContent><div className="overflow-x-auto"><table className="w-full min-w-[980px] text-sm"><thead><tr className="border-b text-left text-muted-foreground">{['因子编码','因子名称','适用工艺/运输方式','因子值','来源与版本','状态','操作'].map(x=><th key={x} className="px-3 py-3 font-medium">{x}</th>)}</tr></thead><tbody>{visible.map(r=><tr key={r.id} className="border-b last:border-0"><td className="px-3 py-4 font-mono text-xs">{r.id}</td><td className="px-3 py-4"><p className="font-medium">{r.name}</p>{r.type==='资源因子'&&<p className="mt-1 text-xs text-muted-foreground">{r.resourceCategory||'钢材类'} · {r.conversionEnabled?`折算${r.conversionTarget} ${r.scrapBasis}:${r.oreEquivalent}`:'不折算矿石'}</p>}</td><td className="px-3 py-4">{r.process}</td><td className="px-3 py-4"><b>{r.value}</b> <span className="text-xs text-muted-foreground">{r.unit}</span></td><td className="max-w-60 px-3 py-4"><p className="truncate">{r.source}</p><p className="mt-1 text-xs text-muted-foreground">版本 {r.version}</p></td><td className="px-3 py-4"><Badge variant={r.active?'default':'secondary'}>{r.active?'启用':'停用'}</Badge></td><td className="px-3 py-4"><div className="flex gap-1"><Button size="icon-sm" variant="ghost" title="编辑" onClick={()=>setEditing(r)}><Pencil/></Button><Button size="icon-sm" variant="ghost" title="版本记录"><History/></Button><Button size="icon-sm" variant="ghost" title={r.active?'停用':'启用'} onClick={()=>setRows(v=>v.map(x=>x.id===r.id?{...x,active:!x.active}:x))}><Power/></Button></div></td></tr>)}</tbody></table></div></CardContent></Card>
-  <Dialog open={!!editing} onOpenChange={o=>!o&&setEditing(null)}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>{editing?.name?'编辑因子':'新增因子'}</DialogTitle><DialogDescription>维护核算因子的适用边界、数值和可信来源。矿石折算仅用于资源量等效分析，不改变碳因子值。</DialogDescription></DialogHeader>{editing&&<div className="grid gap-4"><div className="grid gap-3 sm:grid-cols-2"><label className="grid gap-1.5 text-sm font-medium">因子名称<Input value={editing.name} onChange={e=>setEditing({...editing,name:e.target.value})} placeholder="如：废钢板桩"/></label>{editing.type==='资源因子'&&<label className="grid gap-1.5 text-sm font-medium">资源分类<select value={editing.resourceCategory||'钢材类'} onChange={e=>setEditing({...editing,resourceCategory:e.target.value as '钢材类'|'其他资源',conversionEnabled:e.target.value==='钢材类'?editing.conversionEnabled:false})} className="h-9 rounded-md border border-input bg-background px-3 text-sm"><option value="钢材类">钢材类</option><option value="其他资源">其他资源</option></select></label>}</div><label className="grid gap-1.5 text-sm font-medium">适用工艺或运输方式<Input value={editing.process} onChange={e=>setEditing({...editing,process:e.target.value})} placeholder="如：回收、分选及预处理"/></label><div className="grid grid-cols-2 gap-3"><label className="grid gap-1.5 text-sm font-medium">因子值<Input type="number" min="0" step="0.001" value={editing.value} onChange={e=>setEditing({...editing,value:Number(e.target.value)})}/></label><label className="grid gap-1.5 text-sm font-medium">单位<Input value={editing.unit} onChange={e=>setEditing({...editing,unit:e.target.value})}/></label></div>{editing.type==='资源因子'&&(editing.resourceCategory||'钢材类')==='钢材类'&&<section className="rounded-lg border bg-muted/30 p-4"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2 text-sm font-semibold"><Calculator className="size-4 text-primary"/>废钢等效矿石折算</div><p className="mt-1 text-xs leading-relaxed text-muted-foreground">默认不折算。启用后按重量比例计算废钢替代的铁矿石量，并保留折算依据。</p></div><Switch checked={editing.conversionEnabled||false} onCheckedChange={checked=>setEditing({...editing,conversionEnabled:checked})} aria-label="启用废钢等效矿石折算"/></div>{editing.conversionEnabled&&<div className="mt-4 grid gap-4"><label className="grid gap-1.5 text-sm font-medium">折算矿石类型<select value={editing.conversionTarget||'磁铁矿'} onChange={e=>setEditing({...editing,conversionTarget:e.target.value as '磁铁矿'|'赤铁矿'|'铁精粉'})} className="h-9 rounded-md border border-input bg-background px-3 text-sm"><option value="磁铁矿">磁铁矿</option><option value="赤铁矿">赤铁矿</option><option value="铁精粉">铁精粉</option></select></label><div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3"><label className="grid gap-1.5 text-sm font-medium">废钢基准量（吨）<Input type="number" min="0.01" value={editing.scrapBasis||100} onChange={e=>setEditing({...editing,scrapBasis:Number(e.target.value)})}/></label><span className="pb-2 text-sm text-muted-foreground">可抵</span><label className="grid gap-1.5 text-sm font-medium">等效矿石量（吨）<Input type="number" min="0" value={editing.oreEquivalent||80} onChange={e=>setEditing({...editing,oreEquivalent:Number(e.target.value)})}/></label></div><div className="rounded-md border border-primary/20 bg-primary/5 p-3"><p className="text-xs text-muted-foreground">折算预览</p><p className="mt-1 text-sm font-medium">每 1 吨{editing.name||'该废钢资源'}可抵 <b className="text-primary">{((editing.oreEquivalent||0)/(editing.scrapBasis||1)).toFixed(3)} 吨{editing.conversionTarget||'磁铁矿'}</b></p><p className="mt-1 text-xs text-muted-foreground">示例：100 吨可折算 {((editing.oreEquivalent||0)/(editing.scrapBasis||1)*100).toFixed(2)} 吨{editing.conversionTarget||'磁铁矿'}。</p></div><div className="flex gap-2 text-xs leading-relaxed text-muted-foreground"><Info className="mt-0.5 size-4 shrink-0"/><span>折算系数需基于资源品类、成分及组织确认的技术依据维护；系统保存原始比例，核算时按实际资源重量线性折算。</span></div></div>}</section>}<label className="grid gap-1.5 text-sm font-medium">来源文件或数据库<Input value={editing.source} onChange={e=>setEditing({...editing,source:e.target.value})} placeholder="请输入折算及碳因子依据"/></label><label className="grid gap-1.5 text-sm font-medium">版本<Input value={editing.version} onChange={e=>setEditing({...editing,version:e.target.value})} placeholder="版本"/></label></div>}<DialogFooter><Button variant="outline" onClick={()=>setEditing(null)}>取消</Button><Button onClick={save} disabled={!editing?.name}>保存</Button></DialogFooter></DialogContent></Dialog>
- </div>
+type Factor = {
+  id: string
+  type: '资源因子' | '运输因子'
+  category: string
+  name: string
+  model: string
+  measureUnit?: string
+  unitWeight?: number
+  energy?: string
+  value: number
+  unit: string
+  source: string
+  date: string
+  active: boolean
+  conversionEnabled?: boolean
+  conversionTarget?: '磁铁矿' | '赤铁矿' | '铁精粉'
+  scrapBasis?: number
+  oreEquivalent?: number
 }
-function Metric({label,value,sub}:{label:string;value:string;sub:string}){return <Card><CardHeader className="pb-2"><CardDescription>{label}</CardDescription><CardTitle className="text-2xl">{value}</CardTitle></CardHeader><CardContent className="text-xs text-muted-foreground">{sub}</CardContent></Card>}
+
+const initial: Factor[] = [
+  { id: 'RF-001', type: '资源因子', category: '脚手架类', name: '钢管脚手架', model: 'Φ48×3.5mm', measureUnit: '根', unitWeight: 0.0355, value: 2340, unit: 'kgCO₂e/吨', source: 'GB/T 51366 / 钢材', date: '2026-05-10', active: true },
+  { id: 'RF-002', type: '资源因子', category: '脚手架类', name: '盘扣式立杆', model: 'Q355 / Φ60×3.2mm', measureUnit: '根', unitWeight: 0.0182, value: 2310, unit: 'kgCO₂e/吨', source: 'GB/T 51366 / 钢材', date: '2026-05-10', active: true },
+  { id: 'RF-003', type: '资源因子', category: '支护类', name: '钢支撑', model: 'Φ609×16mm', measureUnit: '米', unitWeight: 0.234, value: 2360, unit: 'kgCO₂e/吨', source: 'GB/T 51366 / 钢材', date: '2026-05-08', active: true },
+  { id: 'RF-004', type: '资源因子', category: '模板类', name: '钢模板', model: 'Q235 / 1.5×3.0m', measureUnit: '块', unitWeight: 0.086, value: 2350, unit: 'kgCO₂e/吨', source: 'GB/T 51366 / 钢材', date: '2026-05-08', active: true, conversionEnabled: true, conversionTarget: '磁铁矿', scrapBasis: 100, oreEquivalent: 80 },
+  { id: 'RF-005', type: '资源因子', category: '轨道类', name: '钢轨', model: '60kg/m', measureUnit: '米', unitWeight: 0.06, value: 2280, unit: 'kgCO₂e/吨', source: 'GB/T 51366 / 钢材', date: '2026-05-06', active: false },
+  { id: 'TF-001', type: '运输因子', category: '陆运', name: '重型柴油货车（≥18t）', model: '柴油', energy: '柴油', value: 0.0962, unit: 'kgCO₂e/(吨·公里)', source: '省级交通碳因子库', date: '2026-05-10', active: true },
+  { id: 'TF-002', type: '运输因子', category: '陆运', name: '中型柴油货车（8-18t）', model: '柴油', energy: '柴油', value: 0.1286, unit: 'kgCO₂e/(吨·公里)', source: '省级交通碳因子库', date: '2026-05-10', active: true },
+  { id: 'TF-003', type: '运输因子', category: '陆运', name: '新能源电动重卡', model: '电力', energy: '电力', value: 0.0418, unit: 'kgCO₂e/(吨·公里)', source: '省级交通碳因子库', date: '2026-05-09', active: true },
+  { id: 'TF-004', type: '运输因子', category: '水运', name: '内河货船（1000t级）', model: '燃油', energy: '燃油', value: 0.0285, unit: 'kgCO₂e/(吨·公里)', source: '水运碳排放因子库', date: '2026-05-07', active: true },
+  { id: 'TF-005', type: '运输因子', category: '水运', name: '沿海散货船（5000t级）', model: '燃油', energy: '燃油', value: 0.0156, unit: 'kgCO₂e/(吨·公里)', source: '水运碳排放因子库', date: '2026-05-07', active: true },
+]
+
+const BLUE = 'text-[#086de0]'
+
+export function CarbonFactorManagement() {
+  const [rows, setRows] = useState(initial)
+  const [tab, setTab] = useState<'资源因子' | '运输因子'>('资源因子')
+  const [category, setCategory] = useState('全部')
+  const [keyword, setKeyword] = useState('')
+  const [status, setStatus] = useState('全部')
+  const [filters, setFilters] = useState({ category: '全部', keyword: '', status: '全部' })
+  const [editing, setEditing] = useState<Factor | null>(null)
+
+  const visible = useMemo(() => rows.filter((row) => {
+    return row.type === tab
+      && (filters.category === '全部' || row.category === filters.category)
+      && (!filters.keyword || `${row.name}${row.model}`.includes(filters.keyword))
+      && (filters.status === '全部' || (filters.status === '启用' ? row.active : !row.active))
+  }), [rows, tab, filters])
+
+  const categories = tab === '资源因子'
+    ? ['全部', '支护类', '脚手架类', '拼装类', '轨道类', '型材类', '电线电缆', '房屋建筑类']
+    : ['全部', '陆运', '水运']
+
+  const openCreate = () => setEditing({
+    id: `${tab === '资源因子' ? 'RF' : 'TF'}-${String(rows.length + 1).padStart(3, '0')}`,
+    type: tab,
+    category: tab === '资源因子' ? '脚手架类' : '陆运',
+    name: '', model: '', measureUnit: '吨', unitWeight: 0, energy: '柴油', value: 0,
+    unit: tab === '资源因子' ? 'kgCO₂e/吨' : 'kgCO₂e/(吨·公里)', source: '', date: '2026-08-20', active: true,
+    conversionEnabled: false, conversionTarget: '磁铁矿', scrapBasis: 100, oreEquivalent: 80,
+  })
+
+  const save = () => {
+    if (!editing) return
+    setRows((current) => current.some((row) => row.id === editing.id)
+      ? current.map((row) => row.id === editing.id ? editing : row)
+      : [editing, ...current])
+    setEditing(null)
+  }
+
+  const reset = () => {
+    setCategory('全部'); setKeyword(''); setStatus('全部')
+    setFilters({ category: '全部', keyword: '', status: '全部' })
+  }
+
+  return <div className="min-h-full bg-[#f5f7fa] font-sans">
+    <div className="border-b bg-card px-6">
+      <div className="flex h-14 items-end gap-8">
+        {(['资源因子', '运输因子'] as const).map((item) => <button
+          key={item}
+          type="button"
+          onClick={() => { setTab(item); reset() }}
+          className={cn('h-14 border-b-2 px-1 text-base font-medium transition-colors', tab === item ? 'border-[#086de0] text-[#086de0]' : 'border-transparent text-muted-foreground hover:text-foreground')}
+        >{item === '资源因子' ? '物资因子' : '运输因子'}</button>)}
+      </div>
+    </div>
+
+    <div className="flex flex-col gap-4 p-4">
+      <div className="flex items-center gap-3 rounded-lg border border-[#9bc4ff] bg-[#eaf3ff] px-5 py-3 text-sm text-[#086de0]">
+        <Package className="size-5 shrink-0" />
+        <p>碳因子库覆盖模板类、支护类、脚手架类、拼装类、轨道类、型材类、电线电缆、房屋建筑类共 8 大物资分类；<b className="ml-2">现阶段具体实施物资以钢材类为主</b>，其余分类持续完善中。</p>
+      </div>
+
+      <section className="bg-card p-4">
+        <div className="flex flex-wrap items-center gap-x-12 gap-y-4 px-4 py-1">
+          <FilterField label={tab === '资源因子' ? '物资类别' : '运输方式'}>
+            <select value={category} onChange={(event) => setCategory(event.target.value)} className="h-12 w-60 rounded-lg border bg-background px-4 text-muted-foreground outline-none focus:border-[#086de0]">
+              {categories.map((item) => <option key={item} value={item}>{item === '全部' ? (tab === '资源因子' ? '全部类别' : '全部方式') : item}</option>)}
+            </select>
+          </FilterField>
+          <FilterField label={tab === '资源因子' ? '物资名称' : '运输工具'}>
+            <Input value={keyword} onChange={(event) => setKeyword(event.target.value)} className="h-12 w-60" placeholder={tab === '资源因子' ? '请输入物资名称' : '请输入运输工具/车型'} />
+          </FilterField>
+          <FilterField label="状态">
+            <select value={status} onChange={(event) => setStatus(event.target.value)} className="h-12 w-60 rounded-lg border bg-background px-4 text-muted-foreground outline-none focus:border-[#086de0]">
+              <option value="全部">全部状态</option><option value="启用">启用</option><option value="停用">停用</option>
+            </select>
+          </FilterField>
+          <div className="flex gap-3">
+            <Button className="h-12 bg-[#086de0] px-6 hover:bg-[#075fc5]" onClick={() => setFilters({ category, keyword, status })}><Search data-icon="inline-start" />查询</Button>
+            <Button variant="outline" className="h-12 px-6" onClick={reset}><RotateCcw data-icon="inline-start" />重置</Button>
+          </div>
+        </div>
+        <div className="mt-5 flex gap-3">
+          <Button className="h-12 bg-[#086de0] px-5 hover:bg-[#075fc5]" onClick={openCreate}><Plus data-icon="inline-start" />新增因子</Button>
+          <Button variant="outline" className="h-12 px-5"><Download data-icon="inline-start" />导出</Button>
+        </div>
+
+        <div className="mt-5 overflow-x-auto rounded-lg border">
+          {tab === '资源因子'
+            ? <ResourceTable rows={visible} onEdit={setEditing} onToggle={(id) => setRows((current) => current.map((row) => row.id === id ? { ...row, active: !row.active } : row))} />
+            : <TransportTable rows={visible} onEdit={setEditing} onToggle={(id) => setRows((current) => current.map((row) => row.id === id ? { ...row, active: !row.active } : row))} />}
+        </div>
+      </section>
+    </div>
+
+    <FactorDialog editing={editing} setEditing={setEditing} onSave={save} />
+  </div>
+}
+
+function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
+  return <label className="flex items-center gap-4 text-sm font-medium"><span className="whitespace-nowrap">{label}</span>{children}</label>
+}
+
+function ResourceTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) {
+  return <table className="w-full min-w-[1280px] text-sm">
+    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '物资类别', '物资名称', '规格型号', '计量单位', '单位重量(吨)', '产品碳因子', '因子单位', '数据来源', '生效日期', '状态', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-4 py-4 font-semibold">{item}</th>)}</tr></thead>
+    <tbody>{rows.map((row, index) => <tr key={row.id} className="border-t hover:bg-muted/30">
+      <td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4"><span className="rounded bg-[#e7f1ff] px-2 py-1 text-[#086de0]">{row.category}</span></td><td className="px-4 py-4 font-semibold">{row.name}</td><td className="px-4 py-4 text-muted-foreground">{row.model}</td><td className="px-4 py-4 text-center">{row.measureUnit}</td><td className="px-4 py-4 text-right tabular-nums">{row.unitWeight}</td><td className="px-4 py-4 text-right text-base font-semibold tabular-nums">{row.value.toLocaleString()}</td><td className="px-4 py-4 text-muted-foreground">{row.unit}</td><td className="px-4 py-4 text-muted-foreground">{row.source}</td><td className="px-4 py-4 text-muted-foreground">{row.date}</td><Status active={row.active} /><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
+    </tr>)}</tbody>
+  </table>
+}
+
+function TransportTable({ rows, onEdit, onToggle }: { rows: Factor[]; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) {
+  return <table className="w-full min-w-[1180px] text-sm">
+    <thead className="bg-[#edf3fa] text-left"><tr>{['序号', '运输方式', '运输工具/车型', '能源类型', '碳排放因子(kgCO₂e/吨·公里)', '数据来源', '状态', '更新日期', '操作'].map((item) => <th key={item} className="whitespace-nowrap px-4 py-4 font-semibold">{item}</th>)}</tr></thead>
+    <tbody>{rows.map((row, index) => <tr key={row.id} className="border-t hover:bg-muted/30">
+      <td className="px-4 py-4">{index + 1}</td><td className="px-4 py-4 font-medium"><span className={cn('inline-flex items-center gap-2', BLUE)}>{row.category === '陆运' ? <Truck className="size-4" /> : <Ship className="size-4" />}<span className="text-foreground">{row.category}</span></span></td><td className="px-4 py-4 font-medium">{row.name}</td><td className="px-4 py-4 text-muted-foreground">{row.energy === '电力' ? <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-emerald-600"><Zap className="size-3" />电力</span> : row.energy}</td><td className="px-4 py-4 text-right text-base font-semibold tabular-nums">{row.value.toFixed(4)}</td><td className="px-4 py-4 text-muted-foreground">{row.source}</td><Status active={row.active} /><td className="px-4 py-4 text-muted-foreground">{row.date}</td><Actions row={row} onEdit={onEdit} onToggle={onToggle} />
+    </tr>)}</tbody>
+  </table>
+}
+
+function Status({ active }: { active: boolean }) { return <td className="px-4 py-4"><span className={cn('rounded px-2 py-1 text-xs font-medium', active ? 'bg-emerald-100 text-emerald-600' : 'bg-muted text-muted-foreground')}>{active ? '启用' : '停用'}</span></td> }
+function Actions({ row, onEdit, onToggle }: { row: Factor; onEdit: (row: Factor) => void; onToggle: (id: string) => void }) { return <td className="px-4 py-4"><div className="flex whitespace-nowrap"><Button variant="ghost" size="sm" className="text-[#086de0]" onClick={() => onEdit(row)}><Pencil data-icon="inline-start" />编辑</Button><Button variant="ghost" size="sm" className="text-destructive" onClick={() => onToggle(row.id)}><Power data-icon="inline-start" />{row.active ? '停用' : '启用'}</Button></div></td> }
+
+function FactorDialog({ editing, setEditing, onSave }: { editing: Factor | null; setEditing: (row: Factor | null) => void; onSave: () => void }) {
+  const isResource = editing?.type === '资源因子'
+  return <Dialog open={!!editing} onOpenChange={(open) => !open && setEditing(null)}><DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl"><DialogHeader><DialogTitle>{editing?.name ? '编辑因子' : '新增因子'}</DialogTitle><DialogDescription>维护因子基础信息、数据来源和适用边界。</DialogDescription></DialogHeader>{editing && <div className="grid gap-4">
+    <div className="grid gap-4 sm:grid-cols-2"><Field label={isResource ? '物资类别' : '运输方式'}><select value={editing.category} onChange={(event) => setEditing({ ...editing, category: event.target.value })} className="h-10 rounded-md border bg-background px-3"><option>{isResource ? '脚手架类' : '陆运'}</option><option>{isResource ? '支护类' : '水运'}</option><option>{isResource ? '模板类' : '铁路'}</option></select></Field><Field label={isResource ? '物资名称' : '运输工具/车型'}><Input value={editing.name} onChange={(event) => setEditing({ ...editing, name: event.target.value })} /></Field></div>
+    <div className="grid gap-4 sm:grid-cols-2"><Field label={isResource ? '规格型号' : '能源类型'}><Input value={editing.model} onChange={(event) => setEditing({ ...editing, model: event.target.value, energy: isResource ? editing.energy : event.target.value })} /></Field><Field label="碳因子值"><Input type="number" value={editing.value} onChange={(event) => setEditing({ ...editing, value: Number(event.target.value) })} /></Field></div>
+    {isResource && <section className="rounded-lg border bg-muted/30 p-4"><div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2 text-sm font-semibold"><Calculator className="size-4 text-[#086de0]" />废钢等效矿石折算</div><p className="mt-1 text-xs text-muted-foreground">默认不折算。仅钢材类资源按需启用。</p></div><Switch checked={editing.conversionEnabled || false} onCheckedChange={(checked) => setEditing({ ...editing, conversionEnabled: checked })} aria-label="启用废钢等效矿石折算" /></div>{editing.conversionEnabled && <div className="mt-4 grid gap-4"><div className="grid grid-cols-[1fr_auto_1fr] items-end gap-3"><Field label="废钢基准量（吨）"><Input type="number" value={editing.scrapBasis || 100} onChange={(event) => setEditing({ ...editing, scrapBasis: Number(event.target.value) })} /></Field><span className="pb-2 text-sm text-muted-foreground">可抵</span><Field label="磁铁矿等效量（吨）"><Input type="number" value={editing.oreEquivalent || 80} onChange={(event) => setEditing({ ...editing, oreEquivalent: Number(event.target.value) })} /></Field></div><div className="rounded-md border border-[#9bc4ff] bg-[#eaf3ff] p-3 text-sm text-[#086de0]"><Info className="mr-2 inline size-4" />100 吨{editing.name || '废钢'}可折算 {(((editing.oreEquivalent || 0) / (editing.scrapBasis || 1)) * 100).toFixed(2)} 吨磁铁矿</div></div>}</section>}
+    <Field label="数据来源"><Input value={editing.source} onChange={(event) => setEditing({ ...editing, source: event.target.value })} /></Field>
+  </div>}<DialogFooter><Button variant="outline" onClick={() => setEditing(null)}>取消</Button><Button className="bg-[#086de0] hover:bg-[#075fc5]" disabled={!editing?.name} onClick={onSave}>保存</Button></DialogFooter></DialogContent></Dialog>
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-1.5 text-sm font-medium">{label}{children}</label> }
