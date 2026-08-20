@@ -22,6 +22,7 @@ import {
   Factory,
   Gavel,
   Handshake,
+  MonitorUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -240,6 +241,7 @@ const NAV_GROUPS: NavGroup[] = [
           { key: 'carbon-factor', label: '碳因子库管理', icon: Database },
           { key: 'carbon-query', label: '碳核算查询', icon: FileSearch },
           { key: 'carbon-stats', label: '统计分析', icon: BarChart3 },
+          { key: 'carbon-screen', label: '数据可视化大屏', icon: MonitorUp },
         ],
       },
     ],

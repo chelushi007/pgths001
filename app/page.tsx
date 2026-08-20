@@ -6,6 +6,9 @@ import { SidebarNav } from '@/components/sidebar-nav'
 import { PublishAnnouncement } from '@/components/publish-announcement'
 import { FulfillmentList } from '@/components/fulfillment-list'
 import { ProcurementAnnouncement } from '@/components/procurement-announcement'
+import { CarbonFactorManagement } from '@/components/carbon-factor-management'
+import { CarbonAccountingQuery } from '@/components/carbon-accounting-query'
+import { CarbonStatistics } from '@/components/carbon-statistics'
 
 export default function Page() {
   const [active, setActive] = useState({
@@ -18,7 +21,13 @@ export default function Page() {
     <div className="flex min-h-screen bg-background">
       <SidebarNav
         activeKey={active.key}
-        onSelect={(key, label, group) => setActive({ key, label, group })}
+        onSelect={(key, label, group) => {
+          if (key === 'carbon-screen') {
+            window.open('/carbon-screen', '_blank', 'noopener,noreferrer')
+            return
+          }
+          setActive({ key, label, group })
+        }}
       />
 
       {/* 右侧内容区 */}
@@ -105,6 +114,12 @@ export default function Page() {
           ) : active.key === 'bid-supplier-perform-end' ||
             active.key === 'agr-base-perform-end' ? (
             <FulfillmentList variant="ended" mode="procurement-scrap" />
+          ) : active.key === 'carbon-factor' ? (
+            <CarbonFactorManagement />
+          ) : active.key === 'carbon-query' ? (
+            <CarbonAccountingQuery />
+          ) : active.key === 'carbon-stats' ? (
+            <CarbonStatistics />
           ) : (
             <div className="flex h-full min-h-[calc(100vh-8rem)] flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
               <div className="flex size-16 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
