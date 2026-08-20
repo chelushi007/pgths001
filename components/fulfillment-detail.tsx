@@ -50,11 +50,28 @@ type ContractRow = {
   statusTone: 'amber' | 'green'
 }
 
+type TransportType = '陆运' | '水运'
+
+export type LogisticsRow = {
+  id: string
+  type: TransportType
+  logisticsNo: string
+  carrier: string
+  contact: string
+  phone: string
+  distance: string
+  departureAt: string
+  arrivalAt: string
+  plateNo: string
+  driverName: string
+  vesselName: string
+  vesselId: string
+}
+
 type PickupRow = {
   no: string
   buyer: string
-  logisticsNo: string
-  distance: string
+  logistics: LogisticsRow[]
   createdAt: string
   pickupAt: string
   status: string
@@ -90,8 +107,38 @@ const INITIAL_PICKUPS: PickupRow[] = [
   {
     no: '2089619994710070400',
     buyer: '广州资源回收有限公司',
-    logisticsNo: 'YD20260818000041',
-    distance: '68',
+    logistics: [
+      {
+        id: 'logistics-1',
+        type: '陆运',
+        logisticsNo: 'YD20260818000041',
+        carrier: '粤运物流有限公司',
+        contact: '李师傅',
+        phone: '13800001234',
+        distance: '68',
+        departureAt: '2026-08-18 08:12',
+        arrivalAt: '2026-08-18 15:38',
+        plateNo: '粤A·D8856',
+        driverName: '李建国',
+        vesselName: '',
+        vesselId: '',
+      },
+      {
+        id: 'logistics-2',
+        type: '水运',
+        logisticsNo: 'SY20260818000009',
+        carrier: '珠江航运有限公司',
+        contact: '陈船长',
+        phone: '13900005678',
+        distance: '120',
+        departureAt: '2026-08-18 16:00',
+        arrivalAt: '2026-08-19 09:20',
+        plateNo: '',
+        driverName: '',
+        vesselName: '珠航货0231',
+        vesselId: 'CN2026080231',
+      },
+    ],
     createdAt: '2026-08-18 15:46:33',
     pickupAt: '2026-08-18 15:46:51',
     status: '已完成',
@@ -100,8 +147,23 @@ const INITIAL_PICKUPS: PickupRow[] = [
   {
     no: '2089620399548665000',
     buyer: '广州资源回收有限公司',
-    logisticsNo: 'YD20260818000053',
-    distance: '120',
+    logistics: [
+      {
+        id: 'logistics-3',
+        type: '陆运',
+        logisticsNo: 'YD20260818000053',
+        carrier: '粤运物流有限公司',
+        contact: '王师傅',
+        phone: '13700004321',
+        distance: '120',
+        departureAt: '2026-08-18 15:48',
+        arrivalAt: '',
+        plateNo: '粤A·F2103',
+        driverName: '王海',
+        vesselName: '',
+        vesselId: '',
+      },
+    ],
     createdAt: '2026-08-18 15:48:21',
     pickupAt: '-',
     status: '待提货',
@@ -165,15 +227,14 @@ export function FulfillmentDetail({
 
   if (!open || !project) return null
 
-  const handleSavePickup = (buyer: string) => {
+  const handleSavePickup = (buyer: string, logistics: LogisticsRow[]) => {
     const now = new Date()
     const stamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
     setPickups((prev) => [
       {
         no: String(Math.floor(Math.random() * 9e18 + 1e18)),
         buyer,
-        logisticsNo: `YD${stamp.replace(/[-: ]/g, '').slice(0, 8)}${String(Math.floor(Math.random() * 900000 + 100000))}`,
-        distance: '',
+        logistics,
         createdAt: stamp,
         pickupAt: '-',
         status: '待提货',
@@ -518,7 +579,7 @@ export function FulfillmentDetail({
                     : isBuyer
                       ? '供货方名称'
                       : '竞买人名称',
-                '物流单号',
+                '物流信息',
                 '创建时间',
                 isReceiver ? '收货时间' : '提货时间',
                 '状态',
@@ -545,7 +606,10 @@ export function FulfillmentDetail({
                       className="inline-flex items-center gap-1 font-mono text-xs font-medium text-primary underline-offset-2 transition-colors hover:underline"
                     >
                       <MapPin className="size-3.5" />
-                      {r.logisticsNo}
+                      <span>
+                        {r.logistics[0]?.type} {r.logistics[0]?.logisticsNo || '待补充'}
+                        {r.logistics.length > 1 ? ` 等 ${r.logistics.length} 条` : ''}
+                      </span>
                     </button>
                   </td>
                   <td className="px-3 py-3 tabular-nums text-muted-foreground">
@@ -612,8 +676,7 @@ export function FulfillmentDetail({
 
       <TransportTrackDialog
         open={trackRow !== null}
-        logisticsNo={trackRow?.logisticsNo ?? ''}
-        distance={trackRow?.distance ?? ''}
+        logistics={trackRow?.logistics ?? []}
         onClose={() => setTrackRow(null)}
       />
     </div>
@@ -648,30 +711,65 @@ function PickupOrderDialog({
   isSupplier?: boolean
   isScrap?: boolean
   onClose: () => void
-  onSave: (buyer: string) => void
+  onSave: (buyer: string, logistics: LogisticsRow[]) => void
 }) {
+  const createLogisticsRow = (): LogisticsRow => ({
+    id: crypto.randomUUID(),
+    type: '陆运',
+    logisticsNo: '',
+    carrier: '',
+    contact: '',
+    phone: '',
+    distance: '',
+    departureAt: '',
+    arrivalAt: '',
+    plateNo: '',
+    driverName: '',
+    vesselName: '',
+    vesselId: '',
+  })
   const [lines, setLines] = useState<DetailLine[]>([])
   const [grossWeight, setGrossWeight] = useState('')
   const [tareWeight, setTareWeight] = useState('')
   const [weighFile, setWeighFile] = useState<string | null>(null)
   const [remark, setRemark] = useState('')
-  const [logisticsNo, setLogisticsNo] = useState('')
-  const [distance, setDistance] = useState('')
+  const [logistics, setLogistics] = useState<LogisticsRow[]>([])
+  const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
   const [reuseMethod, setReuseMethod] = useState('')
   const [recycleCompany, setRecycleCompany] = useState('')
   const [reuseRemark, setReuseRemark] = useState('')
   const [isNewProduct, setIsNewProduct] = useState(false)
-  const [trackOpen, setTrackOpen] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!open) return
+    setLogistics((current) =>
+      current.length > 0
+        ? current
+        : [
+            {
+              id: crypto.randomUUID(),
+              type: '陆运',
+              logisticsNo: '',
+              carrier: '',
+              contact: '',
+              phone: '',
+              distance: '',
+              departureAt: '',
+              arrivalAt: '',
+              plateNo: '',
+              driverName: '',
+              vesselName: '',
+              vesselId: '',
+            },
+          ],
+    )
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && !trackLogistics) onClose()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [open, onClose])
+  }, [open, onClose, trackLogistics])
 
   if (!open) return null
 
@@ -812,51 +910,79 @@ function PickupOrderDialog({
             title={isBuyer ? '到货物流登记' : '物流信息登记'}
             icon={<Truck className="size-4 text-primary" />}
           >
-            <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-              <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <FieldLabel label="物流单号" className="mb-0" />
-                  {logisticsNo.trim() && (
-                    <button
-                      type="button"
-                      onClick={() => setTrackOpen(true)}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-primary transition-colors hover:text-primary/80"
-                    >
-                      <MapPin className="size-3.5" />
-                      查看运输轨迹
-                    </button>
-                  )}
-                </div>
-                <input
-                  value={logisticsNo}
-                  onChange={(e) => setLogisticsNo(e.target.value)}
-                  placeholder="如 YD20260820000123"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </div>
-              <div>
-                <FieldLabel label="运输距离（km）" />
-                <input
-                  type="number"
-                  min="0"
-                  value={distance}
-                  onChange={(e) => setDistance(e.target.value)}
-                  placeholder="0"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm tabular-nums outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </div>
-              <InputField label="承运单位" placeholder="请输入承运单位" />
-              <InputField label="车牌号" placeholder="如 粤A·12345" />
-              <InputField label="司机姓名" placeholder="请输入司机姓名" />
-              <InputField label="联系电话" placeholder="请输入联系电话" />
-              <div className="md:col-span-2">
-                <FieldLabel label={isBuyer ? '收货时间' : '发货时间'} />
-                <input
-                  type="datetime-local"
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </div>
+            <div className="overflow-x-auto rounded-lg border border-border">
+              <table className="w-full min-w-[1680px] border-collapse text-sm">
+                <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
+                  <tr>
+                    {['运输类型', '物流单号', '承运单位', '联系人', '联系电话', '运输距离(km)', '车辆/船舶名称', '司机/船舶识别号', '装运时间', '到货时间', '操作'].map((header) => (
+                      <th key={header} className="px-2 py-2.5 font-medium">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {logistics.map((row, index) => {
+                    const update = (patch: Partial<LogisticsRow>) =>
+                      setLogistics((current) =>
+                        current.map((item) =>
+                          item.id === row.id ? { ...item, ...patch } : item,
+                        ),
+                      )
+                    const inputClass =
+                      'w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20'
+                    return (
+                      <tr key={row.id} className="border-t border-border align-top">
+                        <td className="w-28 px-2 py-2">
+                          <select
+                            value={row.type}
+                            onChange={(event) =>
+                              update({
+                                type: event.target.value as TransportType,
+                                plateNo: '',
+                                driverName: '',
+                                vesselName: '',
+                                vesselId: '',
+                              })
+                            }
+                            className={inputClass}
+                            aria-label={`第 ${index + 1} 条运输类型`}
+                          >
+                            <option value="陆运">陆运</option>
+                            <option value="水运">水运</option>
+                          </select>
+                        </td>
+                        <td className="w-44 px-2 py-2">
+                          <input value={row.logisticsNo} onChange={(e) => update({ logisticsNo: e.target.value })} placeholder={row.type === '陆运' ? '如 YD20260820000123' : '如 SY20260820000123'} className={inputClass} />
+                        </td>
+                        <td className="w-44 px-2 py-2"><input value={row.carrier} onChange={(e) => update({ carrier: e.target.value })} placeholder="承运单位" className={inputClass} /></td>
+                        <td className="w-32 px-2 py-2"><input value={row.contact} onChange={(e) => update({ contact: e.target.value })} placeholder="联系人" className={inputClass} /></td>
+                        <td className="w-36 px-2 py-2"><input value={row.phone} onChange={(e) => update({ phone: e.target.value })} placeholder="联系电话" className={inputClass} /></td>
+                        <td className="w-28 px-2 py-2"><input type="number" min="0" value={row.distance} onChange={(e) => update({ distance: e.target.value })} placeholder="0" className={inputClass} /></td>
+                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.plateNo : row.vesselName} onChange={(e) => update(row.type === '陆运' ? { plateNo: e.target.value } : { vesselName: e.target.value })} placeholder={row.type === '陆运' ? '车牌号' : '船名'} className={inputClass} /></td>
+                        <td className="w-40 px-2 py-2"><input value={row.type === '陆运' ? row.driverName : row.vesselId} onChange={(e) => update(row.type === '陆运' ? { driverName: e.target.value } : { vesselId: e.target.value })} placeholder={row.type === '陆运' ? '司机姓名' : '船舶识别号'} className={inputClass} /></td>
+                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.departureAt} onChange={(e) => update({ departureAt: e.target.value })} className={inputClass} /></td>
+                        <td className="w-48 px-2 py-2"><input type="datetime-local" value={row.arrivalAt} onChange={(e) => update({ arrivalAt: e.target.value })} className={inputClass} /></td>
+                        <td className="w-28 px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            {row.logisticsNo.trim() && (
+                              <button type="button" onClick={() => setTrackLogistics(row)} className="text-primary" aria-label={`查看第 ${index + 1} 条运输轨迹`}><MapPin className="size-4" /></button>
+                            )}
+                            <button type="button" disabled={logistics.length === 1} onClick={() => setLogistics((current) => current.filter((item) => item.id !== row.id))} className="text-destructive disabled:cursor-not-allowed disabled:opacity-30" aria-label={`删除第 ${index + 1} 条物流信息`}><Trash2 className="size-4" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
             </div>
+            <button
+              type="button"
+              onClick={() => setLogistics((current) => [...current, createLogisticsRow()])}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-dashed border-primary/50 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/5"
+            >
+              <Plus className="size-4" />
+              新增物流信息
+            </button>
           </FormSection>
 
           {/* 重量信息 */}
@@ -877,7 +1003,7 @@ function PickupOrderDialog({
                 />
               </div>
               <div>
-                <FieldLabel label="皮重（吨）" />
+                <FieldLabel label="���重（吨）" />
                 <input
                   type="number"
                   min="0"
@@ -1160,7 +1286,7 @@ function PickupOrderDialog({
           </button>
           <button
             type="button"
-            onClick={() => onSave(project.buyer)}
+            onClick={() => onSave(project.buyer, logistics)}
             className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {isBuyer ? '确认收货' : '保存'}
@@ -1169,10 +1295,9 @@ function PickupOrderDialog({
       </div>
 
       <TransportTrackDialog
-        open={trackOpen}
-        logisticsNo={logisticsNo}
-        distance={distance}
-        onClose={() => setTrackOpen(false)}
+        open={trackLogistics !== null}
+        logistics={trackLogistics ? [trackLogistics] : []}
+        onClose={() => setTrackLogistics(null)}
       />
     </div>
   )
@@ -1189,17 +1314,18 @@ type TrackNode = {
 
 function TransportTrackDialog({
   open,
-  logisticsNo,
-  distance,
+  logistics,
   onClose,
 }: {
   open: boolean
-  logisticsNo: string
-  distance: string
+  logistics: LogisticsRow[]
   onClose: () => void
 }) {
+  const [activeIndex, setActiveIndex] = useState(0)
+
   useEffect(() => {
     if (!open) return
+    setActiveIndex(0)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
@@ -1207,7 +1333,8 @@ function TransportTrackDialog({
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open || logistics.length === 0) return null
+  const active = logistics[Math.min(activeIndex, logistics.length - 1)]
 
   const nodes: TrackNode[] = [
     {
@@ -1269,19 +1396,33 @@ function TransportTrackDialog({
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="mb-5 flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm">
-            <div>
-              <span className="text-muted-foreground">物流单号：</span>
-              <span className="font-mono text-xs text-foreground">
-                {logisticsNo}
-              </span>
+          {logistics.length > 1 && (
+            <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+              {logistics.map((item, index) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveIndex(index)}
+                  className={`shrink-0 rounded-md border px-3 py-2 text-xs font-medium transition-colors ${
+                    activeIndex === index
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-input bg-background text-muted-foreground hover:bg-accent'
+                  }`}
+                >
+                  {item.type} {item.logisticsNo || `物流 ${index + 1}`}
+                </button>
+              ))}
             </div>
-            <div>
-              <span className="text-muted-foreground">运输距离：</span>
-              <span className="font-medium tabular-nums text-foreground">
-                {distance ? `${distance} km` : '—'}
-              </span>
-            </div>
+          )}
+          <div className="mb-5 grid grid-cols-2 gap-3 rounded-lg border border-border bg-secondary/40 p-4 text-sm">
+            <div><span className="text-muted-foreground">运输类型：</span><span className="font-medium text-foreground">{active.type}</span></div>
+            <div><span className="text-muted-foreground">物流单号：</span><span className="font-mono text-xs text-foreground">{active.logisticsNo || '—'}</span></div>
+            <div><span className="text-muted-foreground">承运单位：</span><span className="text-foreground">{active.carrier || '—'}</span></div>
+            <div><span className="text-muted-foreground">运输距离：</span><span className="font-medium tabular-nums text-foreground">{active.distance ? `${active.distance} km` : '—'}</span></div>
+            <div><span className="text-muted-foreground">{active.type === '陆运' ? '车牌号：' : '船名：'}</span><span className="text-foreground">{active.type === '陆运' ? active.plateNo || '—' : active.vesselName || '—'}</span></div>
+            <div><span className="text-muted-foreground">{active.type === '陆运' ? '司机姓名：' : '船舶识别号：'}</span><span className="text-foreground">{active.type === '陆运' ? active.driverName || '—' : active.vesselId || '—'}</span></div>
+            <div><span className="text-muted-foreground">联系人：</span><span className="text-foreground">{active.contact || '—'} {active.phone}</span></div>
+            <div><span className="text-muted-foreground">装运 / 到货：</span><span className="text-foreground">{active.departureAt || '—'} / {active.arrivalAt || '—'}</span></div>
           </div>
 
           <ol className="relative ml-2">
