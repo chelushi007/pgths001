@@ -26,6 +26,12 @@ const materialRank = [
   { n: '热轧型钢', v: 286.6 }, { n: '钢板桩', v: 254.2 }, { n: '盘扣式脚手架', v: 231.1 },
   { n: '钢管脚手架', v: 208.6 }, { n: '周转扣件', v: 187.4 }, { n: '贝雷片', v: 168.9 },
 ]
+// 废钢等效替代的铁矿石（四大类，单位：吨）
+const oreReplace = [
+  { n: '磁铁矿', v: 268.4, color: BLUE }, { n: '赤铁矿', v: 154.7, color: ORANGE },
+  { n: '褐铁矿', v: 86.2, color: TEAL }, { n: '菱铁矿', v: 42.5, color: GREEN },
+]
+const oreTotal = oreReplace.reduce((sum, item) => sum + item.v, 0)
 const feed = [
   ['16:26', '钢厂直收', '废钢 128.6t', '+229.18'],
   ['16:10', '资源处置', '边角料 42.8t', '+75.62'],
@@ -106,6 +112,30 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
                 <p className="mt-1 text-sm text-white/80">{x[2]}</p>
               </div>
             ))}
+          </div>
+        </Panel>
+      </section>
+
+      <section className="mt-4">
+        <Panel title="废钢替代铁矿石">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,220px)_1fr]">
+            <div className="flex flex-col justify-center rounded-lg border border-white/10 bg-white/[.04] p-4">
+              <p className="inline-flex items-center gap-2 text-xs text-white/55"><Factory className="size-4 text-[#2fd699]" />累计替代铁矿石</p>
+              <p className="mt-2 text-3xl font-semibold tabular-nums text-[#2fd699]">{oreTotal.toFixed(1)} <span className="text-sm font-normal text-white/55">吨</span></p>
+              <p className="mt-1 text-xs text-white/45">废钢等效替代原生铁矿石开采量</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {oreReplace.map((ore) => (
+                <div key={ore.n} className="rounded-lg border border-white/10 bg-white/[.04] p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 text-xs text-white/70"><span className="size-2 rounded-full" style={{ background: ore.color }} />{ore.n}</span>
+                    <span className="text-xs text-white/45">{((ore.v / oreTotal) * 100).toFixed(0)}%</span>
+                  </div>
+                  <p className="mt-2 text-lg font-semibold tabular-nums">{ore.v.toFixed(1)} <span className="text-[10px] font-normal text-white/50">吨</span></p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full" style={{ width: `${(ore.v / oreTotal) * 100}%`, background: ore.color }} /></div>
+                </div>
+              ))}
+            </div>
           </div>
         </Panel>
       </section>

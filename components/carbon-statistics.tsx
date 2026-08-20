@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from 'recharts'
-import { Leaf, MonitorPlay, Recycle, TrendingUp, Trophy, Boxes } from 'lucide-react'
+import { Leaf, MonitorPlay, Recycle, TrendingUp, Trophy, Boxes, Factory } from 'lucide-react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
 import { CarbonDataScreen } from '@/components/carbon-data-screen'
 
@@ -44,6 +44,14 @@ const materialRank = [
   { name: '钢模板', value: 152.7 }, { name: '周转木方', value: 134.3 }, { name: '二手周转箱', value: 118.4 },
   { name: '工字钢', value: 102.5 },
 ]
+// 废钢等效替代的铁矿石（四大类，单位：吨）
+const oreReplace = [
+  { name: '磁铁矿', value: 268.4, color: BLUE },
+  { name: '赤铁矿', value: 154.7, color: ORANGE },
+  { name: '褐铁矿', value: 86.2, color: TEAL },
+  { name: '菱铁矿', value: 42.5, color: GREEN },
+]
+const oreTotal = oreReplace.reduce((sum, item) => sum + item.value, 0)
 const detail = [
   { name: '资源出租', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56 },
   { name: '资源采购', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52 },
@@ -84,6 +92,30 @@ export function CarbonStatistics() {
         <Kpi icon={TrendingUp} tint="bg-[#fff1e6] text-[#ee7c30]" label="累计碳排放" value="18.30" unit="tCO₂e" />
         <Kpi icon={Boxes} tint="bg-[#eef3fb] text-[#4b6ea8]" label="核算物资总量" value="803.10" unit="吨" />
       </div>
+
+      <Panel title="废钢替代铁矿石" subtitle="废钢等效替代原生铁矿石开采量（单位：吨）" icon={Factory}>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,240px)_1fr]">
+          <div className="flex flex-col justify-center rounded-lg bg-[#e7f1ff] p-5">
+            <p className="text-sm text-[#086de0]/80">累计替代铁矿石</p>
+            <p className="mt-2 flex items-baseline gap-1"><b className="text-3xl tabular-nums text-[#086de0]">{oreTotal.toFixed(1)}</b><span className="text-sm text-[#086de0]/70">吨</span></p>
+            <p className="mt-2 text-xs text-muted-foreground">按废钢与各类铁矿石的等效折算系数汇总</p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {oreReplace.map((ore) => (
+              <div key={ore.name} className="rounded-lg border p-4">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2 text-sm font-medium"><span className="size-2.5 rounded-full" style={{ background: ore.color }} />{ore.name}</span>
+                  <span className="text-sm font-semibold tabular-nums">{ore.value.toFixed(1)} 吨</span>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full rounded-full" style={{ width: `${(ore.value / oreTotal) * 100}%`, background: ore.color }} />
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">占比 {((ore.value / oreTotal) * 100).toFixed(1)}%</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Panel>
 
       <div className="grid gap-4 xl:grid-cols-[1.55fr_1fr]">
         <Panel title="各业务类型碳排放与减碳量" subtitle="单位：tCO₂e">
