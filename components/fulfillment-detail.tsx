@@ -281,7 +281,7 @@ export function FulfillmentDetail({
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-foreground">
-              项目管理 — {project.title}
+              项���管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
               {isLessee
@@ -494,7 +494,7 @@ export function FulfillmentDetail({
                 '付款方式',
                 '状态',
                 '发起时间',
-                isReceiver ? '付款备注' : '收款备注',
+                isReceiver ? '付��备注' : '收款备注',
                 '操作',
               ]}
             >
@@ -914,7 +914,7 @@ function PickupOrderDialog({
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
                 {isNewProduct
-                  ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
+                  ? '已���记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
                   : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
               </p>
             </FormSection>
@@ -1034,10 +1034,10 @@ function PickupOrderDialog({
             )}
           </FormSection>
 
-          {/* 重量信息：交付方（提货录入方）过磅；普通收货确认方不再重复过磅；钢厂直收在收货时须过磅并折算矿石 */}
-          {(!isReceiver || isScrap) && (
+          {/* 重量信息：由发货方（供应商 / 回收基地等交付方）过磅；收货确认方（含钢厂/回收商、钢厂）不再重复过磅 */}
+          {!isReceiver && (
           <FormSection
-            title={isScrap ? '收货过磅' : '重量信息'}
+            title={isScrap ? '发货过磅' : '重量信息'}
             icon={<Scale className="size-4 text-primary" />}
           >
             <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
@@ -1080,7 +1080,7 @@ function PickupOrderDialog({
                   废钢等效矿石折算
                 </div>
                 <p className="mt-1 text-xs text-[#086de0]/70">
-                  按收货净重自动折算为对应铁矿石类型的等效开采重量，作为碳减排核算依据。
+                  按发货净重自动折算为对应铁矿石类型的等效开采重量，作为碳减排核算依据。
                 </p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
                   <div className="sm:w-56">
