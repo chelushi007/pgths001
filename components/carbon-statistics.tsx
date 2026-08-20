@@ -10,18 +10,18 @@ const ORANGE = '#ee7c30'
 const GREEN = '#1bbf7a'
 const TEAL = '#12a89d'
 
-// 业务类型（保持不变）：资源出租/资源采购/资源处置/钢厂直收
+// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂直收
 const bizBar = [
-  { name: '租赁', reduce: 42.26, emit: 5.70 },
-  { name: '买卖', reduce: 13.92, emit: 7.40 },
-  { name: '处置', reduce: 34.70, emit: 1.40 },
-  { name: '直收', reduce: 28.40, emit: 3.80 },
+  { name: '资源出租', reduce: 42.26, emit: 5.70 },
+  { name: '资源采购', reduce: 13.92, emit: 7.40 },
+  { name: '资源处置', reduce: 34.70, emit: 1.40 },
+  { name: '钢厂直收', reduce: 28.40, emit: 3.80 },
 ]
 const bizPie = [
-  { name: '买卖', value: 13.92, color: ORANGE },
-  { name: '处置', value: 34.70, color: GREEN },
-  { name: '租赁', value: 42.26, color: BLUE },
-  { name: '直收', value: 28.40, color: TEAL },
+  { name: '资源处置', value: 34.70, color: GREEN },
+  { name: '资源出租', value: 42.26, color: BLUE },
+  { name: '资源采购', value: 13.92, color: ORANGE },
+  { name: '钢厂直收', value: 28.40, color: TEAL },
 ]
 const monthly = [
   { m: '1月', reduce: 42.0, emit: 7.0 },
@@ -32,10 +32,10 @@ const monthly = [
   { m: '6月', reduce: 73.0, emit: 11.0 },
 ]
 const orgRank = [
-  { name: '十五局', value: 268.4 }, { name: '十二局', value: 241.2 }, { name: '二十局', value: 226.6 },
-  { name: '十八局', value: 213.1 }, { name: '十一局', value: 198.6 }, { name: '二十三局', value: 187.4 },
-  { name: '十六局', value: 175.9 }, { name: '二十五局', value: 164.3 }, { name: '十四局', value: 152.7 },
-  { name: '二十二局', value: 141.4 },
+  { name: '单位A', value: 268.4 }, { name: '单位B', value: 241.2 }, { name: '单位C', value: 226.6 },
+  { name: '单位D', value: 213.1 }, { name: '单位E', value: 198.6 }, { name: '单位F', value: 187.4 },
+  { name: '单位G', value: 175.9 }, { name: '单位H', value: 164.3 }, { name: '单位I', value: 152.7 },
+  { name: '单位J', value: 141.4 },
 ]
 const orgColor = (i: number) => (i === 0 ? BLUE : i === 1 ? GREEN : i === 2 ? ORANGE : TEAL)
 const materialRank = [
@@ -45,10 +45,10 @@ const materialRank = [
   { name: '工字钢', value: 102.5 },
 ]
 const detail = [
-  { name: '租赁', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56 },
-  { name: '买卖', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52 },
-  { name: '处置', color: GREEN, orders: 2, tons: 91.0, emit: 1.40, reduce: 34.70, net: 33.30 },
-  { name: '直收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60 },
+  { name: '资源出租', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56 },
+  { name: '资源采购', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52 },
+  { name: '资源处置', color: GREEN, orders: 2, tons: 91.0, emit: 1.40, reduce: 34.70, net: 33.30 },
+  { name: '钢厂直收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60 },
 ]
 const total = detail.reduce(
   (acc, r) => ({ orders: acc.orders + r.orders, tons: acc.tons + r.tons, emit: acc.emit + r.emit, reduce: acc.reduce + r.reduce, net: acc.net + r.net }),
@@ -131,12 +131,12 @@ export function CarbonStatistics() {
       </Panel>
 
       <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-        <Panel title="局级单位碳减排排行 · Top 10" subtitle="单位：tCO₂e">
+        <Panel title="碳减排排名 · Top 10" subtitle="单位：tCO₂e">
           <ChartContainer config={config} className="h-[26rem] w-full">
             <BarChart data={orgRank} layout="vertical" margin={{ left: 12, right: 40 }}>
               <CartesianGrid horizontal={false} strokeDasharray="3 3" />
               <XAxis type="number" domain={[0, 280]} ticks={[0, 70, 140, 210, 280]} tickLine={false} axisLine={false} />
-              <YAxis dataKey="name" type="category" width={56} tickLine={false} axisLine={false} />
+              <YAxis dataKey="name" type="category" width={64} tickLine={false} axisLine={false} />
               <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: 'right', fontSize: 12, fill: 'var(--foreground)' }}>
                 {orgRank.map((_, i) => <Cell key={i} fill={orgColor(i)} />)}
               </Bar>

@@ -13,14 +13,14 @@ const monthly = [
   { m: '1月', reduce: 42.0, emit: 7.0 }, { m: '2月', reduce: 40.0, emit: 8.0 }, { m: '3月', reduce: 54.0, emit: 8.0 },
   { m: '4月', reduce: 61.2, emit: 10.4 }, { m: '5月', reduce: 90.0, emit: 13.0 }, { m: '6月', reduce: 73.0, emit: 11.0 },
 ]
-// 业务类型（保持不变）：资源出租/资源采购/资源处置/钢厂直收
+// 业务类型（保持不变）：资源处置/资源出租/资源采购/钢厂直收
 const bizPie = [
-  { n: '租赁', v: 42.26, color: BLUE }, { n: '买卖', v: 13.92, color: ORANGE },
-  { n: '处置', v: 34.70, color: GREEN }, { n: '直收', v: 28.40, color: TEAL },
+  { n: '资源出租', v: 42.26, color: BLUE }, { n: '资源采购', v: 13.92, color: ORANGE },
+  { n: '资源处置', v: 34.70, color: GREEN }, { n: '钢厂直收', v: 28.40, color: TEAL },
 ]
 const orgRank = [
-  { n: '十五局', v: 268.4 }, { n: '十二局', v: 241.2 }, { n: '二十局', v: 226.6 },
-  { n: '十八局', v: 213.1 }, { n: '十一局', v: 198.6 }, { n: '二十三局', v: 187.4 }, { n: '十六局', v: 175.9 },
+  { n: '单位A', v: 268.4 }, { n: '单位B', v: 241.2 }, { n: '单位C', v: 226.6 },
+  { n: '单位D', v: 213.1 }, { n: '单位E', v: 198.6 }, { n: '单位F', v: 187.4 }, { n: '单位G', v: 175.9 },
 ]
 const materialRank = [
   { n: '热轧型钢', v: 286.6 }, { n: '钢板桩', v: 254.2 }, { n: '盘扣式脚手架', v: 231.1 },
@@ -111,12 +111,12 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
       </section>
 
       <section className="mt-4 grid gap-4 lg:grid-cols-[1.3fr_1fr]">
-        <Panel title="局级单位碳减排排行">
+        <Panel title="碳减排排名">
           <ChartContainer config={config} className="h-72 w-full [&_.recharts-cartesian-axis-tick_text]:fill-white/60">
             <BarChart data={orgRank} layout="vertical" margin={{ left: 12, right: 36 }}>
               <CartesianGrid stroke="#ffffff" opacity={0.08} horizontal={false} />
               <XAxis type="number" hide />
-              <YAxis dataKey="n" type="category" width={56} tickLine={false} axisLine={false} />
+              <YAxis dataKey="n" type="category" width={64} tickLine={false} axisLine={false} />
               <Bar dataKey="v" radius={[0, 4, 4, 0]} maxBarSize={20} label={{ position: 'right', fontSize: 12, fill: '#ffffff' }}>
                 {orgRank.map((_, i) => <Cell key={i} fill={i === 0 ? BLUE : i === 1 ? GREEN : i === 2 ? ORANGE : TEAL} />)}
               </Bar>
