@@ -281,7 +281,7 @@ export function FulfillmentDetail({
         <div className="flex items-center justify-between border-b border-border bg-secondary/60 px-6 py-4">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold text-foreground">
-              项���管理 — {project.title}
+              项�����管理 — {project.title}
             </h2>
             <span className="rounded bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
               {isLessee
@@ -861,6 +861,17 @@ function PickupOrderDialog({
       ? (parseFloat(grossWeight) - parseFloat(tareWeight)).toFixed(2)
       : ''
 
+  // 普通采购业务（供应商发货 / 采购方收货，非钢厂回收、非受让承租流转）
+  const isProcurementDeal = (isSupplier || isBuyer) && !isScrap && !isTransferee && !isLessee
+  // 二手资源：普通采购业务中标记为非新品的资源，等同再生资源纳入回收利用碳核算
+  const isSecondHand = isProcurementDeal && !isNewProduct
+  // 发货方（供应商）过磅时展示折算：钢厂回收（废钢）或二手资源采购
+  const showOreConversion = isScrap || (!isReceiver && isSecondHand)
+  // 等效矿石重量（用于发货方过磅与收货单反显）
+  const oreEquivalent = netWeight
+    ? (parseFloat(netWeight) * (ORE_TYPES.find((o) => o.type === oreType)?.factor ?? 0)).toFixed(2)
+    : ''
+
   return (
     <div
       className="fixed inset-0 z-[60] flex items-center justify-center p-4"
@@ -918,7 +929,7 @@ function PickupOrderDialog({
                           : 'border-input bg-background text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      再生资源（可回收利用）
+                      二手资源
                     </button>
                     <button
                       type="button"
@@ -937,7 +948,7 @@ function PickupOrderDialog({
               <p className="mt-2 text-xs text-muted-foreground">
                 {isNewProduct
                   ? '已标记为新品：新品不涉及资源回收再利用减排，采购方履约结束列表将不体现碳减排量与碳凭证。'
-                  : '再生资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
+                  : '二手资源将纳入资源回收利用碳核算，采购方履约结束后可查看碳减排量与碳凭证。'}
               </p>
             </FormSection>
           )}
@@ -1099,11 +1110,11 @@ function PickupOrderDialog({
                 />
               </div>
             </div>
-            {isScrap && (
+            {showOreConversion && (
               <div className="mt-4 rounded-lg border border-[#9bc4ff] bg-[#eaf3ff] p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-[#086de0]">
                   <Recycle className="size-4" />
-                  废钢等效矿石折算
+                  {isScrap ? '废钢等效矿石折算' : '二手资源等效矿石折算'}
                 </div>
                 <p className="mt-1 text-xs text-[#086de0]/70">
                   按发货净重自动折算为对应铁矿石类型的等效开采重量，作为碳减排核算依据。
@@ -1308,6 +1319,24 @@ function PickupOrderDialog({
                     )}
                   </div>
                 </div>
+                {(isScrap || isSecondHand) && (
+                  <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-[#9bc4ff] bg-[#eaf3ff] px-3 py-2.5 text-sm">
+                    <div className="flex items-center gap-2 text-[#086de0]">
+                      <Recycle className="size-4" />
+                      <span className="font-medium">
+                        {isScrap ? '废钢等效矿石折算' : '二手资源等效矿石折算'}
+                      </span>
+                      <span className="text-[#086de0]/70">（{oreType}）</span>
+                    </div>
+                    <span className="text-xs text-[#086de0]/80">
+                      等效开采重量{' '}
+                      <b className="text-base tabular-nums text-[#086de0]">
+                        {oreEquivalent || '—'}
+                      </b>{' '}
+                      吨
+                    </span>
+                  </div>
+                )}
               </div>
             ) : (
               <button
