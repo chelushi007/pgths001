@@ -26,13 +26,18 @@ type Record = {
   status: '已核算' | '待复核'
   // 资源出租：该资源第几次出租
   rentalSeq?: number
+  // 减碳贡献角色：owner 归属主体（减碳确权入本单位账户）/ partaker 参与方（碳减排归属交易对方）
+  role: 'owner' | 'partaker'
+  roleLabel: string
+  // 减碳贡献单位：参与方业务归属交易对方，归属主体业务归本单位自持
+  contributor: string
 }
 
 const records: Record[] = [
-  { id: 'CZDD20260520002', biz: '资源处置', project: '报废工装及边角料处置', resource: '废钢', spec: 'Q235 / 混合规格', unit: '中铁十一局一公司', weight: 86.4, distance: 68, emission: 2.12, reduction: 13.86, net: 11.74, cert: 'TC-CZ-20260522-0007', date: '2026-05-22 16:05', status: '已核算' },
-  { id: 'ZLDD20260518007', biz: '资源出租', project: '工程钢模板循环租赁', resource: '钢模板', spec: '组合式 / 1.5m', unit: '中铁十一局三公司', weight: 142.6, distance: 36, emission: 3.58, reduction: 28.4, net: 24.82, cert: 'TC-ZL-20260519-0012', date: '2026-05-19 10:20', status: '已核算', rentalSeq: 2 },
-  { id: 'CGDD20260512021', biz: '资源采购', project: '生产辅材集中采购', resource: '热轧钢板', spec: 'Q355 / 12mm', unit: '中铁十五局一公司', weight: 98.5, distance: 120, emission: 2.36, reduction: 4.32, net: 1.96, cert: 'TC-CG-20260514-0003', date: '2026-05-14 11:40', status: '已核算' },
-  { id: 'GCDD20260510015', biz: '钢厂回收', project: '珠江钢厂废钢协议回收', resource: '废钢', spec: '统料', unit: '中铁二十局四公司', weight: 56.2, distance: 240, emission: 0.88, reduction: 21.5, net: 20.62, cert: 'TC-GC-20260511-0009', date: '2026-05-11 09:15', status: '已核算' },
+  { id: 'CZDD20260520002', biz: '资源处置', project: '报废工装及边角料处置', resource: '废钢', spec: 'Q235 / 混合规格', unit: '中铁十一局一公司', weight: 86.4, distance: 68, emission: 2.12, reduction: 13.86, net: 11.74, cert: 'TC-CZ-20260522-0007', date: '2026-05-22 16:05', status: '已核算', role: 'partaker', roleLabel: '转让方', contributor: '广州资源回收有限公司（受让方）' },
+  { id: 'ZLDD20260518007', biz: '资源出租', project: '工程钢模板循环租赁', resource: '钢模板', spec: '组合式 / 1.5m', unit: '中铁十一局三公司', weight: 142.6, distance: 36, emission: 3.58, reduction: 28.4, net: 24.82, cert: 'TC-ZL-20260519-0012', date: '2026-05-19 10:20', status: '已核算', rentalSeq: 2, role: 'partaker', roleLabel: '出租方', contributor: '广州帝隆科技股份有限公司（承租方）' },
+  { id: 'CGDD20260512021', biz: '资源采购', project: '生产辅材集中采购', resource: '热轧钢板', spec: 'Q355 / 12mm', unit: '中铁十五局一公司', weight: 98.5, distance: 120, emission: 2.36, reduction: 4.32, net: 1.96, cert: 'TC-CG-20260514-0003', date: '2026-05-14 11:40', status: '已核算', role: 'owner', roleLabel: '采购方', contributor: '中铁十五局一公司（本单位自持）' },
+  { id: 'GCDD20260510015', biz: '钢厂回收', project: '珠江钢厂废钢协议回收', resource: '废钢', spec: '统料', unit: '中铁二十局四公司', weight: 56.2, distance: 240, emission: 0.88, reduction: 21.5, net: 20.62, cert: 'TC-GC-20260511-0009', date: '2026-05-11 09:15', status: '已核算', role: 'owner', roleLabel: '回收方', contributor: '中铁二十局四公司（本单位自持）' },
 ]
 
 const types: Biz[] = ['资源处置', '资源出租', '资源采购', '钢厂回收']
@@ -119,9 +124,9 @@ export function CarbonAccountingQuery() {
           <Button variant="outline" className="h-10 px-5"><Download data-icon="inline-start" />导出</Button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1180px] whitespace-nowrap text-sm">
+          <table className="w-full min-w-[1360px] whitespace-nowrap text-sm">
             <thead className="bg-[#edf3fa] text-left">
-              <tr>{['序号', '订单编号', '业务类型', '资源名称', '资源规格', '归集单位', '重量(吨)', '碳排放(tCO₂e)', '减碳量(tCO₂e)', '碳凭证编号', '核算时间', '操作'].map((x) => <th key={x} className="whitespace-nowrap px-3 py-3 font-semibold">{x}</th>)}</tr>
+              <tr>{['序号', '订单编号', '业务类型', '资源名称', '资源规格', '归集单位', '重量(吨)', '碳排放(tCO₂e)', '减碳量(tCO₂e)', '减碳贡献单位', '碳凭证编号', '核算时间', '操作'].map((x) => <th key={x} className="whitespace-nowrap px-3 py-3 font-semibold">{x}</th>)}</tr>
             </thead>
             <tbody>
               {visible.map((r, index) => (
@@ -137,6 +142,14 @@ export function CarbonAccountingQuery() {
                   <td className="px-3 py-4 text-right tabular-nums">{r.weight.toFixed(2)}</td>
                   <td className="px-3 py-4 text-right font-medium tabular-nums text-orange-600">{r.emission.toFixed(2)}</td>
                   <td className="px-3 py-4 text-right font-medium tabular-nums text-emerald-600">{r.reduction.toFixed(2)}</td>
+                  <td className="px-3 py-4">
+                    <div className="flex flex-col gap-1">
+                      <span className={cn('inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[11px] font-medium', r.role === 'owner' ? 'bg-[#e8f7ee] text-emerald-600' : 'bg-[#e7f1ff] text-[#086de0]')}>
+                        {r.role === 'owner' ? '归属主体' : '参与方'} · {r.roleLabel}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{r.contributor}</span>
+                    </div>
+                  </td>
                   <td className="px-3 py-4 font-mono text-xs text-muted-foreground">{r.cert}</td>
                   <td className="px-3 py-4 text-muted-foreground">{r.date}</td>
                   <td className="px-3 py-4">
@@ -164,11 +177,15 @@ export function CarbonAccountingQuery() {
                 <Trace label="资源活动数据" value={`${detail.weight} t × 新品排放因子`} />
                 <Trace label="核算公式" value="物资重量 × 新品排放因子" />
                 <Trace label="碳减排量" value={`${detail.reduction.toFixed(2)} tCO₂e`} />
+                <Trace label="减碳角色" value={`${detail.role === 'owner' ? '归属主体' : '参与方'} · ${detail.roleLabel}`} />
+                <Trace label="减碳贡献单位" value={detail.contributor} />
+                <Trace label="减碳归属" value={detail.role === 'owner' ? '确权计入本单位碳账户' : '碳凭证归属交易对方'} />
               </div>
               <div className="rounded-lg border bg-muted/40 p-4 text-sm leading-6">
                 <b>核算边界：</b>资源回收、再利用或循环使用相对原生材料生产的替代效益，按物资重量 × 新品排放因子核算；运输碳排放 {detail.emission.toFixed(2)} tCO₂e 单独列示、不计入碳减排量。<br />
+                <b>减碳归属：</b>{detail.role === 'owner' ? `本单位作为${detail.roleLabel}，减碳量确权计入自身碳账户。` : `本单位作为${detail.roleLabel}，促成 ${detail.contributor} 减碳，仅体现减碳贡献、碳凭证归属对方。`}<br />
                 <b>数据来源：</b>履约确认重量、碳因子库有效版本。<br />
-                <b>质量控制：</b>因子版本冻结、活动数据留痕、公式与结果支持复核。
+                <b>质量控制：</b>因子版本冻结、活动数据留痕、公式与结果保持复核。
               </div>
             </div>
           )}
