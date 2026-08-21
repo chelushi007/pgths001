@@ -161,13 +161,13 @@ export function CarbonAccountingQuery() {
                 <Trace label="资源名称" value={detail.rentalSeq ? `${detail.resource}（第 ${detail.rentalSeq} 次出租）` : detail.resource} />
                 <Trace label="资源规格" value={detail.spec} />
                 <Trace label="核算重量" value={`${detail.weight.toFixed(2)} 吨`} />
-                <Trace label="资源活动数据" value={`${detail.weight} t × 对应资源因子`} />
-                <Trace label="运输活动数据" value={`${detail.weight} t × ${detail.distance} km × 运输因子`} />
-                <Trace label="净减排结果" value={`${detail.net.toFixed(2)} tCO₂e`} />
+                <Trace label="资源活动数据" value={`${detail.weight} t × 新品排放因子`} />
+                <Trace label="核算公式" value="物资重量 × 新品排放因子" />
+                <Trace label="碳减排量" value={`${detail.reduction.toFixed(2)} tCO₂e`} />
               </div>
               <div className="rounded-lg border bg-muted/40 p-4 text-sm leading-6">
-                <b>核算边界：</b>资源回收、再利用或循环使用相对原生材料生产的替代效益，扣除履约中陆运与水运产生的运输排放。<br />
-                <b>数据来源：</b>履约确认重量、物流运输距离、碳因子库有效版本。<br />
+                <b>核算边界：</b>资源回收、再利用或循环使用相对原生材料生产的替代效益，按物资重量 × 新品排放因子核算；运输碳排放 {detail.emission.toFixed(2)} tCO₂e 单独列示、不计入碳减排量。<br />
+                <b>数据来源：</b>履约确认重量、碳因子库有效版本。<br />
                 <b>质量控制：</b>因子版本冻结、活动数据留痕、公式与结果支持复核。
               </div>
             </div>

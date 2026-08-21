@@ -64,10 +64,10 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <ScreenKpi icon={Leaf} tint="text-[#2fd699]" label="净减碳量" value="100.98" unit="tCO₂e" />
-        <ScreenKpi icon={Recycle} tint="text-[#3b9bff]" label="累计减碳量" value="119.28" unit="tCO₂e" />
-        <ScreenKpi icon={TrendingUp} tint="text-[#ff9d4d]" label="累计碳排放" value="18.30" unit="tCO₂e" />
+        <ScreenKpi icon={Leaf} tint="text-[#2fd699]" label="碳减排量" value="119.28" unit="tCO₂e" />
+        <ScreenKpi icon={TrendingUp} tint="text-[#ff9d4d]" label="累计碳排放（参考）" value="18.30" unit="tCO₂e" />
         <ScreenKpi icon={Boxes} tint="text-[#22c1c9]" label="核算物资总量" value="803.10" unit="吨" />
+        <ScreenKpi icon={Recycle} tint="text-[#3b9bff]" label="核算订单数" value="7" unit="单" />
       </section>
 
       <section className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)_minmax(0,1fr)]">

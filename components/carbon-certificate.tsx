@@ -646,13 +646,13 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     reuseTitle: '本次租赁循环利用减排明细',
     transportTitle: '本次租赁运输碳排放',
     scopeText:
-      '（订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排与运输碳排放，不含历史周转累计减碳量。',
+      '（订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排，运输碳排放单独列示、不计入碳减排量，不含历史周转累计减碳量。',
     materialWeight: '86.40 吨',
     reuseTotal: '182.05',
     transportTotal: '0.97',
     transportNewReduction: '0.32',
-    netReduction: '181.08',
-    netRate: '99.5',
+    netReduction: '182.05',
+    netRate: '100',
     orderNo: 'ZLDD20260520002',
     flow: {
       ownerTitle: '出租方',
@@ -680,13 +680,13 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     reuseTitle: '本次转让循环利用减排明细',
     transportTitle: '本次转让运输碳排放',
     scopeText:
-      '（订单 ZRDD20260520002），仅统计与本次转让直接相关的资源循环利用减排与单程交付运输碳排放，货权转移后不含受让方后续使用排放。',
+      '（订单 ZRDD20260520002），仅统计与本次转让直接相关的资源循环利用减排，单程交付运输碳排放单独列示、不计入碳减排量，货权转移后不含受让方后续使用排放。',
     materialWeight: '86.40 吨',
     reuseTotal: '183.57',
     transportTotal: '0.41',
     transportNewReduction: '0.32',
-    netReduction: '183.16',
-    netRate: '99.8',
+    netReduction: '183.57',
+    netRate: '100',
     orderNo: 'ZRDD20260520002',
     flow: {
       ownerTitle: '转让方',
@@ -714,13 +714,13 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     reuseTitle: '本次采购供货循环利用减排明细',
     transportTitle: '本次采购供货运输碳排放',
     scopeText:
-      '（订单 CGDD20260520002），仅统计与本次采购供货直接相关的资源回收利用减排与单程送货运输碳排放，验收入库后不含采购方后续加工排放。',
+      '（订单 CGDD20260520002），仅统计与本次采购供货直接相关的资源回收利用减排，单程送货运输碳排放单独列示、不计入碳减排量，验收入库后不含采购方后续加工排放。',
     materialWeight: '86.40 吨',
     reuseTotal: '198.48',
     transportTotal: '0.27',
     transportNewReduction: '0.35',
-    netReduction: '198.21',
-    netRate: '99.9',
+    netReduction: '198.48',
+    netRate: '100',
     orderNo: 'CGDD20260520002',
     flow: {
       ownerTitle: '供应商',
@@ -1060,24 +1060,23 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           <span className="text-sm font-semibold text-foreground">碳减排量核算公式</span>
         </div>
         <p className="mt-3 text-sm text-foreground">
-          碳减排量（净减排量）=（物资重量 × 新品排放因子）–（运输量 × 运输距离 × 运输因子）
+          碳减排量 =（物资重量 × 新品排放因子）
         </p>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          即：循环利用减排 {cfg.reuseTotal} – 运输碳排放 {cfg.transportTotal} =
-          净减排量{' '}
+          即：物资重量 × 新品排放因子（循环利用减排 {cfg.reuseTotal}）= 碳减排量{' '}
           <span className="font-semibold text-primary">
             {cfg.netReduction} tCO₂e
           </span>
+          。运输碳排放 {cfg.transportTotal} tCO₂e 单独列示、不计入碳减排量。
         </p>
       </div>
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />
-        <MetricCard icon={Truck} label="运输碳排放" value={cfg.transportTotal} unit="tCO₂e" />
+        <MetricCard icon={TrendingDown} label="碳减排量" value={cfg.netReduction} unit="tCO₂e" highlight />
+        <MetricCard icon={Truck} label="运输碳排放（参考）" value={cfg.transportTotal} unit="tCO₂e" />
         <MetricCard icon={Zap} label="运输碳减排（新能源）" value={cfg.transportNewReduction} unit="tCO₂e" />
-        <MetricCard icon={TrendingDown} label="碳减排量（净减排量）" value={cfg.netReduction} unit="tCO₂e" highlight />
-        <MetricCard icon={Leaf} label="净减排率" value={cfg.netRate} unit="%" />
       </div>
 
       {/* 运输碳排放表 */}
@@ -1152,7 +1151,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           </table>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          运输碳排放 = 运输量 × 运输距离 × 运输因子。能源类型为新能源时，按燃油基准因子（柴油货车 0.0962
+          运输碳排放 = 运输量 × 运输距离 × 运输因子，单独列示供参考，<b className="text-foreground">不计入本次碳减排量</b>。能源类型为新能源时，按燃油基准因子（柴油货车 0.0962
           kgCO₂e/吨·km）折算同运量、同里程的燃油基准排放，两者差额即为该环节较燃油类型的运输碳减排。
         </p>
       </div>

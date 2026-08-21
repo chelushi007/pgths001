@@ -87,10 +87,10 @@ export function CarbonStatistics() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi icon={Leaf} tint="bg-[#e8f7ee] text-[#1bbf7a]" label="净减碳量" value="100.98" unit="tCO₂e" />
-        <Kpi icon={Recycle} tint="bg-[#e7f1ff] text-[#086de0]" label="累计减碳量" value="119.28" unit="tCO₂e" />
-        <Kpi icon={TrendingUp} tint="bg-[#fff1e6] text-[#ee7c30]" label="累计碳排放" value="18.30" unit="tCO₂e" />
+        <Kpi icon={Leaf} tint="bg-[#e8f7ee] text-[#1bbf7a]" label="碳减排量" value="119.28" unit="tCO₂e" />
+        <Kpi icon={TrendingUp} tint="bg-[#fff1e6] text-[#ee7c30]" label="累计碳排放（参考）" value="18.30" unit="tCO₂e" />
         <Kpi icon={Boxes} tint="bg-[#eef3fb] text-[#4b6ea8]" label="核算物资总量" value="803.10" unit="吨" />
+        <Kpi icon={Recycle} tint="bg-[#e7f1ff] text-[#086de0]" label="核算订单数" value="7" unit="单" />
       </div>
 
       <Panel title="废钢替代铁矿石" subtitle="废钢等效替代原生铁矿石开采量（单位：吨）" icon={Factory}>
@@ -197,16 +197,15 @@ export function CarbonStatistics() {
       <Panel title="业务类型核算明细">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[840px] text-sm">
-            <thead className="bg-[#f5f7fa] text-left text-muted-foreground"><tr>{['业务类型', '订单数(单)', '物资数量(吨)', '碳排放(tCO₂e)', '减碳量(tCO₂e)', '净减碳量(tCO₂e)'].map((h, i) => <th key={h} className={cn('px-4 py-3 font-medium', i === 0 ? 'text-left' : 'text-right')}>{h}</th>)}</tr></thead>
+            <thead className="bg-[#f5f7fa] text-left text-muted-foreground"><tr>{['业务类型', '订单数(单)', '物资数量(吨)', '碳排放(tCO₂e，参考)', '碳减排量(tCO₂e)'].map((h, i) => <th key={h} className={cn('px-4 py-3 font-medium', i === 0 ? 'text-left' : 'text-right')}>{h}</th>)}</tr></thead>
             <tbody>
               {detail.map((r) => (
                 <tr key={r.name} className="border-t hover:bg-muted/30">
                   <td className="px-4 py-3"><span className="inline-flex items-center gap-2 font-medium"><span className="size-2.5 rounded-full" style={{ background: r.color }} />{r.name}</span></td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.orders}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.tons.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums text-[#ee7c30]">{r.emit.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right font-medium tabular-nums text-[#1bbf7a]">{r.reduce.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums">{r.net.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums text-[#ee7c30]">{r.emit.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-[#1bbf7a]">{r.reduce.toFixed(2)}</td>
                 </tr>
               ))}
               <tr className="border-t bg-[#f5f7fa] font-semibold">
@@ -215,7 +214,6 @@ export function CarbonStatistics() {
                 <td className="px-4 py-3 text-right tabular-nums">{total.tons.toFixed(2)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-[#ee7c30]">{total.emit.toFixed(2)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-[#1bbf7a]">{total.reduce.toFixed(2)}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{total.net.toFixed(2)}</td>
               </tr>
             </tbody>
           </table>
