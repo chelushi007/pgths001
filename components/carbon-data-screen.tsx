@@ -120,7 +120,7 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
         <Panel title="废钢替代铁矿石">
           <div className="grid gap-4 lg:grid-cols-[minmax(0,220px)_1fr]">
             <div className="flex flex-col justify-center rounded-lg border border-white/10 bg-white/[.04] p-4">
-              <p className="inline-flex items-center gap-2 text-xs text-white/55"><Factory className="size-4 text-[#2fd699]" />累���替代铁矿石</p>
+              <p className="inline-flex items-center gap-2 text-xs text-white/55"><Factory className="size-4 text-[#2fd699]" />累计替代铁矿石</p>
               <p className="mt-2 text-3xl font-semibold tabular-nums text-[#2fd699]">{oreTotal.toFixed(1)} <span className="text-sm font-normal text-white/55">吨</span></p>
               <p className="mt-1 text-xs text-white/45">废钢等效替代原生铁矿石开采量</p>
             </div>
