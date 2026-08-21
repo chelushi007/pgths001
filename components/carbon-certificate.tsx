@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞价，价高�����得',
+    desc: '多家受让方在线报价参与竞价，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -1175,7 +1175,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                 <th className="px-3 py-2.5 font-medium">物资名称</th>
                 <th className="px-3 py-2.5 font-medium">规格</th>
                 <th className="px-3 py-2.5 text-right font-medium">物资重量(吨)</th>
-                <th className="px-3 py-2.5 text-right font-medium">新品排��因子(kgCO₂e/吨)</th>
+                <th className="px-3 py-2.5 text-right font-medium">新品排放因子(kgCO₂e/吨)</th>
                 <th className="px-3 py-2.5 text-right font-medium">循环复用减排(tCO₂e)</th>
               </tr>
             </thead>

@@ -764,6 +764,9 @@ function PickupOrderDialog({
   // 钢厂回收：按净重自动折算为对应铁矿石类型的等效重量
   const [oreType, setOreType] = useState<OreType>('磁铁矿')
   const [remark, setRemark] = useState('')
+  // 收货方（采购方 / 受让方 / 承租方）确认收货时填写资源去向与用途，非必填
+  const [resourceDestination, setResourceDestination] = useState('')
+  const [resourceUsage, setResourceUsage] = useState('')
   const [logistics, setLogistics] = useState<LogisticsRow[]>([])
   const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
   const [isNewProduct, setIsNewProduct] = useState(false)
@@ -1347,6 +1350,42 @@ function PickupOrderDialog({
                 <Plus className="size-4" />
                 新增明细行
               </button>
+            )}
+
+            {/* 收货方（采购方 / 受让方 / 承租方）确认收货时可写明资源的去向与用途，均为非必填 */}
+            {isReceiver && (
+              <div className="mt-4 rounded-md border border-border bg-secondary/40 p-4">
+                <div className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Recycle className="size-4 text-primary" />
+                  资源去向与用途
+                  <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
+                    选填
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+                  <div>
+                    <FieldLabel label="资源去向" />
+                    <input
+                      value={resourceDestination}
+                      onChange={(e) => setResourceDestination(e.target.value)}
+                      placeholder="如：调拨至 XX 项目部 / XX 仓库继续周转使用"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel label="资源用途" />
+                    <input
+                      value={resourceUsage}
+                      onChange={(e) => setResourceUsage(e.target.value)}
+                      placeholder="如：用于 XX 工程支护 / 二次循环利用 / 回炉再造"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    />
+                  </div>
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  填写资源的后续去向与实际用途，便于循环利用追溯与碳减排核算佐证；非必填。
+                </p>
+              </div>
             )}
 
             <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
