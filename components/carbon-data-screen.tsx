@@ -18,6 +18,14 @@ const bizPie = [
   { n: '资源出租', v: 42.26, color: BLUE }, { n: '资源采购', v: 13.92, color: ORANGE },
   { n: '资源处置', v: 34.70, color: GREEN }, { n: '钢厂回收', v: 28.40, color: TEAL },
 ]
+// 两类碳减排贡献：归属主体（采购方13.92 + 回收方28.40）/ 参与方（出租方42.26 + 转让方34.70）
+const OWNED_REDUCE = 13.92 + 28.40
+const PARTAKER_REDUCE = 42.26 + 34.70
+const REDUCE_TOTAL = OWNED_REDUCE + PARTAKER_REDUCE
+const contribSplit = [
+  { key: 'owner', label: '归属主体减碳', sub: '采购方 / 回收方 · 确权入账', value: OWNED_REDUCE, color: GREEN },
+  { key: 'partaker', label: '参与方减碳贡献', sub: '出租方 / 转让方 · 归属对方', value: PARTAKER_REDUCE, color: BLUE },
+]
 const orgRank = [
   { n: '单位A', v: 268.4 }, { n: '单位B', v: 241.2 }, { n: '单位C', v: 226.6 },
   { n: '单位D', v: 213.1 }, { n: '单位E', v: 198.6 }, { n: '单位F', v: 187.4 }, { n: '单位G', v: 175.9 },
@@ -110,6 +118,24 @@ export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
               <div key={x[0]} className="border-b border-white/10 pb-3 last:border-0">
                 <div className="flex justify-between text-xs text-white/50"><span>{x[0]} · {x[1]}</span><span className="font-semibold text-[#2fd699]">{x[3]} tCO₂e</span></div>
                 <p className="mt-1 text-sm text-white/80">{x[2]}</p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      </section>
+
+      <section className="mt-4">
+        <Panel title="碳减排贡献分类">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {contribSplit.map((c) => (
+              <div key={c.key} className="rounded-lg border border-white/10 bg-white/[.04] p-4">
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-2 text-sm font-medium" style={{ color: c.color }}><span className="size-2.5 rounded-full" style={{ background: c.color }} />{c.label}</span>
+                  <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] text-white/60">{c.key === 'owner' ? '计入本方碳账户' : '碳凭证归属对方'}</span>
+                </div>
+                <p className="mt-2 flex items-baseline gap-1.5"><b className="text-2xl font-semibold tabular-nums" style={{ color: c.color }}>{c.value.toFixed(2)}</b><span className="text-xs text-white/55">tCO₂e · 占比 {((c.value / REDUCE_TOTAL) * 100).toFixed(1)}%</span></p>
+                <p className="mt-1 text-xs text-white/45">{c.sub}</p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full" style={{ width: `${(c.value / REDUCE_TOTAL) * 100}%`, background: c.color }} /></div>
               </div>
             ))}
           </div>

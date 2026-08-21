@@ -53,15 +53,18 @@ const oreReplace = [
 ]
 const oreTotal = oreReplace.reduce((sum, item) => sum + item.value, 0)
 const detail = [
-  { name: '资源出租', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56 },
-  { name: '资源采购', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52 },
-  { name: '资源处置', color: GREEN, orders: 2, tons: 91.0, emit: 1.40, reduce: 34.70, net: 33.30 },
-  { name: '钢厂回收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60 },
+  { name: '资源出租', color: BLUE, orders: 2, tons: 229.0, emit: 5.70, reduce: 42.26, net: 36.56, role: 'partaker' as const, roleLabel: '出租方' },
+  { name: '资源采购', color: ORANGE, orders: 2, tons: 308.5, emit: 7.40, reduce: 13.92, net: 6.52, role: 'owner' as const, roleLabel: '采购方' },
+  { name: '资源处置', color: GREEN, orders: 2, tons: 91.0, emit: 1.40, reduce: 34.70, net: 33.30, role: 'partaker' as const, roleLabel: '转让方' },
+  { name: '钢厂回收', color: TEAL, orders: 1, tons: 174.6, emit: 3.80, reduce: 28.40, net: 24.60, role: 'owner' as const, roleLabel: '回收方' },
 ]
 const total = detail.reduce(
   (acc, r) => ({ orders: acc.orders + r.orders, tons: acc.tons + r.tons, emit: acc.emit + r.emit, reduce: acc.reduce + r.reduce, net: acc.net + r.net }),
   { orders: 0, tons: 0, emit: 0, reduce: 0, net: 0 },
 )
+// 两类碳减排贡献：归属主体（确权入账，采购方/回收方）/ 参与方（促成对方，出租方/转让方）
+const OWNED_REDUCE = detail.filter((d) => d.role === 'owner').reduce((s, d) => s + d.reduce, 0)
+const PARTAKER_REDUCE = detail.filter((d) => d.role === 'partaker').reduce((s, d) => s + d.reduce, 0)
 
 const config = {
   reduce: { label: '减碳量', color: BLUE },
@@ -92,6 +95,35 @@ export function CarbonStatistics() {
         <Kpi icon={Boxes} tint="bg-[#eef3fb] text-[#4b6ea8]" label="核算物资总量" value="803.10" unit="吨" />
         <Kpi icon={Recycle} tint="bg-[#e7f1ff] text-[#086de0]" label="核算订单数" value="7" unit="单" />
       </div>
+
+      <Panel title="碳减排贡献分类" subtitle="按减碳确权归属拆分（单位：tCO₂e）" icon={Leaf}>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-xl border border-[#1bbf7a]/35 bg-[#f4fbf7] p-5">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 text-sm font-medium text-[#128a56]"><Leaf className="size-4" />归属主体减碳（确权入账）</span>
+              <span className="rounded-full bg-[#e8f7ee] px-2.5 py-0.5 text-[11px] font-medium text-[#1bbf7a]">计入本方碳账户</span>
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5"><b className="text-2xl tabular-nums text-[#128a56]">{OWNED_REDUCE.toFixed(2)}</b><span className="text-xs text-[#1bbf7a]">tCO₂e · 占比 {((OWNED_REDUCE / total.reduce) * 100).toFixed(1)}%</span></p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {detail.filter((d) => d.role === 'owner').map((d) => (
+                <span key={d.name} className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] text-muted-foreground"><span className="size-1.5 rounded-full" style={{ background: d.color }} />{d.name}（{d.roleLabel}）{d.reduce.toFixed(2)}t</span>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-xl border border-[#086de0]/30 bg-[#eff5ff] p-5">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 text-sm font-medium text-[#0a58b0]"><Recycle className="size-4" />参与方减碳贡献（促成对方）</span>
+              <span className="rounded-full bg-[#e0ecff] px-2.5 py-0.5 text-[11px] font-medium text-[#086de0]">碳凭证归属对方</span>
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5"><b className="text-2xl tabular-nums text-[#0a58b0]">{PARTAKER_REDUCE.toFixed(2)}</b><span className="text-xs text-[#086de0]">tCO₂e · 占比 {((PARTAKER_REDUCE / total.reduce) * 100).toFixed(1)}%</span></p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {detail.filter((d) => d.role === 'partaker').map((d) => (
+                <span key={d.name} className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] text-muted-foreground"><span className="size-1.5 rounded-full" style={{ background: d.color }} />{d.name}（{d.roleLabel}）{d.reduce.toFixed(2)}t</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Panel>
 
       <Panel title="废钢替代铁矿石" subtitle="废钢等效替代原生铁矿石开采量（单位：吨）" icon={Factory}>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,240px)_1fr]">
@@ -196,12 +228,13 @@ export function CarbonStatistics() {
 
       <Panel title="业务类型核算明细">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[840px] text-sm">
-            <thead className="bg-[#f5f7fa] text-left text-muted-foreground"><tr>{['业务类型', '订单数(单)', '物资数量(吨)', '碳排放(tCO₂e，参考)', '碳减排量(tCO₂e)'].map((h, i) => <th key={h} className={cn('px-4 py-3 font-medium', i === 0 ? 'text-left' : 'text-right')}>{h}</th>)}</tr></thead>
+          <table className="w-full min-w-[960px] text-sm">
+            <thead className="bg-[#f5f7fa] text-left text-muted-foreground"><tr>{['业务类型', '减碳角色', '订单数(单)', '物资数量(吨)', '碳排放(tCO₂e，参考)', '碳减排贡献(tCO₂e)'].map((h, i) => <th key={h} className={cn('px-4 py-3 font-medium', i === 0 || i === 1 ? 'text-left' : 'text-right')}>{h}</th>)}</tr></thead>
             <tbody>
               {detail.map((r) => (
                 <tr key={r.name} className="border-t hover:bg-muted/30">
                   <td className="px-4 py-3"><span className="inline-flex items-center gap-2 font-medium"><span className="size-2.5 rounded-full" style={{ background: r.color }} />{r.name}</span></td>
+                  <td className="px-4 py-3"><span className={cn('inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-medium', r.role === 'owner' ? 'bg-[#e8f7ee] text-[#1bbf7a]' : 'bg-[#eff5ff] text-[#086de0]')}>{r.role === 'owner' ? '归属主体' : '参与方'} · {r.roleLabel}</span></td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.orders}</td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.tons.toFixed(2)}</td>
                   <td className="px-4 py-3 text-right tabular-nums text-[#ee7c30]">{r.emit.toFixed(2)}</td>
@@ -210,6 +243,7 @@ export function CarbonStatistics() {
               ))}
               <tr className="border-t bg-[#f5f7fa] font-semibold">
                 <td className="px-4 py-3">合计</td>
+                <td className="px-4 py-3 text-xs font-normal text-muted-foreground">归属 {OWNED_REDUCE.toFixed(2)} / 参与 {PARTAKER_REDUCE.toFixed(2)}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{total.orders}</td>
                 <td className="px-4 py-3 text-right tabular-nums">{total.tons.toFixed(2)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-[#ee7c30]">{total.emit.toFixed(2)}</td>
