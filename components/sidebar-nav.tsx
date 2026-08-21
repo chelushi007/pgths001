@@ -46,6 +46,11 @@ const NAV_GROUPS: NavGroup[] = [
     icon: LayoutDashboard,
     children: [
       {
+        key: 'workbench-home',
+        label: '个人工作台首页',
+        icon: LayoutDashboard,
+      },
+      {
         key: 'revitalize',
         label: '资源盘活',
         icon: Recycle,

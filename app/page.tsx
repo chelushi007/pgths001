@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { LayoutDashboard, Bell, Search } from 'lucide-react'
 import { SidebarNav } from '@/components/sidebar-nav'
+import { PersonalWorkbench } from '@/components/personal-workbench'
 import { PublishAnnouncement } from '@/components/publish-announcement'
 import { FulfillmentList } from '@/components/fulfillment-list'
 import { ProcurementAnnouncement } from '@/components/procurement-announcement'
@@ -12,8 +13,8 @@ import { CarbonStatistics } from '@/components/carbon-statistics'
 
 export default function Page() {
   const [active, setActive] = useState({
-    key: 'd-publish',
-    label: '发布公告',
+    key: 'workbench-home',
+    label: '个人工作台首页',
     group: '个人工作台',
   })
 
@@ -63,7 +64,9 @@ export default function Page() {
 
         {/* 内容区 */}
         <main className="flex-1 overflow-y-auto p-6">
-          {active.key === 'publish' ? (
+          {active.key === 'workbench-home' ? (
+            <PersonalWorkbench />
+          ) : active.key === 'publish' ? (
             <PublishAnnouncement mode="rental" />
           ) : active.key === 'd-publish' ? (
             <PublishAnnouncement mode="disposal" />
