@@ -435,9 +435,12 @@ export function FulfillmentList({
   const isTransferee = mode === 'disposal-transferee'
   // 承租方（出租收货方）：使用出租数据与流转方式筛选，但以收货视角履约
   const isLessee = mode === 'rental-lessee'
-  // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看，展示碳减排量但无碳凭证
+  // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看
+  // 承租方展示碳减排量但无碳凭证；受让方碳凭证归属受让方（见下方 isTransferor）
   const isSelfReceiver = isTransferee || isLessee
   const isDisposal = mode === 'disposal' || isTransferee
+  // 转让方（发起处置转让的一方）：仅体现碳减排贡献，碳凭证归属受让方、不再由转让方核发
+  const isTransferor = mode === 'disposal'
   // 钢厂回收：实质为采购废钢（再生资源），复用采购模式的全部行为
   const isScrap =
     mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
@@ -629,7 +632,9 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
                 {!hideCarbon && (
-                  <th className="px-4 py-3 font-medium">碳减排量</th>
+                  <th className="px-4 py-3 font-medium">
+                    {isTransferor ? '碳减排贡献' : '碳减排量'}
+                  </th>
                 )}
                 <th className="px-4 py-3 font-medium">操作</th>
               </tr>
@@ -737,10 +742,11 @@ export function FulfillmentList({
                                 : '管理项目'}
                           </button>
                         )}
-                        {/* 出租方 / 转让方履约结束的碳凭证入口；受让方 / 承租方（收货方）不出碳凭证 */}
+                        {/* 出租方履约结束的碳凭证入口；转让方碳凭证归属受让方、此处不核发；承租方（收货方）不出碳凭证 */}
                         {isEnded &&
                           !isProcurement &&
                           !isSelfReceiver &&
+                          !isTransferor &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
@@ -766,6 +772,30 @@ export function FulfillmentList({
                         {isEnded &&
                           isBuyer &&
                           (!p.isNewProduct || isScrap) &&
+                          (p.certState === 'generate' ? (
+                            <button
+                              type="button"
+                              onClick={() => setGenerateProject(p)}
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-5 transition-colors hover:text-chart-5/80"
+                            >
+                              <FilePlus2 className="size-3.5" />
+                              生成碳凭证
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCertProject({ code: p.code, title: p.title })
+                              }
+                              className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                            >
+                              <ShieldCheck className="size-3.5" />
+                              碳凭证
+                            </button>
+                          ))}
+                        {/* 受让方（处置收货方）履约结束的碳凭证入口：转让业务碳凭证归属受让方 */}
+                        {isEnded &&
+                          isTransferee &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
