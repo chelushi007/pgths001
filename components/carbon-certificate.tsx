@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞价，价高���得',
+    desc: '多家受让方在线报价参与竞价，价高�����得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -655,6 +655,7 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     transportNewReduction: '0.32',
     netReduction: '182.05',
     netRate: '100',
+    holder: '广州帝隆科技股份有限公司（承租方）',
     orderNo: 'ZLDD20260520002',
     flow: {
       ownerTitle: '出租方',

@@ -633,7 +633,7 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">报名截止</th>
                 {!hideCarbon && (
                   <th className="px-4 py-3 font-medium">
-                    {isTransferor ? '碳减排贡献' : '碳减排量'}
+                    {isTransferor || isLessor ? '碳减排贡献' : '碳减排量'}
                   </th>
                 )}
                 <th className="px-4 py-3 font-medium">操作</th>
@@ -742,11 +742,12 @@ export function FulfillmentList({
                                 : '管理项目'}
                           </button>
                         )}
-                        {/* 出租方履约结束的碳凭证入口；转让方碳凭证归属受让方、此处不核发；承租方（收货方）不出碳凭证 */}
+                        {/* 出租方碳凭证归属承租方、转让方碳凭证归属受让方，此处均不核发；承租方（收货方）碳凭证见下方入口 */}
                         {isEnded &&
                           !isProcurement &&
                           !isSelfReceiver &&
                           !isTransferor &&
+                          !isLessor &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
@@ -793,9 +794,9 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
-                        {/* 受让方（处置收货方）履约结束的碳凭证入口：转让业务碳凭证归属受让方 */}
+                        {/* 收货方（受让方 / 承租方）履约结束的碳凭证入口：转让/出租业务碳凭证分别归属受让方 / 承租方 */}
                         {isEnded &&
-                          isTransferee &&
+                          isSelfReceiver &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
