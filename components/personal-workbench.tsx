@@ -169,7 +169,7 @@ const activities = [
 ]
 
 const chartConfig = {
-  reduce: { label: '循环减碳', color: BLUE },
+  reduce: { label: '循环减碳', color: GREEN },
   emit: { label: '碳排放', color: ORANGE },
 } satisfies ChartConfig
 
@@ -180,6 +180,15 @@ const NET_TOTAL = REDUCE_TOTAL - EMIT_TOTAL // 净碳效益
 const CARBON_CREDIT = 1013 // 碳积分余额
 const TREES = Math.round((NET_TOTAL * 1000) / 18.3) // 等效植树（按每棵年固碳约18.3kg）
 const COAL = (NET_TOTAL * 0.4).toFixed(1) // 等效节约标煤（吨）
+// 减碳率：减碳贡献相对总活动碳基准（减碳 + 排放）的比例
+const REDUCE_RATE = ((REDUCE_TOTAL / (REDUCE_TOTAL + EMIT_TOTAL)) * 100).toFixed(1)
+
+// 企业碳排放来源构成（tCO₂e，合计 = EMIT_TOTAL）
+const EMISSION_SOURCES = [
+  { key: 'process', name: '废钢改制加工', value: 8.6, color: ORANGE },
+  { key: 'transport', name: '运输物流', value: 4.2, color: BLUE },
+  { key: 'energy', name: '能源消耗', value: 5.5, color: TEAL },
+]
 
 export function PersonalWorkbench() {
   const totalActive = BUSINESSES.reduce((s, b) => s + b.active, 0)
@@ -259,56 +268,147 @@ export function PersonalWorkbench() {
           </span>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_1.3fr]">
-          {/* 左：核心账户数值 */}
+        {/* 三大核心账户数值：减碳贡献 / 碳排放 / 净碳效益 */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl bg-[#e8f7ee] p-5">
+            <div className="flex items-center gap-2 text-sm text-[#1bbf7a]">
+              <TrendingDown className="size-4" />
+              循环减碳贡献（累计）
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <b className="text-3xl tabular-nums text-[#128a56]">
+                {REDUCE_TOTAL.toFixed(2)}
+              </b>
+              <span className="text-sm text-[#1bbf7a]">tCO₂e</span>
+            </p>
+            <p className="mt-1.5 text-xs text-[#1bbf7a]/80">
+              资源循环利用相对新品生产的碳减排总量
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#fff1e6] p-5">
+            <div className="flex items-center gap-2 text-sm text-[#ee7c30]">
+              <TrendingUp className="size-4" />
+              企业碳排放（累计）
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <b className="text-3xl tabular-nums text-[#c85f1e]">
+                {EMIT_TOTAL.toFixed(2)}
+              </b>
+              <span className="text-sm text-[#ee7c30]">tCO₂e</span>
+            </p>
+            <p className="mt-1.5 text-xs text-[#ee7c30]/80">
+              改制加工 / 运输 / 能源等环节自身排放
+            </p>
+          </div>
+          <div className="rounded-xl bg-[#e7f1ff] p-5">
+            <div className="flex items-center gap-2 text-sm text-[#086de0]">
+              <Leaf className="size-4" />
+              净碳效益
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <b className="text-3xl tabular-nums text-[#0a58b0]">
+                {NET_TOTAL.toFixed(2)}
+              </b>
+              <span className="text-sm text-[#086de0]">tCO₂e</span>
+            </p>
+            <p className="mt-1.5 text-xs text-[#086de0]/80">
+              减碳贡献扣除自身排放，减碳率 {REDUCE_RATE}%
+            </p>
+          </div>
+        </div>
+
+        {/* 碳台账对比条：减碳贡献 vs 企业碳排放 */}
+        <div className="mt-4 rounded-xl border p-5">
+          <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="flex items-center gap-1.5 text-[#128a56]">
+              <span className="size-2.5 rounded-full bg-[#1bbf7a]" />
+              循环减碳贡献 {REDUCE_TOTAL.toFixed(2)} tCO₂e
+            </span>
+            <span className="flex items-center gap-1.5 text-[#ee7c30]">
+              <span className="size-2.5 rounded-full bg-[#ee7c30]" />
+              企业碳排放 {EMIT_TOTAL.toFixed(2)} tCO₂e
+            </span>
+          </div>
+          <div className="flex h-4 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-[#1bbf7a]"
+              style={{ width: `${REDUCE_RATE}%` }}
+            />
+            <div className="h-full flex-1 bg-[#ee7c30]" />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            每产生 1 吨自身碳排放，即为社会创造约{' '}
+            <b className="text-[#128a56]">
+              {(REDUCE_TOTAL / EMIT_TOTAL).toFixed(1)}
+            </b>{' '}
+            吨循环减碳效益
+          </p>
+        </div>
+
+        <div className="mt-4 grid gap-5 lg:grid-cols-[minmax(0,1fr)_1.3fr]">
+          {/* 左：减碳贡献构成 + 碳排放构成 */}
           <div className="flex flex-col gap-4">
-            <div className="rounded-xl bg-[#e8f7ee] p-5">
-              <div className="flex items-center gap-2 text-sm text-[#1bbf7a]">
-                <TrendingDown className="size-4" />
-                循环减碳贡献（累计）
-              </div>
-              <p className="mt-2 flex items-baseline gap-1.5">
-                <b className="text-3xl tabular-nums text-[#128a56]">
-                  {REDUCE_TOTAL.toFixed(2)}
-                </b>
-                <span className="text-sm text-[#1bbf7a]">tCO₂e</span>
-              </p>
-              <p className="mt-1.5 text-xs text-[#1bbf7a]/80">
-                资源循环利用相对新品生产的碳减排总量
-              </p>
+            <div className="rounded-xl border p-5">
+              <p className="mb-3 text-sm font-medium">减碳贡献构成（按业务）</p>
+              <ul className="flex flex-col gap-3">
+                {BUSINESSES.map((b) => (
+                  <li key={b.key} className="flex items-center gap-3">
+                    <span className="w-16 shrink-0 text-xs text-muted-foreground">
+                      {b.name}
+                    </span>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${(b.reduce / REDUCE_TOTAL) * 100}%`,
+                          background: b.color,
+                        }}
+                      />
+                    </div>
+                    <span
+                      className="w-20 shrink-0 text-right text-xs font-medium tabular-nums"
+                      style={{ color: b.color }}
+                    >
+                      {b.reduce.toFixed(2)} t
+                    </span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-xl border p-4">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <TrendingUp className="size-3.5 text-[#ee7c30]" />
-                  企业碳排放
-                </div>
-                <p className="mt-2 flex items-baseline gap-1">
-                  <b className="text-xl tabular-nums text-[#ee7c30]">
-                    {EMIT_TOTAL.toFixed(2)}
-                  </b>
-                  <span className="text-xs text-muted-foreground">tCO₂e</span>
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  改制 / 运输等环节排放
-                </p>
+            <div className="rounded-xl border p-5">
+              <p className="mb-3 text-sm font-medium">碳排放来源构成</p>
+              <div className="mb-3 flex h-3 overflow-hidden rounded-full">
+                {EMISSION_SOURCES.map((s) => (
+                  <div
+                    key={s.key}
+                    className="h-full"
+                    style={{
+                      width: `${(s.value / EMIT_TOTAL) * 100}%`,
+                      background: s.color,
+                    }}
+                  />
+                ))}
               </div>
-              <div className="rounded-xl border p-4">
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Leaf className="size-3.5 text-[#086de0]" />
-                  净碳效益
-                </div>
-                <p className="mt-2 flex items-baseline gap-1">
-                  <b className="text-xl tabular-nums text-[#086de0]">
-                    {NET_TOTAL.toFixed(2)}
-                  </b>
-                  <span className="text-xs text-muted-foreground">tCO₂e</span>
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  减碳贡献扣除自身排放
-                </p>
-              </div>
+              <ul className="grid grid-cols-3 gap-2">
+                {EMISSION_SOURCES.map((s) => (
+                  <li key={s.key}>
+                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ background: s.color }}
+                      />
+                      {s.name}
+                    </span>
+                    <p className="mt-0.5 text-sm font-medium tabular-nums">
+                      {s.value.toFixed(1)}
+                      <span className="ml-0.5 text-[11px] font-normal text-muted-foreground">
+                        t
+                      </span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {/* 等效换算 */}
@@ -342,12 +442,12 @@ export function PersonalWorkbench() {
                 循环减碳 vs 碳排放（tCO₂e）
               </p>
             </div>
-            <ChartContainer config={chartConfig} className="h-64 w-full">
+            <ChartContainer config={chartConfig} className="h-72 w-full">
               <AreaChart data={carbonTrend} margin={{ left: 4, right: 8 }}>
                 <defs>
                   <linearGradient id="wb-reduce" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={BLUE} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={BLUE} stopOpacity={0.02} />
+                    <stop offset="5%" stopColor={GREEN} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={GREEN} stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="wb-emit" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={ORANGE} stopOpacity={0.3} />
@@ -361,7 +461,7 @@ export function PersonalWorkbench() {
                 <Area
                   dataKey="reduce"
                   name="循环减碳"
-                  stroke={BLUE}
+                  stroke={GREEN}
                   strokeWidth={2.5}
                   fill="url(#wb-reduce)"
                 />
