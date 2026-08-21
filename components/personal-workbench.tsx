@@ -40,8 +40,26 @@ function cn(...cls: (string | false | undefined)[]) {
   return cls.filter(Boolean).join(' ')
 }
 
+// 减碳贡献角色：
+// - owner   碳减排归属主体：减碳确权计入本企业碳账户（如采购方、钢厂回收方）
+// - partaker 参与方：促成交易对方减碳，碳凭证归属对方，本企业仅体现减碳贡献（如出租方、转让方）
+type ReduceRole = 'owner' | 'partaker'
+
 // 四类业务概览：资源处置 / 资源出租 / 资源采购 / 钢厂回收
-const BUSINESSES = [
+const BUSINESSES: Array<{
+  key: string
+  name: string
+  icon: typeof PackageOpen
+  color: string
+  tint: string
+  active: number
+  pending: number
+  done: number
+  tons: number
+  reduce: number
+  role: ReduceRole
+  roleLabel: string
+}> = [
   {
     key: 'disposal',
     name: '资源处置',
@@ -53,6 +71,8 @@ const BUSINESSES = [
     done: 2,
     tons: 91.0,
     reduce: 34.7,
+    role: 'partaker',
+    roleLabel: '转让方',
   },
   {
     key: 'rental',
@@ -65,6 +85,8 @@ const BUSINESSES = [
     done: 2,
     tons: 229.0,
     reduce: 42.26,
+    role: 'partaker',
+    roleLabel: '出租方',
   },
   {
     key: 'procurement',
@@ -77,6 +99,8 @@ const BUSINESSES = [
     done: 2,
     tons: 308.5,
     reduce: 13.92,
+    role: 'owner',
+    roleLabel: '采购方',
   },
   {
     key: 'steel',
@@ -89,6 +113,8 @@ const BUSINESSES = [
     done: 1,
     tons: 174.6,
     reduce: 28.4,
+    role: 'owner',
+    roleLabel: '回收方',
   },
 ]
 
@@ -182,6 +208,16 @@ const TREES = Math.round((NET_TOTAL * 1000) / 18.3) // 等效植树（按每棵�
 const COAL = (NET_TOTAL * 0.4).toFixed(1) // 等效节约标煤（吨）
 // 减碳率：减碳贡献相对总活动碳基准（减碳 + 排放）的比例
 const REDUCE_RATE = ((REDUCE_TOTAL / (REDUCE_TOTAL + EMIT_TOTAL)) * 100).toFixed(1)
+
+// 两类减碳：归属主体减碳（确权入账） / 参与方减碳贡献（促成对方）
+const OWNED_REDUCE = BUSINESSES.filter((b) => b.role === 'owner').reduce(
+  (s, b) => s + b.reduce,
+  0,
+)
+const PARTAKER_REDUCE = BUSINESSES.filter((b) => b.role === 'partaker').reduce(
+  (s, b) => s + b.reduce,
+  0,
+)
 
 // 企业碳排放来源构成（tCO₂e，合计 = EMIT_TOTAL）
 const EMISSION_SOURCES = [
@@ -282,7 +318,8 @@ export function PersonalWorkbench() {
               <span className="text-sm text-[#1bbf7a]">tCO₂e</span>
             </p>
             <p className="mt-1.5 text-xs text-[#1bbf7a]/80">
-              资源循环利用相对新品生产的碳减排总量
+              含归属主体减碳 {OWNED_REDUCE.toFixed(2)} + 参与方贡献{' '}
+              {PARTAKER_REDUCE.toFixed(2)} tCO₂e
             </p>
           </div>
           <div className="rounded-xl bg-[#fff1e6] p-5">
@@ -314,6 +351,83 @@ export function PersonalWorkbench() {
             <p className="mt-1.5 text-xs text-[#086de0]/80">
               减碳贡献扣除自身排放，减碳率 {REDUCE_RATE}%
             </p>
+          </div>
+        </div>
+
+        {/* 减碳贡献分类：归属主体减碳 / 参与方减碳贡献 */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-[#1bbf7a]/35 bg-[#f4fbf7] p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#128a56]">
+                <Leaf className="size-4" />
+                归属主体减碳（确权入账）
+              </div>
+              <span className="rounded-full bg-[#e8f7ee] px-2.5 py-0.5 text-[11px] font-medium text-[#1bbf7a]">
+                计入本企业碳账户
+              </span>
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <b className="text-2xl tabular-nums text-[#128a56]">
+                {OWNED_REDUCE.toFixed(2)}
+              </b>
+              <span className="text-xs text-[#1bbf7a]">
+                tCO₂e · 占比 {((OWNED_REDUCE / REDUCE_TOTAL) * 100).toFixed(1)}%
+              </span>
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              本企业作为采购方 / 钢厂回收方，减碳量确权归属并计入自身碳资产
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {BUSINESSES.filter((b) => b.role === 'owner').map((b) => (
+                <span
+                  key={b.key}
+                  className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] text-muted-foreground"
+                >
+                  <span
+                    className="size-1.5 rounded-full"
+                    style={{ background: b.color }}
+                  />
+                  {b.name}（{b.roleLabel}）{b.reduce.toFixed(2)}t
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-[#086de0]/30 bg-[#eff5ff] p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-[#0a58b0]">
+                <Recycle className="size-4" />
+                参与方减碳贡献（促成对方）
+              </div>
+              <span className="rounded-full bg-[#e0ecff] px-2.5 py-0.5 text-[11px] font-medium text-[#086de0]">
+                碳凭证归属交易对方
+              </span>
+            </div>
+            <p className="mt-2 flex items-baseline gap-1.5">
+              <b className="text-2xl tabular-nums text-[#0a58b0]">
+                {PARTAKER_REDUCE.toFixed(2)}
+              </b>
+              <span className="text-xs text-[#086de0]">
+                tCO₂e · 占比 {((PARTAKER_REDUCE / REDUCE_TOTAL) * 100).toFixed(1)}%
+              </span>
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              本企业作为出租方 / 转让方，促成承租方 / 受让方减碳，仅体现贡献
+            </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {BUSINESSES.filter((b) => b.role === 'partaker').map((b) => (
+                <span
+                  key={b.key}
+                  className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] text-muted-foreground"
+                >
+                  <span
+                    className="size-1.5 rounded-full"
+                    style={{ background: b.color }}
+                  />
+                  {b.name}（{b.roleLabel}）{b.reduce.toFixed(2)}t
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -349,16 +463,41 @@ export function PersonalWorkbench() {
           {/* 左：减碳贡献构成 + 碳排放构成 */}
           <div className="flex flex-col gap-4">
             <div className="rounded-xl border p-5">
-              <p className="mb-3 text-sm font-medium">减碳贡献构成（按业务）</p>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-medium">减碳贡献构成（按业务）</p>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <span className="size-2 rounded-full bg-[#1bbf7a]" />
+                    归属主体
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="size-2 rounded-full border border-[#086de0]" />
+                    参与方
+                  </span>
+                </div>
+              </div>
               <ul className="flex flex-col gap-3">
                 {BUSINESSES.map((b) => (
                   <li key={b.key} className="flex items-center gap-3">
-                    <span className="w-16 shrink-0 text-xs text-muted-foreground">
+                    <span className="flex w-24 shrink-0 flex-col text-xs text-muted-foreground">
                       {b.name}
+                      <span
+                        className={cn(
+                          'mt-0.5 inline-flex w-fit items-center rounded px-1 text-[10px]',
+                          b.role === 'owner'
+                            ? 'bg-[#e8f7ee] text-[#1bbf7a]'
+                            : 'bg-[#eff5ff] text-[#086de0]',
+                        )}
+                      >
+                        {b.role === 'owner' ? '归属主体' : '参与方'}·{b.roleLabel}
+                      </span>
                     </span>
                     <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
                       <div
-                        className="h-full rounded-full"
+                        className={cn(
+                          'h-full rounded-full',
+                          b.role === 'partaker' && 'opacity-55',
+                        )}
                         style={{
                           width: `${(b.reduce / REDUCE_TOTAL) * 100}%`,
                           background: b.color,
