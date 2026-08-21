@@ -445,10 +445,10 @@ export function FulfillmentList({
   const isScrap =
     mode === 'procurement-scrap' || mode === 'procurement-scrap-buyer'
   const isBuyer = mode === 'procurement-buyer' || mode === 'procurement-scrap-buyer'
-  // 仅供应商（供货方）隐藏碳信息；采购方（收货方）需展示碳核算
+  // 供应商（供货方）展示「碳减排贡献」，采购方（收货方）展示「碳减排量」，均需碳核算
   const isSupplier = mode === 'procurement' || mode === 'procurement-scrap'
   const isProcurement = isSupplier || isBuyer
-  const hideCarbon = isSupplier
+  const hideCarbon = false
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
@@ -633,7 +633,7 @@ export function FulfillmentList({
                 <th className="px-4 py-3 font-medium">报名截止</th>
                 {!hideCarbon && (
                   <th className="px-4 py-3 font-medium">
-                    {isTransferor || isLessor ? '碳减排贡献' : '碳减排量'}
+                    {isTransferor || isLessor || isSupplier ? '碳减排贡献' : '碳减排量'}
                   </th>
                 )}
                 <th className="px-4 py-3 font-medium">操作</th>
