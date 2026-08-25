@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞价，价高者得',
+    desc: '多家受让方在线报价参与竞���，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -619,6 +619,19 @@ type CertConfig = {
   netRate: string
   // 碳凭证归属主体（如转让业务归属受让方）；未设置时不展示归属字段
   holder?: string
+  // 出租整备加工碳排放（仅出租业务）：未设置时不展示整备加工区
+  prep?: {
+    emission: string
+    weightBefore: string
+    weightAfter: string
+    types: string[]
+    rows: {
+      process: string
+      energy: string
+      factor: string
+      emission: string
+    }[]
+  }
   orderNo: string
   flow: {
     ownerTitle: string
@@ -656,6 +669,18 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     netReduction: '182.05',
     netRate: '100',
     holder: '广州帝隆科技股份有限公司（承租方）',
+    prep: {
+      emission: '0.46',
+      weightBefore: '86.40 吨',
+      weightAfter: '85.92 吨',
+      types: ['清洗', '除锈', '检测', '维修'],
+      rows: [
+        { process: '清洗', energy: '电力', factor: '2.30', emission: '0.12' },
+        { process: '除锈', energy: '电力', factor: '3.15', emission: '0.19' },
+        { process: '检测', energy: '电力', factor: '0.85', emission: '0.05' },
+        { process: '维修（焊接/矫正）', energy: '电力', factor: '1.72', emission: '0.10' },
+      ],
+    },
     orderNo: 'ZLDD20260520002',
     flow: {
       ownerTitle: '出租方',
@@ -1074,17 +1099,94 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           <span className="font-semibold text-primary">
             {cfg.netReduction} tCO₂e
           </span>
-          。运输碳排放 {cfg.transportTotal} tCO₂e 单独列示、不计入碳减排量。
+          。
+          {cfg.prep
+            ? `整备加工碳排放 ${cfg.prep.emission} tCO₂e、运输碳排放 ${cfg.transportTotal} tCO₂e 均单独列示、不计入碳减排量。`
+            : `运输碳排放 ${cfg.transportTotal} tCO₂e 单独列示、不计入碳减排量。`}
         </p>
       </div>
 
       {/* 指标卡 */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div
+        className={`grid grid-cols-2 gap-4 md:grid-cols-2 ${
+          cfg.prep ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
+        }`}
+      >
         <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />
         <MetricCard icon={TrendingDown} label="碳减排量" value={cfg.netReduction} unit="tCO₂e" highlight />
+        {cfg.prep && (
+          <MetricCard icon={HardHat} label="整备加工碳排放（参考）" value={cfg.prep.emission} unit="tCO₂e" />
+        )}
         <MetricCard icon={Truck} label="运输碳排放（参考）" value={cfg.transportTotal} unit="tCO₂e" />
         <MetricCard icon={Zap} label="运输碳减排（新能源）" value={cfg.transportNewReduction} unit="tCO₂e" />
       </div>
+
+      {/* 出租整备加工碳排放表（仅出租业务） */}
+      {cfg.prep && (
+        <div>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-foreground">
+              本次出租整备加工碳排放
+            </h3>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1 text-chart-4">
+                <span className="size-2 rounded-full bg-chart-4" />
+                整备加工碳排放合计 {cfg.prep.emission} tCO₂e
+              </span>
+              <span className="text-muted-foreground">
+                整备前 {cfg.prep.weightBefore} → 整备后 {cfg.prep.weightAfter}
+              </span>
+            </div>
+          </div>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {cfg.prep.types.map((t) => (
+              <span
+                key={t}
+                className="inline-flex items-center rounded bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+            <table className="w-full min-w-[520px] border-collapse text-sm">
+              <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2.5 font-medium">整备工序</th>
+                  <th className="px-3 py-2.5 font-medium">能源类型</th>
+                  <th className="px-3 py-2.5 text-right font-medium">
+                    加工因子(kgCO₂e/吨)
+                  </th>
+                  <th className="px-3 py-2.5 text-right font-medium">加工碳排放</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cfg.prep.rows.map((r) => (
+                  <tr key={r.process} className="border-t border-border">
+                    <td className="px-3 py-3 text-foreground">{r.process}</td>
+                    <td className="px-3 py-3">
+                      <span className="inline-flex items-center gap-1 rounded bg-primary/12 px-2 py-0.5 text-xs font-medium text-primary">
+                        <Zap className="size-3" />
+                        {r.energy}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">
+                      {r.factor}
+                    </td>
+                    <td className="px-3 py-3 text-right font-medium tabular-nums text-chart-4">
+                      {r.emission}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            整备加工碳排放 = 各工序能耗 × 加工因子，反映出租前清洗、除锈、切割、焊接、矫正、喷涂、检测、维修等整备环节的能耗排放，单独列示供参考，
+            <b className="text-foreground">不计入本次碳减排量</b>。
+          </p>
+        </div>
+      )}
 
       {/* 运输碳排放表 */}
       <div>

@@ -55,6 +55,13 @@ type ProjectRow = {
   // - emitTransferee 受让方将资源运输至钢厂的运输碳排放（预估）+ 改制加工碳排放
   emitTransferor?: number
   emitTransferee?: number
+  // 出租/退租业务碳排放（tCO₂e）：
+  // - emitPrep 出租整备碳排放（清洗/除锈/切割/焊接/矫正/喷涂/检测/维修等）
+  // - emitRentTransport 出租运输碳排放（出租方→承租方）
+  // - emitReturnTransport 退租运输碳排放（承租方→出租方）
+  emitPrep?: number
+  emitRentTransport?: number
+  emitReturnTransport?: number
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -72,6 +79,9 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Q355 / Φ60×3.2mm',
     rentalSeq: 3,
     weight: 130.20,
+    emitPrep: 0.86,
+    emitRentTransport: 0.42,
+    emitReturnTransport: 0.40,
   },
   {
     code: '2089230162376921088',
@@ -87,6 +97,9 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     resourceSpec: '321型 / 3.0m',
     rentalSeq: 5,
     weight: 52.30,
+    emitPrep: 0.34,
+    emitRentTransport: 0.18,
+    emitReturnTransport: 0.17,
   },
   {
     code: '2088517041526018048',
@@ -102,6 +115,9 @@ const ACTIVE_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Φ48×3.5mm',
     rentalSeq: 6,
     weight: 85.40,
+    emitPrep: 0.55,
+    emitRentTransport: 0.28,
+    emitReturnTransport: 0.27,
   },
 ]
 
@@ -121,6 +137,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Q355 / Φ60×3.2mm',
     rentalSeq: 2,
     weight: 126.85,
+    emitPrep: 0.82,
+    emitRentTransport: 0.41,
+    emitReturnTransport: 0.39,
   },
   {
     code: '2087441038265520128',
@@ -137,6 +156,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Q355 / Φ60×3.2mm',
     rentalSeq: 1,
     weight: 128.60,
+    emitPrep: 0.84,
+    emitRentTransport: 0.42,
+    emitReturnTransport: 0.40,
   },
   {
     code: '2087111470823018400',
@@ -156,6 +178,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Φ48×3.5mm',
     rentalSeq: 5,
     weight: 83.72,
+    emitPrep: 0.54,
+    emitRentTransport: 0.27,
+    emitReturnTransport: 0.26,
   },
   {
     code: '2086901355420188160',
@@ -172,6 +197,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     resourceSpec: 'Ⅲ型 / 2.6m',
     rentalSeq: 2,
     weight: 214.00,
+    emitPrep: 1.38,
+    emitRentTransport: 0.69,
+    emitReturnTransport: 0.66,
   },
   {
     code: '2086331209988110336',
@@ -187,6 +215,9 @@ const ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '贝雷片',
     resourceSpec: '321型 / 3.0m',
     rentalSeq: 4,
+    emitPrep: 0.62,
+    emitRentTransport: 0.31,
+    emitReturnTransport: 0.30,
     weight: 51.05,
   },
 ]
@@ -469,8 +500,14 @@ export function FulfillmentList({
   const hideCarbon = false
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
-  // 碳排放列：转让方履约结束展示运输碳排放；受让方（进行中/结束）展示运输(预估)+改制加工碳排放
-  const showEmission = (isTransferor && isEnded) || isTransferee
+  // 碳排放列：
+  // - 转让方履约结束：运输碳排放；受让方（进行中/结束）：运输(预估)+改制加工
+  // - 出租方（进行中）：出租整备+出租运输；出租方（结束）：出租整备+退租运输
+  // - 承租方（进行中/结束）：退租运输
+  const showEmission =
+    (isTransferor && isEnded) || isTransferee || isLessor || isLessee
+  // 出租次数列：出租方履约/履约结束展示
+  const showRentalSeq = isLessor
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
   const rawProjects = isProcurement
@@ -649,6 +686,9 @@ export function FulfillmentList({
                 {showResourceCol && (
                   <th className="px-4 py-3 font-medium">重量(吨)</th>
                 )}
+                {showRentalSeq && (
+                  <th className="px-4 py-3 font-medium">出租次数</th>
+                )}
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
                 {showEmission && (
@@ -669,7 +709,8 @@ export function FulfillmentList({
                     colSpan={
                       (hideCarbon ? 7 : 8) +
                       (showResourceCol ? 3 : 0) +
-                      (showEmission ? 1 : 0)
+                      (showEmission ? 1 : 0) +
+                      (showRentalSeq ? 1 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -720,6 +761,17 @@ export function FulfillmentList({
                         {p.weight?.toFixed(2) ?? '—'}
                       </td>
                     )}
+                    {showRentalSeq && (
+                      <td className="whitespace-nowrap px-4 py-3">
+                        {p.rentalSeq != null ? (
+                          <span className="inline-flex items-center rounded bg-chart-1/12 px-2 py-0.5 text-xs font-medium tabular-nums text-chart-1">
+                            第 {p.rentalSeq} 次出租
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                    )}
                     <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupStart}
                     </td>
@@ -728,11 +780,37 @@ export function FulfillmentList({
                     </td>
                     {showEmission && (
                       <td className="whitespace-nowrap px-4 py-3">
-                        <EmissionCell
-                          value={isTransferee ? p.emitTransferee : p.emitTransferor}
-                          note={isTransferee ? '运输(预估) + 改制加工' : '运输至受让方'}
-                          estimated={isTransferee}
-                        />
+                        {(() => {
+                          // 各角色碳排放口径不同：见 showEmission 注释
+                          let value: number | undefined
+                          let note = ''
+                          let estimated = false
+                          if (isTransferee) {
+                            value = p.emitTransferee
+                            note = '运输(预估) + 改制加工'
+                            estimated = true
+                          } else if (isTransferor) {
+                            value = p.emitTransferor
+                            note = '运输至受让方'
+                          } else if (isLessor) {
+                            const prep = p.emitPrep ?? 0
+                            const trans = isEnded
+                              ? (p.emitReturnTransport ?? 0)
+                              : (p.emitRentTransport ?? 0)
+                            value = prep + trans
+                            note = isEnded ? '整备 + 退租运输' : '整备 + 出租运输'
+                          } else if (isLessee) {
+                            value = p.emitReturnTransport
+                            note = '退租运输'
+                          }
+                          return (
+                            <EmissionCell
+                              value={value}
+                              note={note}
+                              estimated={estimated}
+                            />
+                          )
+                        })()}
                       </td>
                     )}
                     {!hideCarbon && (

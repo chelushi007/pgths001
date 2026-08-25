@@ -56,6 +56,18 @@ const REPROCESS_VEHICLES: Record<string, string[]> = {
 // 运输能源类型
 const REPROCESS_ENERGIES = ['柴油', '汽油', '电力', 'LNG', '氢能'] as const
 
+// 出租方「出租整备」板块选项
+const RENTAL_PREP_TYPES = [
+  '清洗',
+  '除锈',
+  '切割',
+  '焊接',
+  '矫正',
+  '喷涂',
+  '检测',
+  '维修',
+] as const
+
 const STEPS = ['正式挂牌', '报名审核', '报价', '成交确认', '履约']
 
 type PaymentRow = {
@@ -235,6 +247,8 @@ export function FulfillmentDetail({
   const isTransferee = mode === 'disposal-transferee'
   // 承租方（出租收货方）：收货视角，业务字段为出租口径（对手方为出租方、款项为租金）
   const isLessee = mode === 'rental-lessee'
+  // 出租方（发起出租的一方）：默认租赁管理视角
+  const isLessor = mode === 'rental'
   const isReceiver = isBuyer || isTransferee || isLessee
   const [tab, setTab] = useState<'perform' | 'passed'>('passed')
   const [pickups, setPickups] = useState<PickupRow[]>(INITIAL_PICKUPS)
@@ -480,7 +494,7 @@ export function FulfillmentDetail({
               isLessee
                 ? '租金支付'
                 : isTransferee
-                  ? '转让款支付'
+                  ? '���让款支付'
                   : isBuyer
                     ? '货款支付'
                     : isProcurement
@@ -699,6 +713,11 @@ export function FulfillmentDetail({
 
           {/* 改制加工：与收货情况并列，仅受让方展示，位置在收货情况之后 */}
           {isTransferee && <ReprocessCard readOnly={readOnly} />}
+
+          {/* 出租整备：与提货情况并列，仅出租方展示，位置在提货情况之后 */}
+          {isLessor && (
+            <RentalPrepCard readOnly={project.status === '履约结束'} />
+          )}
         </div>
 
         {/* 底部 */}
@@ -1633,6 +1652,120 @@ function TransportTrackDialog({
 }
 
 /* ------------------------- 复用小组件 ------------------------- */
+
+// 出租方「出租整备」板块：与「提货情况」并列的独立卡片，记录整备类型、整备后重量及过磅单，均为非强制项
+function RentalPrepCard({ readOnly }: { readOnly?: boolean }) {
+  const [types, setTypes] = useState<string[]>([])
+  const [weight, setWeight] = useState('')
+  const [weighFile, setWeighFile] = useState<string | null>(null)
+  const fileRef = useRef<HTMLInputElement | null>(null)
+  const disabled = !!readOnly
+
+  return (
+    <Card
+      title="出租整备"
+      actions={
+        <span className="rounded bg-muted px-2 py-0.5 text-[11px] font-normal text-muted-foreground">
+          选填
+        </span>
+      }
+    >
+      <div>
+        {/* 整备加工类型（可多选） */}
+        <div>
+          <FieldLabel label="整备加工类型" />
+          <div className="flex flex-wrap gap-2">
+            {RENTAL_PREP_TYPES.map((t) => {
+              const on = types.includes(t)
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() =>
+                    setTypes((prev) =>
+                      prev.includes(t)
+                        ? prev.filter((x) => x !== t)
+                        : [...prev, t],
+                    )
+                  }
+                  className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                    on
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-input bg-background text-foreground hover:bg-accent'
+                  }`}
+                >
+                  {t}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 整备后重量 + 过磅单 */}
+        <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+          <div>
+            <FieldLabel label="整备后重量（吨）" />
+            <input
+              value={weight}
+              inputMode="decimal"
+              disabled={disabled}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="请输入整备后过磅重量"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted"
+            />
+          </div>
+          <div>
+            <FieldLabel label="整备后过磅单" />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) setWeighFile(f.name)
+              }}
+            />
+            {weighFile ? (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm">
+                <FileText className="size-4 text-primary" />
+                <span className="flex-1 truncate text-foreground">{weighFile}</span>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWeighFile(null)
+                      if (fileRef.current) fileRef.current.value = ''
+                    }}
+                    className="text-muted-foreground transition-colors hover:text-destructive"
+                    aria-label="移除整备后过磅单"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => fileRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Upload className="size-4" />
+                上传过磅单
+              </button>
+            )}
+          </div>
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          填写出租前的整备加工内容与整备后重量，用于测算整备加工碳排放、支撑碳减排贡献核算；均为非强制项。
+        </p>
+      </div>
+    </Card>
+  )
+}
 
 // 受让方「改制加工」板块：与「收货情况」并列的独立卡片，记录改制类型、改制后重量、资源去向及后续运输，均为非强制项
 function ReprocessCard({ readOnly }: { readOnly?: boolean }) {
