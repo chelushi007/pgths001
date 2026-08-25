@@ -47,6 +47,14 @@ const REPROCESS_DESTINATIONS = [
   '暂不确定',
 ] as const
 const REPROCESS_TRANSPORTS = ['陆运', '水运', '铁路运输'] as const
+// 各运输方式对应的运输工具
+const REPROCESS_VEHICLES: Record<string, string[]> = {
+  陆运: ['重型货车', '中型货车', '牵引挂车'],
+  水运: ['内河货船', '沿海货船', '驳船'],
+  铁路运输: ['铁路敞车', '铁路棚车'],
+}
+// 运输能源类型
+const REPROCESS_ENERGIES = ['柴油', '汽油', '电力', 'LNG', '氢能'] as const
 
 const STEPS = ['正式挂牌', '报名审核', '报价', '成交确认', '履约']
 
@@ -688,6 +696,9 @@ export function FulfillmentDetail({
             </TableShell>
             <MiniPager total={pickups.length} />
           </Card>
+
+          {/* 改制加工：与收货情况并列，仅受让方展示，位置在收货情况之后 */}
+          {isTransferee && <ReprocessCard readOnly={readOnly} />}
         </div>
 
         {/* 底部 */}
@@ -775,17 +786,9 @@ function PickupOrderDialog({
   // 钢厂回收：按净重自动折算为对应铁矿石类型的等效重量
   const [oreType, setOreType] = useState<OreType>('磁铁矿')
   const [remark, setRemark] = useState('')
-  // 收货方（采购方 / 承租方）确认收货时填写资源去向与用途，非必填（受让方改用「改制加工」板块）
+  // 收货方（采购方 / 承租方）确认收货时填写资源去向与用途，非必填（受让方使用独立「改制加工」板块）
   const [resourceDestination, setResourceDestination] = useState('')
   const [resourceUsage, setResourceUsage] = useState('')
-  // 受让方确认收货时的「改制加工」板块（非强制项）
-  const [reprocessTypes, setReprocessTypes] = useState<string[]>([])
-  const [reprocessWeight, setReprocessWeight] = useState('')
-  const [reprocessWeighFile, setReprocessWeighFile] = useState<string | null>(null)
-  const [reprocessDest, setReprocessDest] = useState('')
-  const [reprocessDistance, setReprocessDistance] = useState('')
-  const [reprocessTransport, setReprocessTransport] = useState('陆运')
-  const reprocessFileRef = useRef<HTMLInputElement | null>(null)
   const [logistics, setLogistics] = useState<LogisticsRow[]>([])
   const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
   const [isNewProduct, setIsNewProduct] = useState(false)
@@ -1407,168 +1410,6 @@ function PickupOrderDialog({
               </div>
             )}
 
-            {/* 受让方确认收货时的「改制加工」板块：记录改制类型、改制后重量、资源去向及后续运输，均为非强制项 */}
-            {isTransferee && (
-              <div className="mt-4 rounded-md border border-border bg-secondary/40 p-4">
-                <div className="mb-4 flex items-center gap-2 text-sm font-medium text-foreground">
-                  <Recycle className="size-4 text-primary" />
-                  改制加工
-                  <span className="rounded bg-muted px-1.5 py-0.5 text-[11px] font-normal text-muted-foreground">
-                    选填
-                  </span>
-                </div>
-
-                {/* 1. 改制加工类型（可多选） */}
-                <div>
-                  <FieldLabel label="改制加工类型" />
-                  <div className="flex flex-wrap gap-2">
-                    {REPROCESS_TYPES.map((t) => {
-                      const on = reprocessTypes.includes(t)
-                      return (
-                        <button
-                          key={t}
-                          type="button"
-                          onClick={() =>
-                            setReprocessTypes((prev) =>
-                              prev.includes(t)
-                                ? prev.filter((x) => x !== t)
-                                : [...prev, t],
-                            )
-                          }
-                          className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
-                            on
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-input bg-background text-foreground hover:bg-accent'
-                          }`}
-                        >
-                          {t}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* 2. 改制加工后重量 + 过磅单 */}
-                <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-                  <div>
-                    <FieldLabel label="改制加工后重量（吨）" />
-                    <input
-                      value={reprocessWeight}
-                      inputMode="decimal"
-                      onChange={(e) => setReprocessWeight(e.target.value)}
-                      placeholder="请输入改制加工后过磅重量"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel label="改制加工过磅单" />
-                    <input
-                      ref={reprocessFileRef}
-                      type="file"
-                      accept="image/*,application/pdf"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0]
-                        if (f) setReprocessWeighFile(f.name)
-                      }}
-                    />
-                    {reprocessWeighFile ? (
-                      <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm">
-                        <FileText className="size-4 text-primary" />
-                        <span className="flex-1 truncate text-foreground">
-                          {reprocessWeighFile}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setReprocessWeighFile(null)
-                            if (reprocessFileRef.current)
-                              reprocessFileRef.current.value = ''
-                          }}
-                          className="text-muted-foreground transition-colors hover:text-destructive"
-                          aria-label="移除改制加工过磅单"
-                        >
-                          <Trash2 className="size-4" />
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => reprocessFileRef.current?.click()}
-                        className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent"
-                      >
-                        <Upload className="size-4" />
-                        上传过磅单
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* 3. 资源去向 */}
-                <div className="mt-4">
-                  <FieldLabel label="资源去向" />
-                  <div className="flex flex-wrap gap-2">
-                    {REPROCESS_DESTINATIONS.map((d) => (
-                      <button
-                        key={d}
-                        type="button"
-                        onClick={() => setReprocessDest(d)}
-                        className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
-                          reprocessDest === d
-                            ? 'border-primary bg-primary/10 text-primary'
-                            : 'border-input bg-background text-foreground hover:bg-accent'
-                        }`}
-                      >
-                        {d}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 4. 运输到去向目的地的预估距离与运输方式 */}
-                <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-                  <div>
-                    <FieldLabel label="预估运输距离（公里）" />
-                    <div className="relative">
-                      <Navigation className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                      <input
-                        value={reprocessDistance}
-                        inputMode="decimal"
-                        onChange={(e) => setReprocessDistance(e.target.value)}
-                        placeholder="至去向目的地的预估里程"
-                        disabled={reprocessDest === '暂不确定'}
-                        className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <FieldLabel label="运输方式" />
-                    <div className="flex gap-2">
-                      {REPROCESS_TRANSPORTS.map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => setReprocessTransport(m)}
-                          disabled={reprocessDest === '暂不确定'}
-                          className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                            reprocessTransport === m
-                              ? 'border-primary bg-primary/10 text-primary'
-                              : 'border-input bg-background text-foreground hover:bg-accent'
-                          }`}
-                        >
-                          {m}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <p className="mt-3 text-xs text-muted-foreground">
-                  填写改制加工与资源后续去向信息，用于测算运输及改制加工碳排放、支撑碳减排贡献核算；均为非强制项。
-                </p>
-              </div>
-            )}
-
             <div className="mt-4 grid grid-cols-[5rem_1fr] gap-3">
               <label className="pt-2 text-right text-sm text-muted-foreground">
                 备注
@@ -1792,6 +1633,234 @@ function TransportTrackDialog({
 }
 
 /* ------------------------- 复用小组件 ------------------------- */
+
+// 受让方「改制加工」板块：与「收货情况」并列的独立卡片，记录改制类型、改制后重量、资源去向及后续运输，均为非强制项
+function ReprocessCard({ readOnly }: { readOnly?: boolean }) {
+  const [types, setTypes] = useState<string[]>([])
+  const [weight, setWeight] = useState('')
+  const [weighFile, setWeighFile] = useState<string | null>(null)
+  const [dest, setDest] = useState('')
+  const [distance, setDistance] = useState('')
+  const [transport, setTransport] = useState<string>('陆运')
+  const [vehicle, setVehicle] = useState<string>(REPROCESS_VEHICLES['陆运'][0])
+  const [energy, setEnergy] = useState<string>('柴油')
+  const fileRef = useRef<HTMLInputElement | null>(null)
+
+  const disabled = !!readOnly
+  const destUnknown = dest === '暂不确定'
+  const vehicleOptions = REPROCESS_VEHICLES[transport] ?? []
+
+  return (
+    <Card
+      title="改制加工"
+      actions={
+        <span className="rounded bg-muted px-2 py-0.5 text-[11px] font-normal text-muted-foreground">
+          选填
+        </span>
+      }
+    >
+      <div>
+        {/* 1. 改制加工类型（可多选） */}
+        <div>
+          <FieldLabel label="改制加工类型" />
+          <div className="flex flex-wrap gap-2">
+            {REPROCESS_TYPES.map((t) => {
+              const on = types.includes(t)
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() =>
+                    setTypes((prev) =>
+                      prev.includes(t)
+                        ? prev.filter((x) => x !== t)
+                        : [...prev, t],
+                    )
+                  }
+                  className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                    on
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-input bg-background text-foreground hover:bg-accent'
+                  }`}
+                >
+                  {t}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* 2. 改制加工后重量 + 过磅单 */}
+        <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+          <div>
+            <FieldLabel label="改制加工后重量（吨）" />
+            <input
+              value={weight}
+              inputMode="decimal"
+              disabled={disabled}
+              onChange={(e) => setWeight(e.target.value)}
+              placeholder="请输入改制加工后过磅重量"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted"
+            />
+          </div>
+          <div>
+            <FieldLabel label="改制加工过磅单" />
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,application/pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) setWeighFile(f.name)
+              }}
+            />
+            {weighFile ? (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm">
+                <FileText className="size-4 text-primary" />
+                <span className="flex-1 truncate text-foreground">{weighFile}</span>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWeighFile(null)
+                      if (fileRef.current) fileRef.current.value = ''
+                    }}
+                    className="text-muted-foreground transition-colors hover:text-destructive"
+                    aria-label="移除改制加工过磅单"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => fileRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Upload className="size-4" />
+                上传过磅单
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 3. 资源去向 */}
+        <div className="mt-4">
+          <FieldLabel label="资源去向" />
+          <div className="flex flex-wrap gap-2">
+            {REPROCESS_DESTINATIONS.map((d) => (
+              <button
+                key={d}
+                type="button"
+                disabled={disabled}
+                onClick={() => setDest(d)}
+                className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  dest === d
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-input bg-background text-foreground hover:bg-accent'
+                }`}
+              >
+                {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. 运输到去向目的地的预估：运输方式 / 运输工具 / 能源类型 / 预估距离 */}
+        <div className="mt-4 rounded-md border border-dashed border-input bg-background/60 p-4">
+          <p className="mb-3 text-sm font-medium text-foreground">运输预估（至去向目的地）</p>
+          <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+            <div>
+              <FieldLabel label="运输方式" />
+              <div className="flex gap-2">
+                {REPROCESS_TRANSPORTS.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    disabled={disabled || destUnknown}
+                    onClick={() => {
+                      setTransport(m)
+                      setVehicle((REPROCESS_VEHICLES[m] ?? [''])[0])
+                    }}
+                    className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      transport === m
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-input bg-background text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <FieldLabel label="运输工具" />
+              <select
+                value={vehicle}
+                disabled={disabled || destUnknown}
+                onChange={(e) => setVehicle(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+              >
+                {vehicleOptions.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <FieldLabel label="能源类型" />
+              <div className="flex flex-wrap gap-2">
+                {REPROCESS_ENERGIES.map((en) => (
+                  <button
+                    key={en}
+                    type="button"
+                    disabled={disabled || destUnknown}
+                    onClick={() => setEnergy(en)}
+                    className={`rounded-md border px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                      energy === en
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-input bg-background text-foreground hover:bg-accent'
+                    }`}
+                  >
+                    {en}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <FieldLabel label="预估运输距离（公里）" />
+              <div className="relative">
+                <Navigation className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={distance}
+                  inputMode="decimal"
+                  disabled={disabled || destUnknown}
+                  onChange={(e) => setDistance(e.target.value)}
+                  placeholder="至去向目的地的预估里程"
+                  className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+                />
+              </div>
+            </div>
+          </div>
+          {destUnknown && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              资源去向为「暂不确定」时，运输预估暂不填写，待去向明确后再补充。
+            </p>
+          )}
+        </div>
+
+        <p className="mt-3 text-xs text-muted-foreground">
+          填写改制加工与资源后续去向、运输信息，用于测算运输及改制加工碳排放、支撑碳减排贡献核算；均为非强制项。
+        </p>
+      </div>
+    </Card>
+  )
+}
 
 function Card({
   title,
