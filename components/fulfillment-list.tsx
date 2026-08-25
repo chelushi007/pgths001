@@ -15,6 +15,7 @@ import {
   Activity,
   MinusCircle,
   FileCheck,
+  TrendingUp,
 } from 'lucide-react'
 import {
   FulfillmentDetail,
@@ -49,6 +50,11 @@ type ProjectRow = {
   resourceSpec?: string
   rentalSeq?: number
   weight?: number
+  // 处置业务运输/改制碳排放（tCO₂e）：
+  // - emitTransferor 转让方将待处置资源运输至受让方产生的运输碳排放
+  // - emitTransferee 受让方将资源运输至钢厂的运输碳排放（预估）+ 改制加工碳排放
+  emitTransferor?: number
+  emitTransferee?: number
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -199,6 +205,8 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢材',
     resourceSpec: 'Q235 / 混合规格',
     weight: 320.50,
+    emitTransferor: 1.86,
+    emitTransferee: 5.24,
   },
   {
     code: '2089616559671742464',
@@ -213,6 +221,8 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '废旧轨枕',
     resourceSpec: 'Ⅱ型 / 2.5m',
     weight: 186.00,
+    emitTransferor: 0.98,
+    emitTransferee: 3.12,
   },
   {
     code: '2089625006320521216',
@@ -227,6 +237,8 @@ const DISPOSAL_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢材',
     resourceSpec: 'Q235 / 统料',
     weight: 95.30,
+    emitTransferor: 0.52,
+    emitTransferee: 1.68,
   },
 ]
 
@@ -245,6 +257,8 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢管',
     resourceSpec: 'Φ60×3.2mm',
     weight: 142.80,
+    emitTransferor: 1.24,
+    emitTransferee: 4.06,
   },
   {
     code: '2086901355420188160',
@@ -263,6 +277,8 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧轨枕',
     resourceSpec: 'Ⅲ型 / 2.6m',
     weight: 208.40,
+    emitTransferor: 1.86,
+    emitTransferee: 5.63,
   },
   {
     code: '2086331209988110336',
@@ -278,6 +294,8 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧设备',
     resourceSpec: '综合规格',
     weight: 76.20,
+    emitTransferor: 0.68,
+    emitTransferee: 2.34,
   },
 ]
 
@@ -451,6 +469,8 @@ export function FulfillmentList({
   const hideCarbon = false
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
+  // 碳排放列：转让方履约结束展示运输碳排放；受让方（进行中/结束）展示运输(预估)+改制加工碳排放
+  const showEmission = (isTransferor && isEnded) || isTransferee
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
   const rawProjects = isProcurement
@@ -631,9 +651,12 @@ export function FulfillmentList({
                 )}
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
+                {showEmission && (
+                  <th className="px-4 py-3 font-medium">碳排放</th>
+                )}
                 {!hideCarbon && (
                   <th className="px-4 py-3 font-medium">
-                    {isTransferor || isLessor || isSupplier ? '碳减排贡献' : '碳减排量'}
+                    {isTransferor || isLessor || isSupplier || isTransferee ? '碳减排贡献' : '碳减排量'}
                   </th>
                 )}
                 <th className="px-4 py-3 font-medium">操作</th>
@@ -645,7 +668,8 @@ export function FulfillmentList({
                   <td
                     colSpan={
                       (hideCarbon ? 7 : 8) +
-                      (showResourceCol ? 3 : 0)
+                      (showResourceCol ? 3 : 0) +
+                      (showEmission ? 1 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -702,6 +726,15 @@ export function FulfillmentList({
                     <td className="whitespace-nowrap px-4 py-3 tabular-nums text-muted-foreground">
                       {p.signupEnd}
                     </td>
+                    {showEmission && (
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <EmissionCell
+                          value={isTransferee ? p.emitTransferee : p.emitTransferor}
+                          note={isTransferee ? '运输(预估) + 改制加工' : '运输至受让方'}
+                          estimated={isTransferee}
+                        />
+                      </td>
+                    )}
                     {!hideCarbon && (
                       <td className="whitespace-nowrap px-4 py-3">
                         {p.isNewProduct && !isScrap ? (
@@ -794,9 +827,10 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
-                        {/* 收货方（受让方 / 承租方）履约结束的碳凭证入口：转让/出租业务碳凭证分别归属受让方 / 承租方 */}
+                        {/* 承租方（出租收货方）履约结束的碳凭证入口；受让方处置业务不再体现碳凭证 */}
                         {isEnded &&
                           isSelfReceiver &&
+                          !isTransferee &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
@@ -972,6 +1006,47 @@ function GenerateCertPrompt({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+function EmissionCell({
+  value,
+  note,
+  estimated,
+}: {
+  value?: number
+  note: string
+  estimated?: boolean
+}) {
+  const fmt = (v: number) =>
+    v.toLocaleString('zh-CN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+
+  if (value == null) {
+    return (
+      <div className="flex items-center gap-1 text-muted-foreground">
+        <MinusCircle className="size-3.5 shrink-0" />
+        <span className="text-sm">—</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-baseline gap-1 font-medium text-chart-5">
+        <TrendingUp className="size-3.5 shrink-0 translate-y-0.5" />
+        <span className="tabular-nums">
+          {estimated ? '≈ ' : ''}
+          {fmt(value)}
+        </span>
+        <span className="text-xs font-normal text-muted-foreground">tCO₂e</span>
+      </div>
+      <span className="inline-flex w-fit items-center rounded bg-chart-5/12 px-1.5 py-0.5 text-[11px] font-medium text-chart-5">
+        {note}
+      </span>
     </div>
   )
 }
