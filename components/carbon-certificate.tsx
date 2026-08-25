@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞���，价高者得',
+    desc: '多家受让方在线报价参与竞�����，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -593,7 +593,7 @@ const TRANSPORT_ROWS_P: TransportRow[] = [
 const REUSE_ROWS_P: ReuseRow[] = [
   { name: '废旧钢轨', spec: '50kg/m 重废', weight: '52.4', factor: '2340', reduction: '122.62' },
   { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '18.6', factor: '2340', reduction: '43.52' },
-  { name: '型钢废料', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
+  { name: '型钢废��', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
 ]
 
 type CertConfig = {
@@ -619,6 +619,11 @@ type CertConfig = {
   netRate: string
   // 碳凭证归属主体（如转让业务归属受让方）；未设置时不展示归属字段
   holder?: string
+  // 运输碳排放计入碳减排量的扣减项（仅出租业务）：设置后碳减排量 =（物资重量 × 新品排放因子）- 出库运输 - 退租运输
+  deductTransport?: {
+    outbound: string
+    return: string
+  }
   // 出租整备加工碳排放（仅出租业务）：未设置时不展示整备加工区
   prep?: {
     emission: string
@@ -661,13 +666,17 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
     reuseTitle: '本次租赁循环利用减排明细',
     transportTitle: '本次租赁运输碳排放',
     scopeText:
-      '（订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排，运输碳排放单独列示、不计入碳减排量，不含历史周转累计减碳量。',
+      '（订单 ZLDD20260520002），仅统计与本次租赁直接相关的循环利用减排，并扣减出库运输与退租运输碳排放，不含历史周转累计减碳量。',
     materialWeight: '86.40 吨',
     reuseTotal: '182.05',
-    transportTotal: '0.97',
+    transportTotal: '0.98',
     transportNewReduction: '0.32',
-    netReduction: '182.05',
-    netRate: '100',
+    deductTransport: {
+      outbound: '0.41',
+      return: '0.57',
+    },
+    netReduction: '181.07',
+    netRate: '99.5',
     holder: '广州帝隆科技股份有限公司（承租方）',
     prep: {
       emission: '0.46',
@@ -1092,18 +1101,35 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           <span className="text-sm font-semibold text-foreground">碳减排量核算公式</span>
         </div>
         <p className="mt-3 text-sm text-foreground">
-          碳减排量 =（物资重量 × 新品排放因子）
+          {cfg.deductTransport
+            ? '碳减排量 =（物资重量 × 新品排放因子）- 出库运输碳排放 - 退租运输碳排放'
+            : '碳减排量 =（物资重量 × 新品排放因子）'}
         </p>
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          即：物资重量 × 新品排放因子（循环利用减排 {cfg.reuseTotal}）= 碳减排量{' '}
-          <span className="font-semibold text-primary">
-            {cfg.netReduction} tCO₂e
-          </span>
-          。
-          {cfg.prep
-            ? `整备加工碳排放 ${cfg.prep.emission} tCO₂e、运输碳排放 ${cfg.transportTotal} tCO₂e 均单独列示、不计入碳减排量。`
-            : `运输碳排放 ${cfg.transportTotal} tCO₂e 单独列示、不计入碳减排量。`}
-        </p>
+        {cfg.deductTransport ? (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            即：循环利用减排 {cfg.reuseTotal} - 出库运输{' '}
+            {cfg.deductTransport.outbound} - 退租运输 {cfg.deductTransport.return} =
+            碳减排量{' '}
+            <span className="font-semibold text-primary">
+              {cfg.netReduction} tCO₂e
+            </span>
+            。
+            {cfg.prep
+              ? `整备加工碳排放 ${cfg.prep.emission} tCO₂e 单独列示、不计入碳减排量。`
+              : ''}
+          </p>
+        ) : (
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            即：物资重量 × 新品排放因子（循环利用减排 {cfg.reuseTotal}）= 碳减排量{' '}
+            <span className="font-semibold text-primary">
+              {cfg.netReduction} tCO₂e
+            </span>
+            。
+            {cfg.prep
+              ? `整备加工碳排放 ${cfg.prep.emission} tCO₂e、运输碳排放 ${cfg.transportTotal} tCO₂e 均单独列示、不计入碳减排量。`
+              : `运输碳排放 ${cfg.transportTotal} tCO₂e 单独列示、不计入碳减排量。`}
+          </p>
+        )}
       </div>
 
       {/* 指标卡 */}
@@ -1117,7 +1143,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
         {cfg.prep && (
           <MetricCard icon={HardHat} label="整备加工碳排放（参考）" value={cfg.prep.emission} unit="tCO₂e" />
         )}
-        <MetricCard icon={Truck} label="运输碳排放（参考）" value={cfg.transportTotal} unit="tCO₂e" />
+        <MetricCard icon={Truck} label={cfg.deductTransport ? '运输碳排放（已扣减）' : '运输碳排放（参考）'} value={cfg.transportTotal} unit="tCO₂e" />
         <MetricCard icon={Zap} label="运输碳减排（新能源）" value={cfg.transportNewReduction} unit="tCO₂e" />
       </div>
 
@@ -1260,7 +1286,18 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           </table>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          运输碳排放 = 运输量 × 运输距离 × 运输因子，单独列示供参考，<b className="text-foreground">不计入本次碳减排量</b>。能源类型为新能源时，按燃油基准因子（柴油货车 0.0962
+          运输碳排放 = 运输量 × 运输距离 × 运输因子
+          {cfg.deductTransport ? (
+            <>
+              ，其中出库运输 {cfg.deductTransport.outbound} tCO₂e、退租运输{' '}
+              {cfg.deductTransport.return} tCO₂e，<b className="text-foreground">已从本次碳减排量中扣减</b>。
+            </>
+          ) : (
+            <>
+              ，单独列示供参考，<b className="text-foreground">不计入本次碳减排量</b>。
+            </>
+          )}
+          能源类型为新能源时，按燃油基准因子（柴油货车 0.0962
           kgCO₂e/吨·km）折算同运量、同里程的燃油基准排放，两者差额即为该环节较燃油类型的运输碳减排。
         </p>
       </div>
