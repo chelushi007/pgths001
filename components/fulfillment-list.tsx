@@ -62,9 +62,28 @@ type ProjectRow = {
   emitPrep?: number
   emitRentTransport?: number
   emitReturnTransport?: number
+  // 采购业务运输碳排放（tCO₂e）：emitSupplier 供应商将货物运输至采购方产生的运输碳排放
+  emitSupplier?: number
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
+  {
+    code: '2089720163388921090',
+    title: '新购钢支撑首次周转出租',
+    flowType: '出租',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-19 09:20:00',
+    signupEnd: '2026-08-19 18:00:00',
+    carbonState: 'estimating',
+    carbonValue: 20.4,
+    resourceName: '钢支撑',
+    resourceSpec: 'Φ609×16mm',
+    rentalSeq: 1,
+    weight: 96.80,
+    emitRentTransport: 0.31,
+    emitReturnTransport: 0.30,
+  },
   {
     code: '2089616559671742464',
     title: '盘扣式脚手架周转出租（第三批）',
@@ -278,7 +297,7 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     code: '2087742971482083328',
     title: '常州市鼓楼区综合管廊物资转让',
     flowType: '转让',
-    stage: '履约结束',
+    stage: '��约结束',
     stageTone: 'green',
     signupStart: '2026-07-13 11:25:05',
     signupEnd: '2026-07-14 00:00:00',
@@ -344,6 +363,7 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢轨',
     resourceSpec: '43kg/m',
     weight: 245.60,
+    emitSupplier: 1.32,
   },
   {
     code: '2089733048921640960',
@@ -358,6 +378,7 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '废旧周转料',
     resourceSpec: '混合规格',
     weight: 132.40,
+    emitSupplier: 0.71,
   },
   {
     code: '2089610033982070784',
@@ -372,12 +393,28 @@ const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
     resourceName: '拆解废钢',
     resourceSpec: '统料',
     weight: 88.70,
+    emitSupplier: 0.48,
+  },
+  {
+    code: '2089510022114550789',
+    title: '轨道新件集中采购（第一批）',
+    flowType: '公开招标',
+    stage: '履约',
+    stageTone: 'blue',
+    signupStart: '2026-08-16 09:00:00',
+    signupEnd: '2026-08-17 12:00:00',
+    carbonState: 'pending',
+    isNewProduct: true,
+    resourceName: '轨道备品备件（新件）',
+    resourceSpec: '标准件',
+    weight: 72.30,
+    emitSupplier: 0.39,
   },
 ]
 
 const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
   {
-    code: '2088930561120388096',
+    code: '2088930561120388100',
     title: '轨道备品备件新件集中采购',
     flowType: '网上询价',
     stage: '履约结束',
@@ -389,6 +426,7 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '轨道备品备件（新件）',
     resourceSpec: '标准件',
     weight: 64.20,
+    emitSupplier: 0.35,
   },
   {
     code: '2088521470033289216',
@@ -408,6 +446,7 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢轨',
     resourceSpec: '50kg/m',
     weight: 312.50,
+    emitSupplier: 1.68,
   },
   {
     code: '2087760012480083200',
@@ -423,6 +462,7 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧金属管材',
     resourceSpec: 'DN200 混合',
     weight: 158.30,
+    emitSupplier: 0.85,
   },
   {
     code: '2087009471823018100',
@@ -441,6 +481,7 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '废旧钢材',
     resourceSpec: 'Q235 混合',
     weight: 276.40,
+    emitSupplier: 1.49,
   },
   {
     code: '2086208209988110300',
@@ -456,6 +497,7 @@ const PROCUREMENT_ENDED_PROJECTS: ProjectRow[] = [
     resourceName: '再生金属',
     resourceSpec: '统料',
     weight: 189.60,
+    emitSupplier: 1.02,
   },
 ]
 
@@ -504,9 +546,10 @@ export function FulfillmentList({
   // - 转让方履约结束：运输碳排放；受让方（进行中/结束）：运输(预估)+改制加工
   // - 出租方（进行中）：出租整备+出租运输；出租方（结束）：出租整备+退租运输
   // - 承租方（进行中/结束）：退租运输
+  // - 供应商（进行中/结束）：运输至采购方
   const showEmission =
-    (isTransferor && isEnded) || isTransferee || isLessor || isLessee
-  // 出租次数列：出租方履约/履约结束展示
+    (isTransferor && isEnded) || isTransferee || isLessor || isLessee || isSupplier
+  // 出租次数列：出租方履约/履约���束展示
   const showRentalSeq = isLessor
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
@@ -793,15 +836,26 @@ export function FulfillmentList({
                             value = p.emitTransferor
                             note = '运输至受让方'
                           } else if (isLessor) {
-                            const prep = p.emitPrep ?? 0
+                            // 第一次出租无需整备，碳排放不含整备排放
+                            const isFirstRental = p.rentalSeq === 1
+                            const prep = isFirstRental ? 0 : (p.emitPrep ?? 0)
                             const trans = isEnded
                               ? (p.emitReturnTransport ?? 0)
                               : (p.emitRentTransport ?? 0)
                             value = prep + trans
-                            note = isEnded ? '整备 + 退租运输' : '整备 + 出租运输'
+                            note = isFirstRental
+                              ? isEnded
+                                ? '退租运输（首次出租免整备）'
+                                : '出租运输（首次出租免整备）'
+                              : isEnded
+                                ? '整备 + 退租运输'
+                                : '整备 + 出租运输'
                           } else if (isLessee) {
                             value = p.emitReturnTransport
                             note = '退租运输'
+                          } else if (isSupplier) {
+                            value = p.emitSupplier
+                            note = '运输至采购方'
                           }
                           return (
                             <EmissionCell

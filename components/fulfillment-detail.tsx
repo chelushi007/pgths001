@@ -812,6 +812,10 @@ function PickupOrderDialog({
   const [trackLogistics, setTrackLogistics] = useState<LogisticsRow | null>(null)
   const [isNewProduct, setIsNewProduct] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
+  // 收货确认方（采购方 / 受让方 / 承租方）实收重量与收货过磅单
+  const [receiveWeight, setReceiveWeight] = useState('')
+  const [receiveWeighFile, setReceiveWeighFile] = useState<string | null>(null)
+  const receiveFileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -1252,6 +1256,73 @@ function PickupOrderDialog({
               )}
             </div>
           </FormSection>
+          )}
+
+          {/* 收货重量：收货确认方（采购方 / 受让方 / 承租方）实收过磅并上传收货过磅单 */}
+          {isReceiver && (
+            <FormSection
+              title="收货重量"
+              icon={<Scale className="size-4 text-primary" />}
+            >
+              <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+                <div>
+                  <FieldLabel label="收货重量（吨）" required />
+                  <input
+                    type="number"
+                    min="0"
+                    value={receiveWeight}
+                    onChange={(e) => setReceiveWeight(e.target.value)}
+                    placeholder="请输入实收过磅重量"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm tabular-nums outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  />
+                </div>
+                <div>
+                  <FieldLabel label="收货过磅单" required />
+                  <input
+                    ref={receiveFileRef}
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) setReceiveWeighFile(f.name)
+                    }}
+                  />
+                  {receiveWeighFile ? (
+                    <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm">
+                      <FileText className="size-4 text-primary" />
+                      <span className="flex-1 truncate text-foreground">
+                        {receiveWeighFile}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiveWeighFile(null)
+                          if (receiveFileRef.current)
+                            receiveFileRef.current.value = ''
+                        }}
+                        className="text-muted-foreground transition-colors hover:text-destructive"
+                        aria-label="移除收货过磅单"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => receiveFileRef.current?.click()}
+                      className="flex w-full items-center justify-center gap-2 rounded-md border border-dashed border-input bg-background px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+                    >
+                      <Upload className="size-4" />
+                      上传收货过磅单（支持图片 / PDF）
+                    </button>
+                  )}
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                收货重量以收货方实际过磅为准，并上传收货过磅单作为验收与碳核算佐证。
+              </p>
+            </FormSection>
           )}
 
           {/* 提货 / 收货明细 */}

@@ -34,7 +34,13 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 
-type FactorType = '资源因子' | '运输因子' | '废钢炼钢因子' | '废钢回收站因子'
+type FactorType =
+  | '资源因子'
+  | '运输因子'
+  | '废钢炼钢因子'
+  | '废钢回收站因子'
+  | '改制加工因子'
+  | '整备因子'
 
 type Factor = {
   id: string
@@ -89,6 +95,22 @@ const initial: Factor[] = [
   { id: 'RS-005', type: '废钢回收站因子', category: '分拣加工', name: '龙门剪切机', model: '1000t 剪切力', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 11.8, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-12', active: true },
   { id: 'RS-006', type: '废钢回收站因子', category: '堆场仓储', name: '堆场照明与排水', model: '光伏 + 市电', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 1.6, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-11', active: true },
   { id: 'RS-007', type: '废钢回收站因子', category: '站内短驳', name: '柴油叉车 / 装载机', model: '5t 叉车', energy: '柴油', activityUnit: 't废钢', scope: '站内作业（范围一）', value: 4.3, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-11', active: false },
+  // 改制加工因子（针对钢材类）：受让方 / 钢厂对回收钢材的改制加工工序
+  { id: 'RP-001', type: '改制加工因子', category: '预处理', name: '人工分拣分类', model: '钢材类', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', value: 3.6, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-14', active: true },
+  { id: 'RP-002', type: '改制加工因子', category: '预处理', name: '结构拆解', model: '钢材类', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', value: 8.2, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-14', active: true },
+  { id: 'RP-003', type: '改制加工因子', category: '剪切破碎', name: '龙门剪切', model: '钢材类 / 1000t 剪切力', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', value: 12.4, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-14', active: true },
+  { id: 'RP-004', type: '改制加工因子', category: '剪切破碎', name: '重型破碎分选', model: '钢材类 / 破碎机组', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', value: 18.6, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-13', active: true },
+  { id: 'RP-005', type: '改制加工因子', category: '剪切破碎', name: '氧气火焰切割', model: '钢材类 / 氧气·乙炔', energy: '燃气', activityUnit: 't钢材', scope: '改制加工（范围一）', value: 26.8, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-13', active: false },
+  { id: 'RP-006', type: '改制加工因子', category: '压块打包', name: '液压打包压块', model: '钢材类 / 打包机', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', value: 9.8, unit: 'kgCO₂e/t钢材', source: '钢材改制加工能耗核算', date: '2026-05-12', active: true },
+  // 整备因子（针对钢材类）：出租方对周转钢材的整备工序（清洗/除锈/切割/焊接/矫正/喷涂/检测/维修）
+  { id: 'PR-001', type: '整备因子', category: '表面处理', name: '高压清洗', model: '钢材类', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 2.4, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-15', active: true },
+  { id: 'PR-002', type: '整备因子', category: '表面处理', name: '抛丸除锈', model: '钢材类 / 抛丸机', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 6.8, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-15', active: true },
+  { id: 'PR-003', type: '整备因子', category: '表面处理', name: '防腐喷涂', model: '钢材类 / 环氧涂层', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 5.2, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-15', active: true },
+  { id: 'PR-004', type: '整备因子', category: '结构加工', name: '定尺切割', model: '钢材类', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 7.6, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-14', active: true },
+  { id: 'PR-005', type: '整备因子', category: '结构加工', name: '焊接修补', model: '钢材类 / CO₂ 保护焊', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 9.4, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-14', active: true },
+  { id: 'PR-006', type: '整备因子', category: '结构加工', name: '校直矫正', model: '钢材类 / 液压矫直', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 4.6, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-13', active: true },
+  { id: 'PR-007', type: '整备因子', category: '检测维修', name: '无损探伤检测', model: '钢材类 / 超声探伤', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 1.8, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-13', active: true },
+  { id: 'PR-008', type: '整备因子', category: '检测维修', name: '构件维修更换', model: '钢材类', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', value: 3.2, unit: 'kgCO₂e/t钢材', source: '钢材整备加工能耗核算', date: '2026-05-12', active: false },
 ]
 
 const BLUE = 'text-[#086de0]'
@@ -106,9 +128,11 @@ const TAB_META: Record<FactorType, {
   运输因子: { label: '运输因子', idPrefix: 'TF', categories: ['陆运', '水运'], catLabel: '运输方式', nameLabel: '运输工具', allText: '全部方式', keywordPlaceholder: '请输入运输工具/车型' },
   废钢炼钢因子: { label: '废钢炼钢因子', idPrefix: 'EF', categories: ['废钢改制加工', '炼钢工序', '炼铁工序', '能源介质'], catLabel: '能源类别', nameLabel: '能源名称', allText: '全部能源', keywordPlaceholder: '请输入能源/活动名称' },
   废钢回收站因子: { label: '废钢回收站因子', idPrefix: 'RS', categories: ['收购计量', '装卸搬运', '分拣加工', '堆场仓储', '站内短驳'], catLabel: '作业环节', nameLabel: '作业名称', allText: '全部环节', keywordPlaceholder: '请输入作业/设备名称' },
+  改制加工因子: { label: '改制加工因子', idPrefix: 'RP', categories: ['预处理', '剪切破碎', '压块打包'], catLabel: '加工环节', nameLabel: '加工工序', allText: '全部环节', keywordPlaceholder: '请输入加工工序/设备名称' },
+  整备因子: { label: '整备因子', idPrefix: 'PR', categories: ['表面处理', '结构加工', '检测维修'], catLabel: '整备环节', nameLabel: '整备工序', allText: '全部环节', keywordPlaceholder: '请输入整备工序/设备名称' },
 }
 
-const TAB_ORDER: FactorType[] = ['资源因子', '运输因子', '废钢炼钢因子', '废钢回收站因子']
+const TAB_ORDER: FactorType[] = ['资源因子', '运输因子', '废钢炼钢因子', '废钢回收站因子', '改制加工因子', '整备因子']
 
 // 分作业环节 / 工序的图标与配色
 const EMISSION_META: Record<string, { icon: typeof Zap; badge: string }> = {
@@ -124,6 +148,18 @@ const STATION_META: Record<string, { icon: typeof Zap; badge: string }> = {
   分拣加工: { icon: Recycle, badge: 'bg-teal-50 text-teal-600' },
   堆场仓储: { icon: Warehouse, badge: 'bg-emerald-50 text-emerald-600' },
   站内短驳: { icon: Truck, badge: 'bg-indigo-50 text-indigo-600' },
+}
+
+const REPROCESS_META: Record<string, { icon: typeof Zap; badge: string }> = {
+  预处理: { icon: Recycle, badge: 'bg-teal-50 text-teal-600' },
+  剪切破碎: { icon: Factory, badge: 'bg-[#e7f1ff] text-[#086de0]' },
+  压块打包: { icon: Package, badge: 'bg-amber-50 text-amber-600' },
+}
+
+const PREP_META: Record<string, { icon: typeof Zap; badge: string }> = {
+  表面处理: { icon: Recycle, badge: 'bg-[#e7f1ff] text-[#086de0]' },
+  结构加工: { icon: Factory, badge: 'bg-amber-50 text-amber-600' },
+  检测维修: { icon: Scale, badge: 'bg-emerald-50 text-emerald-600' },
 }
 
 export function CarbonFactorManagement() {
@@ -154,6 +190,8 @@ export function CarbonFactorManagement() {
       运输因子: { category: '陆运', energy: '柴油', unit: 'kgCO₂e/(吨·公里)' },
       废钢炼钢因子: { category: '废钢改制加工', energy: '电力', activityUnit: 't废钢', scope: '改制预处理（范围二）', unit: 'kgCO₂e/t废钢' },
       废钢回收站因子: { category: '收购计量', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', unit: 'kgCO₂e/t废钢' },
+      改制加工因子: { category: '预处理', energy: '电力', activityUnit: 't钢材', scope: '改制加工（范围二）', unit: 'kgCO₂e/t钢材' },
+      整备因子: { category: '表面处理', energy: '电力', activityUnit: 't钢材', scope: '出租整备（范围二）', unit: 'kgCO₂e/t钢材' },
     }
     setEditing({
       id: `${meta.idPrefix}-${String(rows.length + 1).padStart(3, '0')}`,
@@ -192,11 +230,13 @@ export function CarbonFactorManagement() {
 
     <div className="flex flex-col gap-4 p-4">
       <div className="flex items-center gap-3 rounded-lg border border-[#9bc4ff] bg-[#eaf3ff] px-5 py-3 text-sm text-[#086de0]">
-        {tab === '废钢回收站因子' ? <Recycle className="size-5 shrink-0" /> : tab === '废钢炼钢因子' ? <Zap className="size-5 shrink-0" /> : <Package className="size-5 shrink-0" />}
+        {tab === '废钢回收站因子' || tab === '改制加工因子' ? <Recycle className="size-5 shrink-0" /> : tab === '废钢炼钢因子' ? <Zap className="size-5 shrink-0" /> : tab === '整备因子' ? <Factory className="size-5 shrink-0" /> : <Package className="size-5 shrink-0" />}
         {tab === '资源因子' && <p>碳因子库覆盖模板类、支护类、脚手架类、拼装类、轨道类、型材类、电线电缆、房屋建筑类共 8 大物资分类；<b className="ml-2">现阶段具体实施物资以钢材类为主</b>，其余分类持续完善中。</p>}
         {tab === '运输因子' && <p>运输因子按陆运、水运两类维护，用于资源回收 / 流转过程的<b className="ml-2">运输环节碳排放</b>核算，因子口径统一为 kgCO₂e/(吨·公里)。</p>}
         {tab === '废钢炼钢因子' && <p>废钢炼钢因子以<b className="mx-1">钢铁冶炼</b>为主，覆盖废钢改制加工、炼钢工序、炼铁工序、能源介质，用于废钢回收再制造的冶炼环节碳排放核算；<b className="ml-1">电炉短流程（废钢）较转炉长流程可显著降碳</b>。</p>}
         {tab === '废钢回收站因子' && <p>废钢回收站因子覆盖收购计量、装卸搬运、分拣加工、堆场仓储、站内短驳等<b className="mx-1">站内运营环节</b>，用于废钢从进站回收到出站入炉的运营碳排放核算，能源以<b className="ml-1">电力（范围二）</b>为主。</p>}
+        {tab === '改制加工因子' && <p>改制加工因子覆盖预处理、剪切破碎、压块打包等回收物资的改制加工环节，<b className="ml-1">现阶段仅针对钢材类材料</b>，用于受让方 / 钢厂改制加工环节的碳排放核算，因子口径统一为 kgCO₂e/t钢材。</p>}
+        {tab === '整备因子' && <p>整备因子覆盖表面处理、结构加工、检测维修等出租周转物资的整备工序（清洗 / 除锈 / 切割 / 焊接 / 矫正 / 喷涂 / 检测 / 维修），<b className="ml-1">现阶段仅针对钢材类材料</b>，用于出租方整备环节的碳排放核算，因子口径统一为 kgCO₂e/t钢材。</p>}
       </div>
 
       {highlights.length > 0 && <SummaryStrip items={highlights} />}
@@ -233,7 +273,11 @@ export function CarbonFactorManagement() {
               ? <TransportTable rows={visible} onEdit={setEditing} onToggle={toggle} />
               : tab === '废钢炼钢因子'
                 ? <ScopeTable rows={visible} onEdit={setEditing} onToggle={toggle} meta={EMISSION_META} catLabel="能源类别" nameLabel="能源/活动名称" valueLabel="废钢炼钢因子" />
-                : <ScopeTable rows={visible} onEdit={setEditing} onToggle={toggle} meta={STATION_META} catLabel="作业环节" nameLabel="作业/设备名称" valueLabel="回收站因子" />}
+                : tab === '废钢回收站因子'
+                  ? <ScopeTable rows={visible} onEdit={setEditing} onToggle={toggle} meta={STATION_META} catLabel="作业环节" nameLabel="作业/设备名称" valueLabel="回收站因子" />
+                  : tab === '改制加工因子'
+                    ? <ScopeTable rows={visible} onEdit={setEditing} onToggle={toggle} meta={REPROCESS_META} catLabel="加工环节" nameLabel="加工工序/设备" valueLabel="改制加工因子" />
+                    : <ScopeTable rows={visible} onEdit={setEditing} onToggle={toggle} meta={PREP_META} catLabel="整备环节" nameLabel="整备工序/设备" valueLabel="整备因子" />}
         </div>
       </section>
     </div>
@@ -263,6 +307,26 @@ function buildHighlights(rows: Factor[], tab: FactorType): Highlight[] {
       { icon: Recycle, label: '站内综合因子（启用项合计）', value: total.toFixed(1), unit: 'kgCO₂e/t废钢', tone: 'blue', highlight: true },
       { icon: Zap, label: '主导能源', value: '电力', unit: '范围二为主', tone: 'green' },
       { icon: Warehouse, label: '覆盖作业环节', value: String(stages), unit: '类', tone: 'teal' },
+    ]
+  }
+  if (tab === '改制加工因子') {
+    const active = rows.filter((r) => r.type === '改制加工因子' && r.active)
+    const total = active.reduce((sum, r) => sum + r.value, 0)
+    const stages = new Set(active.map((r) => r.category)).size
+    return [
+      { icon: Recycle, label: '改制综合因子（启用项合计）', value: total.toFixed(1), unit: 'kgCO₂e/t钢材', tone: 'blue', highlight: true },
+      { icon: Factory, label: '适用材料', value: '钢材类', unit: '现阶段', tone: 'amber' },
+      { icon: Package, label: '覆盖加工环节', value: String(stages), unit: '类', tone: 'teal' },
+    ]
+  }
+  if (tab === '整备因子') {
+    const active = rows.filter((r) => r.type === '整备因子' && r.active)
+    const total = active.reduce((sum, r) => sum + r.value, 0)
+    const stages = new Set(active.map((r) => r.category)).size
+    return [
+      { icon: Factory, label: '整备综合因子（启用项合计）', value: total.toFixed(1), unit: 'kgCO₂e/t钢材', tone: 'blue', highlight: true },
+      { icon: Recycle, label: '适用材料', value: '钢材类', unit: '现阶段', tone: 'green' },
+      { icon: Scale, label: '覆盖整备环节', value: String(stages), unit: '类', tone: 'teal' },
     ]
   }
   return []
@@ -348,23 +412,33 @@ function FactorDialog({ editing, setEditing, onSave }: { editing: Factor | null;
   const isTransport = kind === '运输因子'
   const isSteel = kind === '废钢炼钢因子'
   const isStation = kind === '废钢回收站因子'
-  const isScopeFactor = isSteel || isStation
+  const isReprocess = kind === '改制加工因子'
+  const isPrep = kind === '整备因子'
+  const isScopeFactor = isSteel || isStation || isReprocess || isPrep
 
   const labelMap: Record<FactorType, { cat: string; name: string; third: string; value: string }> = {
     资源因子: { cat: '物资类别', name: '物资名称', third: '规格型号', value: '碳因子值' },
     运输因子: { cat: '运输方式', name: '运输工具/车型', third: '能源类型', value: '碳因子值' },
     废钢炼钢因子: { cat: '能源类别', name: '能源/活动名称', third: '活动水平单位', value: '废钢炼钢因子值' },
     废钢回收站因子: { cat: '作业环节', name: '作业/设备名称', third: '活动水平单位', value: '回收站因子值' },
+    改制加工因子: { cat: '加工环节', name: '加工工序/设备', third: '活动水平单位', value: '改制加工因子值' },
+    整备因子: { cat: '整备环节', name: '整备工序/设备', third: '活动水平单位', value: '整备因子值' },
   }
   const catOptionsMap: Record<FactorType, string[]> = {
     资源因子: ['脚手架类', '支护类', '模板类'],
     运输因子: ['陆运', '水运', '铁路'],
     废钢炼钢因子: ['废钢改制加工', '炼钢工序', '炼铁工序', '能源介质'],
     废钢回收站因子: ['收购计量', '装卸搬运', '分拣加工', '堆场仓储', '站内短驳'],
+    改制加工因子: ['预处理', '剪切破碎', '压块打包'],
+    整备因子: ['表面处理', '结构加工', '检测维修'],
   }
   const scopeOptions = isStation
     ? ['站内作业（范围一）', '站内作业（范围二）']
-    : ['改制预处理（范围一）', '改制预处理（范围二）', '炼钢工序（废钢入炉）', '炼钢工序（铁水入炉）', '炼铁工序（范围一）', '烧结工序（范围一）', '燃料燃烧（范围一）', '外购电力（范围二）']
+    : isReprocess
+      ? ['改制加工（范围一）', '改制加工（范围二）']
+      : isPrep
+        ? ['出租整备（范围一）', '出租整备（范围二）']
+        : ['改制预处理（范围一）', '改制预处理（范围二）', '炼钢工序（废钢入炉）', '炼钢工序（铁水入炉）', '炼铁工序（范围一）', '烧结工序（范围一）', '燃料燃烧（范围一）', '外购电力（范围二）']
 
   // 运输工具/车型、能源类型：按运输方式联动可选
   const vehicleOptions: Record<string, string[]> = {
