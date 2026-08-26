@@ -494,7 +494,7 @@ export function FulfillmentDetail({
               isLessee
                 ? '租金支付'
                 : isTransferee
-                  ? '���让款支付'
+                  ? '转让款支付'
                   : isBuyer
                     ? '货款支付'
                     : isProcurement

@@ -297,7 +297,7 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
     code: '2087742971482083328',
     title: '常州市鼓楼区综合管廊物资转让',
     flowType: '转让',
-    stage: '��约结束',
+    stage: '履约结束',
     stageTone: 'green',
     signupStart: '2026-07-13 11:25:05',
     signupEnd: '2026-07-14 00:00:00',
@@ -530,7 +530,7 @@ export function FulfillmentList({
   // 承租方展示碳减排量但无碳凭证；受让方碳凭证归属受让方（见下方 isTransferor）
   const isSelfReceiver = isTransferee || isLessee
   const isDisposal = mode === 'disposal' || isTransferee
-  // 转让方（发起处置转让的一方）：仅体现碳减排贡献，碳凭证归属受让方、不再由转让方核发
+  // 转让方（发起处置转让的一方）：仅体现减排贡献，碳凭证归属受让方、不再由转让方核发
   const isTransferor = mode === 'disposal'
   // 钢厂回收：实质为采购废钢（再生资源），复用采购模式的全部行为
   const isScrap =
@@ -549,7 +549,7 @@ export function FulfillmentList({
   // - 供应商（进行中/结束）：运输至采购方
   const showEmission =
     (isTransferor && isEnded) || isTransferee || isLessor || isLessee || isSupplier
-  // 出租次数列：出租方履约/履约���束展示
+  // 出租次数列：出租方履约/履约结束展示
   const showRentalSeq = isLessor
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true

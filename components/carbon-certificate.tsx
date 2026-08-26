@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞�����，价高者得',
+    desc: '多家受让方在线报价参与竞价，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -593,7 +593,7 @@ const TRANSPORT_ROWS_P: TransportRow[] = [
 const REUSE_ROWS_P: ReuseRow[] = [
   { name: '废旧钢轨', spec: '50kg/m 重废', weight: '52.4', factor: '2340', reduction: '122.62' },
   { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '18.6', factor: '2340', reduction: '43.52' },
-  { name: '型钢废��', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
+  { name: '型钢废料', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
 ]
 
 type CertConfig = {
