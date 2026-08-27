@@ -234,6 +234,7 @@ export function FulfillmentDetail({
     | 'rental-lessee'
     | 'procurement-scrap'
     | 'procurement-scrap-buyer'
+    | 'disposal-steel'
   onClose: () => void
 }) {
   const isDisposal = mode === 'disposal'
@@ -929,7 +930,7 @@ function PickupOrderDialog({
     >
       <button
         type="button"
-        aria-label="关闭弹窗"
+        aria-label="关闭弹���"
         onClick={onClose}
         className="absolute inset-0 cursor-default bg-foreground/40 backdrop-blur-sm"
       />

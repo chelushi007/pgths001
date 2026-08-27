@@ -88,7 +88,7 @@ const initial: Factor[] = [
   { id: 'EF-106', type: '废钢炼钢因子', category: '能源介质', name: '冶炼用电（华东电网）', model: '', energy: '电力', activityUnit: 'kWh', scope: '外购电力（范围二）', value: 0.5617, unit: 'kgCO₂e/kWh', source: '生态环境部电网基准线', date: '2026-05-09', active: true },
   { id: 'EF-107', type: '废钢炼钢因子', category: '能源介质', name: '天然气', model: '', energy: '天然气', activityUnit: 'm³', scope: '燃料燃烧（范围一）', value: 2.1622, unit: 'kgCO₂e/m³', source: 'GB/T 2589 综合能耗', date: '2026-05-07', active: false },
   // 废钢回收站因子
-  { id: 'RS-001', type: '废钢回收站因子', category: '收购计量', name: '地磅智能计量系统', model: '80t 数字地磅', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 0.8, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-13', active: true },
+  { id: 'RS-001', type: '废钢回收站因子', category: '收购计量', name: '地磅智能计量系统', model: '80t 数字地磅', energy: '电力', activityUnit: 't废钢', scope: '站���作业（范围二）', value: 0.8, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-13', active: true },
   { id: 'RS-002', type: '废钢回收站因子', category: '装卸搬运', name: '电磁吸盘起重机', model: '10t 桥式', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 6.2, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-13', active: true },
   { id: 'RS-003', type: '废钢回收站因子', category: '装卸搬运', name: '液压抓斗起重机', model: '16t 门座式', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 5.4, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-13', active: true },
   { id: 'RS-004', type: '废钢回收站因子', category: '分拣加工', name: '智能光电分选线', model: 'AI 视觉分选', energy: '电力', activityUnit: 't废钢', scope: '站内作业（范围二）', value: 9.5, unit: 'kgCO₂e/t废钢', source: '回收站运营能耗核算', date: '2026-05-12', active: true },
@@ -129,7 +129,7 @@ const TAB_META: Record<FactorType, {
   废钢炼钢因子: { label: '废钢炼钢因子', idPrefix: 'EF', categories: ['废钢改制加工', '炼钢工序', '炼铁工序', '能源介质'], catLabel: '能源类别', nameLabel: '能源名称', allText: '全部能源', keywordPlaceholder: '请输入能源/活动名称' },
   废钢回收站因子: { label: '废钢回收站因子', idPrefix: 'RS', categories: ['收购计量', '装卸搬运', '分拣加工', '堆场仓储', '站内短驳'], catLabel: '作业环节', nameLabel: '作业名称', allText: '全部环节', keywordPlaceholder: '请输入作业/设备名称' },
   改制加工因子: { label: '改制加工因子', idPrefix: 'RP', categories: ['预处理', '剪切破碎', '压块打包'], catLabel: '加工环节', nameLabel: '加工工序', allText: '全部环节', keywordPlaceholder: '请输入加工工序/设备名称' },
-  整备因子: { label: '整备因子', idPrefix: 'PR', categories: ['表面处理', '结构加工', '检测维修'], catLabel: '整备环节', nameLabel: '整备工序', allText: '全部环节', keywordPlaceholder: '请输入整备工序/设备名称' },
+  整备因子: { label: '整备因子', idPrefix: 'PR', categories: ['表面处理', '结构加工', '检��维修'], catLabel: '整备环节', nameLabel: '整备工序', allText: '全部环节', keywordPlaceholder: '请输入整备工序/设备名称' },
 }
 
 const TAB_ORDER: FactorType[] = ['资源因子', '运输因子', '废钢炼钢因子', '废钢回收站因子', '改制加工因子', '整备因子']
@@ -170,6 +170,7 @@ export function CarbonFactorManagement() {
   const [status, setStatus] = useState('全部')
   const [filters, setFilters] = useState({ category: '全部', keyword: '', status: '全部' })
   const [editing, setEditing] = useState<Factor | null>(null)
+  const [weights, setWeights] = useState({ 处置方: 30, 回收商: 30, 钢厂: 30, 平台: 10 })
 
   const meta = TAB_META[tab]
 
@@ -240,6 +241,29 @@ export function CarbonFactorManagement() {
       </div>
 
       {highlights.length > 0 && <SummaryStrip items={highlights} />}
+
+      <section className="rounded-lg border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">碳减排贡献权重</h2>
+            <p className="mt-1 text-xs text-muted-foreground">自定义处置链路中各角色的贡献分配比例，合计应为 100%。</p>
+          </div>
+          <span className={cn('text-sm font-medium', Object.values(weights).reduce((a, b) => a + b, 0) === 100 ? 'text-primary' : 'text-destructive')}>
+            合计 {Object.values(weights).reduce((a, b) => a + b, 0)}%
+          </span>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {(Object.keys(weights) as Array<keyof typeof weights>).map((role) => (
+            <label key={role} className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-sm">
+              <span>{role}</span>
+              <span className="flex items-center gap-1">
+                <Input type="number" min="0" max="100" value={weights[role]} onChange={(e) => setWeights((current) => ({ ...current, [role]: Math.max(0, Math.min(100, Number(e.target.value) || 0)) }))} className="h-8 w-20 text-right" />
+                <span className="text-muted-foreground">%</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </section>
 
       <section className="bg-card p-4">
         <div className="flex items-center gap-4 px-1 py-1">

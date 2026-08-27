@@ -349,6 +349,43 @@ const DISPOSAL_ENDED_PROJECTS: ProjectRow[] = [
   },
 ]
 
+const STEEL_ENDED_PROJECTS: ProjectRow[] = [
+  {
+    code: '2090018847256104960',
+    title: '废钢回收炼钢项目（华南基地）',
+    flowType: '回收转钢',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-07-18 09:00:00',
+    signupEnd: '2026-07-20 18:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 286.42,
+    resourceName: '废旧钢轨及型钢',
+    resourceSpec: '钢材类 / 混合规格',
+    weight: 520.00,
+    emitTransferor: 2.40,
+    emitTransferee: 6.80,
+  },
+  {
+    code: '2089567123041187840',
+    title: '废钢回收炼钢项目（第二批）',
+    flowType: '回收转钢',
+    stage: '履约结束',
+    stageTone: 'green',
+    signupStart: '2026-06-22 10:00:00',
+    signupEnd: '2026-06-25 18:00:00',
+    certState: 'issued',
+    carbonState: 'accounted',
+    carbonValue: 164.18,
+    resourceName: '废旧钢材',
+    resourceSpec: '钢材类 / Q235',
+    weight: 310.00,
+    emitTransferor: 1.62,
+    emitTransferee: 4.20,
+  },
+]
+
 const PROCUREMENT_ACTIVE_PROJECTS: ProjectRow[] = [
   {
     code: '2089901220553201664',
@@ -520,17 +557,19 @@ export function FulfillmentList({
     | 'rental-lessee'
     | 'procurement-scrap'
     | 'procurement-scrap-buyer'
+    | 'disposal-steel'
 }) {
   const isEnded = variant === 'ended'
   // 受让方（处置收货方）：使用处置数据与处置方式筛选，但以收货视角履约
+  const isSteel = mode === 'disposal-steel'
   const isTransferee = mode === 'disposal-transferee'
   // 承租方（出租收货方）：使用出租数据与流转方式筛选，但以收货视角履约
   const isLessee = mode === 'rental-lessee'
   // 受让方 / 承租方共用「收货方」行为：进行中显示履约、结束显示查看
   // 承租方展示碳减排量但无碳凭证；受让方碳凭证归属受让方（见下方 isTransferor）
   const isSelfReceiver = isTransferee || isLessee
-  const isDisposal = mode === 'disposal' || isTransferee
-  // 转让方（发起处置转让的一方）：仅体现减排贡献，碳凭证归属受让方、不再由转让方核发
+  const isDisposal = mode === 'disposal' || isTransferee || isSteel
+  // 转让方（发起处置转让的一方）：仅体现减��贡献，碳凭证归属受让方、不再由转让方核发
   const isTransferor = mode === 'disposal'
   // 钢厂回收：实质为采购废钢（再生资源），复用采购模式的全部行为
   const isScrap =
@@ -539,7 +578,7 @@ export function FulfillmentList({
   // 供应商（供货方）展示「碳减排贡献」，采购方（收货方）展示「碳减排量」，均需碳核算
   const isSupplier = mode === 'procurement' || mode === 'procurement-scrap'
   const isProcurement = isSupplier || isBuyer
-  const hideCarbon = false
+  const hideCarbon = isSteel
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
   // 碳排放列：
@@ -553,7 +592,9 @@ export function FulfillmentList({
   const showRentalSeq = isLessor
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
-  const rawProjects = isProcurement
+  const rawProjects = isSteel
+    ? STEEL_ENDED_PROJECTS
+    : isProcurement
     ? isEnded
       ? PROCUREMENT_ENDED_PROJECTS
       : PROCUREMENT_ACTIVE_PROJECTS
@@ -913,6 +954,7 @@ export function FulfillmentList({
                           !isSelfReceiver &&
                           !isTransferor &&
                           !isLessor &&
+                          !isSteel &&
                           (p.certState === 'generate' ? (
                             <button
                               type="button"
@@ -934,6 +976,17 @@ export function FulfillmentList({
                               碳凭证
                             </button>
                           ))}
+                        {/* 钢厂方履约结束的碳凭证入口 */}
+                        {isEnded && isSteel && (
+                          <button
+                            type="button"
+                            onClick={() => setCertProject({ code: p.code, title: p.title })}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-chart-4 transition-colors hover:text-chart-4/80"
+                          >
+                            <ShieldCheck className="size-3.5" />
+                            碳凭证
+                          </button>
+                        )}
                         {/* 采购方（收货方）履约结束的碳凭证入口：新品不核算碳，不体现碳凭证 */}
                         {isEnded &&
                           isBuyer &&
@@ -1028,14 +1081,18 @@ export function FulfillmentList({
       <CarbonCertificate
         open={certProject !== null}
         project={certProject}
-        mode={
-          isProcurement
-            ? 'procurement'
+          mode={
+            isSteel
+              ? 'steel'
+              : isProcurement
+              ? 'procurement'
             : isTransferee
               ? 'disposal'
               : isLessee
                 ? 'rental'
-                : mode
+                : mode === 'disposal'
+                ? 'disposal'
+                : 'rental'
         }
         onClose={() => setCertProject(null)}
       />

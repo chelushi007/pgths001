@@ -87,6 +87,18 @@ const NAV_GROUPS: NavGroup[] = [
                   },
                 ],
               },
+              {
+                key: 'steel-party',
+                label: '钢厂方',
+                icon: Factory,
+                children: [
+                  {
+                    key: 'steel-party-perform-end',
+                    label: '履约结束',
+                    icon: CheckCircle2,
+                  },
+                ],
+              },
             ],
           },
           {

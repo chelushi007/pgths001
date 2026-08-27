@@ -311,7 +311,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞价，价高者得',
+    desc: '多家受让方在线报价参与竞���，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -617,6 +617,7 @@ type CertConfig = {
   transportNewReduction: string
   netReduction: string
   netRate: string
+  steelFormula?: string
   // 碳凭证归属主体（如转让业务归属受让方）；未设置时不展示归属字段
   holder?: string
   // 运输碳排放计入碳减排量的扣减项（仅出租业务）：设置后碳减排量 =（物资重量 × 新品排放因子）- 出库运输 - 退租运输
@@ -650,7 +651,7 @@ type CertConfig = {
   }
 }
 
-const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
+const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement' | 'steel', CertConfig> = {
   rental: {
     certTitle: '绿色循环碳减排凭证',
     ownerLabel: '出租单位',
@@ -771,6 +772,39 @@ const CERT_CONFIG: Record<'rental' | 'disposal' | 'procurement', CertConfig> = {
       hasReturn: false,
     },
   },
+  steel: {} as CertConfig,
+}
+
+CERT_CONFIG.steel = {
+  ...CERT_CONFIG.disposal,
+  certTitle: '钢厂再生利用碳减排凭证',
+  ownerLabel: '处置方',
+  ownerValue: '中铁物资/华南公司',
+  counterpartyLabel: '钢厂',
+  counterpartyValue: '华南钢铁有限公司',
+  flowLabel: '资源处置回收转钢',
+  reuseTitle: '回收转钢循环利用减排明细',
+  transportTitle: '回收运输及入厂运输碳排放',
+  scopeText: '本凭证覆盖资源处置→回收商→钢厂的完整链路，按简化公式核算钢厂侧最终减排量。',
+  materialWeight: '520.00 吨',
+  reuseTotal: '546.00',
+  transportTotal: '9.20',
+  transportNewReduction: '0',
+  netReduction: '286.42',
+  netRate: '52.5',
+  steelFormula: '碳减排量 =（物资重量 × 新品排放因子）× 废钢折算因子 − 回收运输 − 改制加工 − 入厂运输 − 钢厂冶炼成品排放',
+  holder: '华南钢铁有限公司（钢厂方）',
+  orderNo: 'GCHS20260720001',
+  flow: {
+    ownerTitle: '处置方',
+    ownerSub: '中铁物资/华南公司',
+    counterpartyTitle: '钢厂',
+    counterpartySub: '华南钢铁有限公司',
+    forwardLabel: '回收转钢',
+    forwardNote: '回收商运输并交付钢厂',
+    reuseSub: '回收分拣 · 改制加工 · 冶炼成品',
+    hasReturn: false,
+  },
 }
 
 /* ---------------- 组件 ---------------- */
@@ -783,7 +817,7 @@ export function CarbonCertificate({
 }: {
   open: boolean
   project: CarbonCertProject | null
-  mode?: 'rental' | 'disposal' | 'procurement'
+  mode?: 'rental' | 'disposal' | 'procurement' | 'steel'
   onClose: () => void
 }) {
   const cfg = CERT_CONFIG[mode]
@@ -1101,9 +1135,11 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           <span className="text-sm font-semibold text-foreground">碳减排量核算公式</span>
         </div>
         <p className="mt-3 text-sm text-foreground">
-          {cfg.deductTransport
-            ? '碳减排量 =（物资重量 × 新品排放因子）- 出库运输碳排放 - 退租运输碳排放'
-            : '碳减排量 =（物资重量 × 新品排放因子）'}
+  {cfg.steelFormula
+  ? cfg.steelFormula
+  : cfg.deductTransport
+  ? '碳减排量 =（物资重量 × 新品排放因子）- 出库运输碳排放 - 退租运输碳排放'
+  : '碳减排量 =（物资重量 × 新品排放因子）'}
         </p>
         {cfg.deductTransport ? (
           <p className="mt-1.5 text-xs text-muted-foreground">
