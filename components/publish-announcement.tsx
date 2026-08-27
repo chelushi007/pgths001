@@ -406,6 +406,8 @@ function RentDialog({
   const cfg = MODE_CONFIG[mode]
   const isDisposal = mode === 'disposal'
   const [rows, setRows] = useState<ResourceRow[]>(INITIAL_ROWS)
+  const [disassembly, setDisassembly] = useState('需买方自行拆解')
+  const [rentalTransport, setRentalTransport] = useState('出租方运输')
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({})
 
   useEffect(() => {
@@ -811,6 +813,44 @@ function RentDialog({
                   {rows.length} 项
                 </span>
               </Field>
+
+              {isDisposal ? (
+                <Field label="拆卸情况" required>
+                  <div className="flex flex-wrap gap-4 pt-1">
+                    {['需买方自行拆解', '无需拆解直接清运'].map((option) => (
+                      <label key={option} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                        <input
+                          type="radio"
+                          name="disassembly"
+                          value={option}
+                          checked={disassembly === option}
+                          onChange={(e) => setDisassembly(e.target.value)}
+                          className="size-4 accent-primary"
+                        />
+                        {option}
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+              ) : (
+                <Field label="运输情况" required>
+                  <div className="flex flex-wrap gap-4 pt-1">
+                    {['出租方运输', '承租方运输'].map((option) => (
+                      <label key={option} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                        <input
+                          type="radio"
+                          name="rental-transport"
+                          value={option}
+                          checked={rentalTransport === option}
+                          onChange={(e) => setRentalTransport(e.target.value)}
+                          className="size-4 accent-primary"
+                        />
+                        {option}
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+              )}
             </div>
           </section>
         </div>

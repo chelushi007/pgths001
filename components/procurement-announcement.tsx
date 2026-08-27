@@ -46,6 +46,7 @@ export function ProcurementAnnouncement() {
   const [bids, setBids] = useState<BidRow[]>(INITIAL_BIDS)
   const [materials, setMaterials] = useState<MaterialRow[]>(INITIAL_MATERIALS)
   const [selected, setSelected] = useState<number[]>([])
+  const [transport, setTransport] = useState('供应商运输')
 
   const addBid = () => {
     bidSeq += 1
@@ -261,6 +262,23 @@ export function ProcurementAnnouncement() {
                   defaultValue="无"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                 />
+              </Field>
+              <Field label="运输情况" required>
+                <div className="flex flex-wrap gap-4 pt-1">
+                  {['供应商运输', '采购方运输'].map((option) => (
+                    <label key={option} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+                      <input
+                        type="radio"
+                        name="procurement-transport"
+                        value={option}
+                        checked={transport === option}
+                        onChange={(e) => setTransport(e.target.value)}
+                        className="size-4 accent-primary"
+                      />
+                      {option}
+                    </label>
+                  ))}
+                </div>
               </Field>
               <Field label="付款方式" required>
                 <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20">
