@@ -64,6 +64,8 @@ type ProjectRow = {
   emitReturnTransport?: number
   // 采购业务运输碳排放（tCO₂e）：emitSupplier 供应商将货物运输至采购方产生的运输碳排放
   emitSupplier?: number
+  // 钢厂方核算：回收运输、改制加工、入厂运输、冶炼成品排放合计
+  emitSteel?: number
 }
 
 const ACTIVE_PROJECTS: ProjectRow[] = [
@@ -366,6 +368,7 @@ const STEEL_ENDED_PROJECTS: ProjectRow[] = [
     weight: 520.00,
     emitTransferor: 2.40,
     emitTransferee: 6.80,
+    emitSteel: 42.18,
   },
   {
     code: '2089567123041187840',
@@ -383,6 +386,7 @@ const STEEL_ENDED_PROJECTS: ProjectRow[] = [
     weight: 310.00,
     emitTransferor: 1.62,
     emitTransferee: 4.20,
+    emitSteel: 26.84,
   },
 ]
 
@@ -578,7 +582,7 @@ export function FulfillmentList({
   // 供应商（供货方）展示「碳减排贡献」，采购方（收货方）展示「碳减排量」，均需碳核算
   const isSupplier = mode === 'procurement' || mode === 'procurement-scrap'
   const isProcurement = isSupplier || isBuyer
-  const hideCarbon = isSteel
+  const hideCarbon = false
   // 出租方（发起出租的一方）：非采购、非收货方、非处置
   const isLessor = !isProcurement && !isSelfReceiver && !isDisposal
   // 碳排放列：
@@ -587,7 +591,7 @@ export function FulfillmentList({
   // - 承租方（进行中/结束）：退租运输
   // - 供应商（进行中/结束）：运输至采购方
   const showEmission =
-    (isTransferor && isEnded) || isTransferee || isLessor || isLessee || isSupplier
+    (isTransferor && isEnded) || isTransferee || isLessor || isLessee || isSupplier || isSteel
   // 出租次数列：出租方履约/履约结束展示
   const showRentalSeq = isLessor
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
@@ -889,7 +893,7 @@ export function FulfillmentList({
                                 ? '退租运输（首次出租免整备）'
                                 : '出租运输（首次出租免整备）'
                               : isEnded
-                                ? '整备 + 退租运输'
+                                ? '整备 + 退租��输'
                                 : '整备 + 出租运输'
                           } else if (isLessee) {
                             value = p.emitReturnTransport
@@ -897,6 +901,9 @@ export function FulfillmentList({
                           } else if (isSupplier) {
                             value = p.emitSupplier
                             note = '运输至采购方'
+                          } else if (isSteel) {
+                            value = p.emitSteel
+                            note = '回收运输 + 改制加工 + 入厂运输 + 冶炼成品'
                           }
                           return (
                             <EmissionCell
@@ -941,7 +948,7 @@ export function FulfillmentList({
                               ? isEnded
                                 ? '查看'
                                 : '履约'
-                              : isSelfReceiver
+                              : isSelfReceiver || isSteel
                                 ? isEnded
                                   ? '查看'
                                   : '履约'
@@ -1294,7 +1301,7 @@ function CarbonCell({
         <span className="text-sm">待核算</span>
       </div>
       <span className="inline-flex w-fit items-center rounded bg-muted px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground">
-        待补充信息
+        待补充��息
       </span>
     </div>
   )

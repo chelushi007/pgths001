@@ -17,6 +17,7 @@ import {
   Zap,
   TrendingDown,
   Building2,
+  Factory,
   HardHat,
   ArrowRight,
   ArrowLeft,
@@ -602,6 +603,8 @@ type CertConfig = {
   ownerValue: string
   counterpartyLabel: string
   counterpartyValue: string
+  recyclerLabel?: string
+  recyclerValue?: string
   infoFlow: InfoFlowStep[]
   fundFlow: FundFlow[]
   logistics: LogisticsItem[]
@@ -618,6 +621,8 @@ type CertConfig = {
   netReduction: string
   netRate: string
   steelFormula?: string
+  finishedProductRate?: string
+  reprocessEmission?: string
   // 碳凭证归属主体（如转让业务归属受让方）；未设置时不展示归属字段
   holder?: string
   // 运输碳排放计入碳减排量的扣减项（仅出租业务）：设置后碳减排量 =（物资重量 × 新品排放因子）- 出库运输 - 退租运输
@@ -644,6 +649,8 @@ type CertConfig = {
     ownerSub: string
     counterpartyTitle: string
     counterpartySub: string
+    recyclerTitle?: string
+    recyclerSub?: string
     forwardLabel: string
     forwardNote: string
     reuseSub: string
@@ -780,6 +787,8 @@ CERT_CONFIG.steel = {
   certTitle: '钢厂再生利用碳减排凭证',
   ownerLabel: '处置方',
   ownerValue: '中铁物资/华南公司',
+  recyclerLabel: '回收商',
+  recyclerValue: '广州资源回收有限公司',
   counterpartyLabel: '钢厂',
   counterpartyValue: '华南钢铁有限公司',
   flowLabel: '资源处置回收转钢',
@@ -792,7 +801,9 @@ CERT_CONFIG.steel = {
   transportNewReduction: '0',
   netReduction: '286.42',
   netRate: '52.5',
-  steelFormula: '碳减排量 =（物资重量 × 新品排放因子）× 废钢折算因子 − 回收运输 − 改制加工 − 入厂运输 − 钢厂冶炼成品排放',
+  steelFormula: '碳减排量 =（物资重量 × 新品排放因子）× 成品折算率 − 回收运输 − 改制加工 − 入厂运输 − 钢厂冶炼成品排放',
+  finishedProductRate: '82.0%',
+  reprocessEmission: '18.60',
   holder: '华南钢铁有限公司（钢厂方）',
   orderNo: 'GCHS20260720001',
   flow: {
@@ -800,6 +811,8 @@ CERT_CONFIG.steel = {
     ownerSub: '中铁物资/华南公司',
     counterpartyTitle: '钢厂',
     counterpartySub: '华南钢铁有限公司',
+    recyclerTitle: '回收商',
+    recyclerSub: '广州资源回收有限公司',
     forwardLabel: '回收转钢',
     forwardNote: '回收商运输并交付钢厂',
     reuseSub: '回收分拣 · 改制加工 · 冶炼成品',
@@ -941,8 +954,11 @@ function CertTab({ cfg, project }: { cfg: CertConfig; project: CarbonCertProject
           {cfg.holder && (
             <KV label="凭证归属" value={cfg.holder} strong accent />
           )}
-          <KV label={cfg.ownerLabel} value={cfg.ownerValue} />
-          <KV label={cfg.counterpartyLabel} value={cfg.counterpartyValue} span2 />
+  <KV label={cfg.ownerLabel} value={cfg.ownerValue} />
+  {cfg.recyclerLabel && cfg.recyclerValue && (
+    <KV label={cfg.recyclerLabel} value={cfg.recyclerValue} />
+  )}
+  <KV label={cfg.counterpartyLabel} value={cfg.counterpartyValue} span2 />
           <KV label="核发日期" value="2026-05-22 14:10" />
           <KV label="核算依据" value="GB/T 51366" />
           <KV label="存证方式" value="区块链存证" />
@@ -1095,6 +1111,18 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
             note={cfg.flow.forwardNote}
             dir="right"
           />
+          {cfg.flow.recyclerTitle && (
+            <>
+              <FlowNode
+                icon={Recycle}
+                title={cfg.flow.recyclerTitle}
+                sub={cfg.flow.recyclerSub ?? '回收分拣与改制加工'}
+                tone="chart-4"
+                active
+              />
+              <FlowArrow label="运输入厂" note="回收商交付至钢厂" dir="right" />
+            </>
+          )}
           <FlowNode
             icon={HardHat}
             title={cfg.flow.counterpartyTitle}
@@ -1175,6 +1203,12 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
         }`}
       >
         <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />
+        {cfg.finishedProductRate && (
+          <MetricCard icon={Factory} label="成品折算率" value={cfg.finishedProductRate} unit="" />
+        )}
+        {cfg.reprocessEmission && (
+          <MetricCard icon={Factory} label="改制加工碳排放" value={cfg.reprocessEmission} unit="tCO₂e" />
+        )}
         <MetricCard icon={TrendingDown} label="碳减排量" value={cfg.netReduction} unit="tCO₂e" highlight />
         {cfg.prep && (
           <MetricCard icon={HardHat} label="整备加工碳排放（参考）" value={cfg.prep.emission} unit="tCO₂e" />
