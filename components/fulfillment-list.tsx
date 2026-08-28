@@ -64,7 +64,7 @@ type ProjectRow = {
   emitReturnTransport?: number
   // 采购业务运输碳排放（tCO₂e）：emitSupplier 供应商将货物运输至采购方产生的运输碳排放
   emitSupplier?: number
-  // 钢厂方核算：回收运输、改制加工、入厂运输、冶炼成品排放合计
+  // 钢厂方履约结束：仅展示冶炼成品排放量
   emitSteel?: number
 }
 
@@ -903,7 +903,7 @@ export function FulfillmentList({
                             note = '运输至采购方'
                           } else if (isSteel) {
                             value = p.emitSteel
-                            note = '回收运输 + 改制加工 + 入厂运输 + 冶炼成品'
+                            note = '冶炼成品排放量'
                           }
                           return (
                             <EmissionCell

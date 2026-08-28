@@ -292,6 +292,7 @@ type ReuseRow = {
   weight: string
   factor: string
   reduction: string
+  finishedProductRate?: string
 }
 
 const REUSE_ROWS: ReuseRow[] = [
@@ -312,7 +313,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞���，价高者得',
+    desc: '多家受让方在线报���参与竞���，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -792,6 +793,7 @@ CERT_CONFIG.steel = {
   counterpartyLabel: '钢厂',
   counterpartyValue: '华南钢铁有限公司',
   flowLabel: '资源处置回收转钢',
+  reuseRows: REUSE_ROWS.map((row) => ({ ...row, finishedProductRate: '82.0%' })),
   reuseTitle: '回收转钢循环利用减排明细',
   transportTitle: '回收运输及入厂运输碳排放',
   scopeText: '本凭证覆盖资源处置→回收商→钢厂的完整链路，按简化公式核算钢厂侧最终减排量。',
@@ -810,12 +812,12 @@ CERT_CONFIG.steel = {
     ownerTitle: '处置方',
     ownerSub: '中铁物资/华南公司',
     counterpartyTitle: '钢厂',
-    counterpartySub: '华南钢铁有限公司',
+    counterpartySub: '华南钢铁有限公司 · 冶炼成品',
     recyclerTitle: '回收商',
-    recyclerSub: '广州资源回收有限公司',
+    recyclerSub: '广州资源回收有限公司 · 改制加工',
     forwardLabel: '回收转钢',
     forwardNote: '回收商运输并交付钢厂',
-    reuseSub: '回收分拣 · 改制加工 · 冶炼成品',
+    reuseSub: '回收商改制加工 · 钢厂冶炼成品',
     hasReturn: false,
   },
 }
@@ -885,7 +887,7 @@ export function CarbonCertificate({
             凭证
           </TabButton>
           <TabButton active={tab === 'account'} onClick={() => setTab('account')}>
-            碳足迹与碳核算
+            ���足迹与碳核算
           </TabButton>
         </div>
 
@@ -1130,17 +1132,25 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
             tone="primary"
             active
           />
-          {cfg.flow.hasReturn ? (
-            <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
-          ) : (
-            <FlowArrow label="货权转移" note="不再退回转让方" dir="right" />
+          {!cfg.steelFormula && (
+            <>
+          {!cfg.steelFormula && (
+            <>
+              {cfg.flow.hasReturn ? (
+                <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
+              ) : (
+                <FlowArrow label="货权转移" note="不再退回转让方" dir="right" />
+              )}
+              <FlowNode
+                icon={Recycle}
+                title="循环复用"
+                sub={cfg.flow.reuseSub}
+                tone="chart-4"
+              />
+            </>
           )}
-          <FlowNode
-            icon={Recycle}
-            title="循环复用"
-            sub={cfg.flow.reuseSub}
-            tone="chart-4"
-          />
+            </>
+          )}
         </div>
       </SectionCard>
 
@@ -1202,14 +1212,14 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           cfg.prep ? 'lg:grid-cols-5' : 'lg:grid-cols-4'
         }`}
       >
-        <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />
+        {!cfg.steelFormula && <MetricCard icon={Recycle} label="循环利用减排" value={cfg.reuseTotal} unit="tCO₂e" />}
         {cfg.finishedProductRate && (
           <MetricCard icon={Factory} label="成品折算率" value={cfg.finishedProductRate} unit="" />
         )}
         {cfg.reprocessEmission && (
           <MetricCard icon={Factory} label="改制加工碳排放" value={cfg.reprocessEmission} unit="tCO₂e" />
         )}
-        <MetricCard icon={TrendingDown} label="碳减排量" value={cfg.netReduction} unit="tCO₂e" highlight />
+        <MetricCard icon={TrendingDown} label={cfg.steelFormula ? '冶炼成品排放量' : '碳减排量'} value={cfg.netReduction} unit="tCO₂e" highlight />
         {cfg.prep && (
           <MetricCard icon={HardHat} label="整备加工碳排放（参考）" value={cfg.prep.emission} unit="tCO₂e" />
         )}
@@ -1385,6 +1395,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                 <th className="px-3 py-2.5 font-medium">规格</th>
                 <th className="px-3 py-2.5 text-right font-medium">物资重量(吨)</th>
                 <th className="px-3 py-2.5 text-right font-medium">新品排放因子(kgCO₂e/吨)</th>
+                {cfg.steelFormula && <th className="px-3 py-2.5 text-right font-medium">成品折算率</th>}
                 <th className="px-3 py-2.5 text-right font-medium">循环复用减排(tCO₂e)</th>
               </tr>
             </thead>
@@ -1395,6 +1406,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                   <td className="px-3 py-3 text-muted-foreground">{r.spec}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-foreground">{r.weight}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">{r.factor}</td>
+                  {cfg.steelFormula && <td className="px-3 py-3 text-right tabular-nums text-foreground">{r.finishedProductRate ?? cfg.finishedProductRate}</td>}
                   <td className="px-3 py-3 text-right font-medium tabular-nums text-primary">{r.reduction}</td>
                 </tr>
               ))}
@@ -1402,7 +1414,9 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
           </table>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          循环利用减排 = 物资重量 × 新品排放因子，表示物资循环复用替代新品生产所避免的碳排放，核算依据 GB/T 51366。
+          {cfg.steelFormula
+            ? '明细按物资重量、新品排放因子与成品折算率核算钢厂冶炼成品排放量。'
+            : '循环利用减排 = 物资重量 × 新品排放因子，表示物资循环复用替代新品生产所避免的碳排放，核算依据 GB/T 51366。'}
         </p>
       </div>
     </div>
