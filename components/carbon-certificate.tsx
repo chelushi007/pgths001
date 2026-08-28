@@ -292,6 +292,7 @@ type ReuseRow = {
   weight: string
   factor: string
   reduction: string
+  finishedProductRate?: string
 }
 
 const REUSE_ROWS: ReuseRow[] = [
@@ -312,7 +313,7 @@ const INFO_FLOW_D: InfoFlowStep[] = [
   },
   {
     title: '竞价（网络竞价）',
-    desc: '多家受让方在线报价参与竞���，价高者得',
+    desc: '多家受让方在线报���参与竞���，价高者得',
     time: '2026-05-15 16:30',
     files: ['竞价报价单.pdf'],
   },
@@ -592,9 +593,9 @@ const TRANSPORT_ROWS_P: TransportRow[] = [
 ]
 
 const REUSE_ROWS_P: ReuseRow[] = [
-  { name: '废旧钢轨', spec: '50kg/m 重废', weight: '52.4', factor: '2340', reduction: '122.62' },
-  { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '18.6', factor: '2340', reduction: '43.52' },
-  { name: '型钢废料', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34' },
+  { name: '废旧钢轨', spec: '50kg/m 重废', weight: '52.4', factor: '2340', reduction: '122.62', finishedProductRate: '82.0%' },
+  { name: '废旧钢管', spec: 'Φ48×3.5mm', weight: '18.6', factor: '2340', reduction: '43.52', finishedProductRate: '82.0%' },
+  { name: '型钢废料', spec: 'H型钢', weight: '15.4', factor: '2100', reduction: '32.34', finishedProductRate: '82.0%' },
 ]
 
 type CertConfig = {
@@ -792,6 +793,7 @@ CERT_CONFIG.steel = {
   counterpartyLabel: '钢厂',
   counterpartyValue: '华南钢铁有限公司',
   flowLabel: '资源处置回收转钢',
+  reuseRows: REUSE_ROWS_P.map((row) => ({ ...row, finishedProductRate: '82.0%' })),
   reuseTitle: '回收转钢循环利用减排明细',
   transportTitle: '回收运输及入厂运输碳排放',
   scopeText: '本凭证覆盖资源处置→回收商→钢厂的完整链路，按简化公式核算钢厂侧最终减排量。',
@@ -1130,17 +1132,21 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
             tone="primary"
             active
           />
-          {cfg.flow.hasReturn ? (
-            <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
-          ) : (
-            <FlowArrow label="货权转移" note="不再退回转让方" dir="right" />
+          {!cfg.steelFormula && (
+            <>
+              {cfg.flow.hasReturn ? (
+                <FlowArrow label="退租回收" note="物资返回出租方" dir="left" />
+              ) : (
+                <FlowArrow label="货权转移" note="不再退回转让方" dir="right" />
+              )}
+              <FlowNode
+                icon={Recycle}
+                title="循环复用"
+                sub={cfg.flow.reuseSub}
+                tone="chart-4"
+              />
+            </>
           )}
-          <FlowNode
-            icon={Recycle}
-            title="循环复用"
-            sub={cfg.flow.reuseSub}
-            tone="chart-4"
-          />
         </div>
       </SectionCard>
 
@@ -1209,7 +1215,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
         {cfg.reprocessEmission && (
           <MetricCard icon={Factory} label="改制加工碳排放" value={cfg.reprocessEmission} unit="tCO₂e" />
         )}
-        <MetricCard icon={TrendingDown} label="碳减排量" value={cfg.netReduction} unit="tCO₂e" highlight />
+        <MetricCard icon={TrendingDown} label={cfg.steelFormula ? '冶炼成品排放量' : '碳减排量'} value={cfg.netReduction} unit="tCO₂e" highlight />
         {cfg.prep && (
           <MetricCard icon={HardHat} label="整备加工碳排放（参考）" value={cfg.prep.emission} unit="tCO₂e" />
         )}
@@ -1364,7 +1370,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
             </>
           ) : (
             <>
-              ，单独列示供参考，<b className="text-foreground">不计入本次碳减排量</b>。
+              ，单独列示供参考，<b className="text-foreground">��计入本次碳减排量</b>。
             </>
           )}
           能源类型为新能源时，按燃油基准因子（柴油货车 0.0962
@@ -1385,6 +1391,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                 <th className="px-3 py-2.5 font-medium">规格</th>
                 <th className="px-3 py-2.5 text-right font-medium">物资重量(吨)</th>
                 <th className="px-3 py-2.5 text-right font-medium">新品排放因子(kgCO₂e/吨)</th>
+                {cfg.steelFormula && <th className="px-3 py-2.5 text-right font-medium">成品折算率</th>}
                 <th className="px-3 py-2.5 text-right font-medium">循环复用减排(tCO₂e)</th>
               </tr>
             </thead>
@@ -1395,6 +1402,7 @@ function AccountTab({ cfg }: { cfg: CertConfig }) {
                   <td className="px-3 py-3 text-muted-foreground">{r.spec}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-foreground">{r.weight}</td>
                   <td className="px-3 py-3 text-right tabular-nums text-muted-foreground">{r.factor}</td>
+                  {cfg.steelFormula && <td className="px-3 py-3 text-right tabular-nums text-foreground">{r.finishedProductRate ?? cfg.finishedProductRate}</td>}
                   <td className="px-3 py-3 text-right font-medium tabular-nums text-primary">{r.reduction}</td>
                 </tr>
               ))}
