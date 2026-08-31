@@ -1,5 +1,5 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, XAxis, YAxis } from 'recharts'
 import { Boxes, Factory, Leaf, Maximize2, Minimize2, Recycle, TrendingUp, X } from 'lucide-react'
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
@@ -51,9 +51,25 @@ const config = { reduce: { label: '减碳量', color: BLUE }, emit: { label: '�
 export function CarbonDataScreen({ onClose }: { onClose?: () => void }) {
   const screenRef = useRef<HTMLElement>(null)
   const [fullscreen, setFullscreen] = useState(false)
+
+  useEffect(() => {
+    const syncFullscreen = () => setFullscreen(document.fullscreenElement === screenRef.current)
+    document.addEventListener('fullscreenchange', syncFullscreen)
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen)
+  }, [])
+
   const toggleFullscreen = async () => {
-    if (!document.fullscreenElement) { await screenRef.current?.requestFullscreen(); setFullscreen(true) }
-    else { await document.exitFullscreen(); setFullscreen(false) }
+    try {
+      if (!document.fullscreenElement) {
+        await screenRef.current?.requestFullscreen()
+      } else {
+        await document.exitFullscreen()
+      }
+    } catch (error) {
+      // Preview iframe 和未获授权的浏览器环境会拒绝全屏请求，避免产生未处理的 Promise 错误。
+      console.warn('[v0] 全屏展示不可用:', error)
+      setFullscreen(document.fullscreenElement === screenRef.current)
+    }
   }
   return (
     <main ref={screenRef} className="min-h-screen overflow-y-auto bg-[#0b1a2e] p-4 font-sans text-white lg:p-6">
