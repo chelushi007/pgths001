@@ -57,6 +57,7 @@ const BUSINESSES: Array<{
   done: number
   tons: number
   reduce: number
+  turnover: number
   role: ReduceRole
   roleLabel: string
 }> = [
@@ -71,6 +72,7 @@ const BUSINESSES: Array<{
     done: 2,
     tons: 91.0,
     reduce: 34.7,
+    turnover: 5,
     role: 'partaker',
     roleLabel: '转让方',
   },
@@ -85,6 +87,7 @@ const BUSINESSES: Array<{
     done: 2,
     tons: 229.0,
     reduce: 42.26,
+    turnover: 8,
     role: 'partaker',
     roleLabel: '出租方',
   },
@@ -99,6 +102,7 @@ const BUSINESSES: Array<{
     done: 2,
     tons: 308.5,
     reduce: 13.92,
+    turnover: 6,
     role: 'owner',
     roleLabel: '采购方',
   },
@@ -113,6 +117,7 @@ const BUSINESSES: Array<{
     done: 1,
     tons: 174.6,
     reduce: 28.4,
+    turnover: 4,
     role: 'owner',
     roleLabel: '回收方',
   },
@@ -371,7 +376,7 @@ export function PersonalWorkbench() {
                 {OWNED_REDUCE.toFixed(2)}
               </b>
               <span className="text-xs text-[#1bbf7a]">
-                tCO₂e · 占比 {((OWNED_REDUCE / REDUCE_TOTAL) * 100).toFixed(1)}%
+                tCO₂e · ���比 {((OWNED_REDUCE / REDUCE_TOTAL) * 100).toFixed(1)}%
               </span>
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">
@@ -657,7 +662,7 @@ export function PersonalWorkbench() {
                 <div className="rounded-lg bg-muted/50 p-3">
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>循环减碳贡献</span>
-                    <span>物资 {b.tons.toFixed(1)} 吨</span>
+                    <span>{(b.key === 'rental' || b.key === 'procurement') ? `周转 ${b.turnover} 次` : `物资 ${b.tons.toFixed(1)} 吨`}</span>
                   </div>
                   <p className="mt-1 flex items-baseline gap-1">
                     <b

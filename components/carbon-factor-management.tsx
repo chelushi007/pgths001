@@ -134,7 +134,7 @@ const TAB_META: Record<FactorType, {
 
 const TAB_ORDER: FactorType[] = ['资源因子', '运输因子', '废钢炼钢因子', '废钢回收站因子', '改制加工因子', '整备因子']
 
-// 分作业环节 / 工序的图标与配色
+// 分作业环节 / 工序的图标与��色
 const EMISSION_META: Record<string, { icon: typeof Zap; badge: string }> = {
   废钢改制加工: { icon: Recycle, badge: 'bg-teal-50 text-teal-600' },
   炼钢工序: { icon: Factory, badge: 'bg-[#e7f1ff] text-[#086de0]' },
@@ -170,8 +170,6 @@ export function CarbonFactorManagement() {
   const [status, setStatus] = useState('全部')
   const [filters, setFilters] = useState({ category: '全部', keyword: '', status: '全部' })
   const [editing, setEditing] = useState<Factor | null>(null)
-  const [weights, setWeights] = useState({ 处置方: 30, 回收商: 30, 钢厂: 30, 平台: 10 })
-
   const meta = TAB_META[tab]
 
   const visible = useMemo(() => rows.filter((row) => {
@@ -241,29 +239,6 @@ export function CarbonFactorManagement() {
       </div>
 
       {highlights.length > 0 && <SummaryStrip items={highlights} />}
-
-      <section className="rounded-lg border bg-card p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">碳减排贡献权重</h2>
-            <p className="mt-1 text-xs text-muted-foreground">自定义处置链路中各角色的贡献分配比例，合计应为 100%。</p>
-          </div>
-          <span className={cn('text-sm font-medium', Object.values(weights).reduce((a, b) => a + b, 0) === 100 ? 'text-primary' : 'text-destructive')}>
-            合计 {Object.values(weights).reduce((a, b) => a + b, 0)}%
-          </span>
-        </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {(Object.keys(weights) as Array<keyof typeof weights>).map((role) => (
-            <label key={role} className="flex items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-sm">
-              <span>{role}</span>
-              <span className="flex items-center gap-1">
-                <Input type="number" min="0" max="100" value={weights[role]} onChange={(e) => setWeights((current) => ({ ...current, [role]: Math.max(0, Math.min(100, Number(e.target.value) || 0)) }))} className="h-8 w-20 text-right" />
-                <span className="text-muted-foreground">%</span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </section>
 
       <section className="bg-card p-4">
         <div className="flex items-center gap-4 px-1 py-1">

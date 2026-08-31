@@ -8,6 +8,7 @@ import { PublishAnnouncement } from '@/components/publish-announcement'
 import { FulfillmentList } from '@/components/fulfillment-list'
 import { ProcurementAnnouncement } from '@/components/procurement-announcement'
 import { CarbonFactorManagement } from '@/components/carbon-factor-management'
+import { BusinessConfig } from '@/components/business-config'
 import { CarbonAccountingQuery } from '@/components/carbon-accounting-query'
 import { CarbonStatistics } from '@/components/carbon-statistics'
 
@@ -115,6 +116,8 @@ export default function Page() {
             <FulfillmentList variant="ended" mode="procurement-scrap" />
           ) : active.key === 'carbon-factor' ? (
             <CarbonFactorManagement />
+          ) : active.key === 'business-config' ? (
+            <BusinessConfig />
           ) : active.key === 'carbon-query' ? (
             <CarbonAccountingQuery />
           ) : active.key === 'carbon-stats' ? (

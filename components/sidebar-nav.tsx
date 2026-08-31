@@ -17,6 +17,7 @@ import {
   Building2,
   Gauge,
   Database,
+  Settings2,
   FileSearch,
   BarChart3,
   Factory,
@@ -255,6 +256,7 @@ const NAV_GROUPS: NavGroup[] = [
         icon: Gauge,
         children: [
           { key: 'carbon-factor', label: '碳因子库管理', icon: Database },
+          { key: 'business-config', label: '业务配置', icon: Settings2 },
           { key: 'carbon-query', label: '碳核算查询', icon: FileSearch },
           { key: 'carbon-stats', label: '统计分析', icon: BarChart3 },
         ],
