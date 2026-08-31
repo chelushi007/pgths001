@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 
 const ROLE_LABELS = ['处置方', '回收商', '钢厂', '平台'] as const
+const RENTAL_ROLE_LABELS = ['出租方', '承租方', '平台'] as const
 
 type Role = (typeof ROLE_LABELS)[number]
+type RentalRole = (typeof RENTAL_ROLE_LABELS)[number]
 
 export function BusinessConfig() {
   const [weights, setWeights] = useState<Record<Role, number>>({
@@ -17,8 +19,11 @@ export function BusinessConfig() {
     钢厂: 30,
     平台: 10,
   })
+  const [rentalWeights, setRentalWeights] = useState<Record<RentalRole, number>>({ 出租方: 40, 承租方: 40, 平台: 20 })
   const total = useMemo(() => Object.values(weights).reduce((sum, value) => sum + value, 0), [weights])
+  const rentalTotal = useMemo(() => Object.values(rentalWeights).reduce((sum, value) => sum + value, 0), [rentalWeights])
   const valid = total === 100
+  const rentalValid = rentalTotal === 100
 
   return (
     <div className="min-h-full bg-[#f5f7fa] font-sans">
@@ -65,6 +70,27 @@ export function BusinessConfig() {
                 <Save data-icon="inline-start" />保存配置
               </Button>
             </div>
+          </CardContent>
+        </Card>
+        <Card className="mt-4">
+          <CardHeader className="flex flex-row items-start justify-between gap-4">
+            <div>
+              <CardTitle className="text-base">出租业务贡献比例</CardTitle>
+              <CardDescription className="mt-1">配置出租方、承租方与平台三方的碳减排贡献比例，合计应为 100%。</CardDescription>
+            </div>
+            <span className={rentalValid ? 'text-sm font-medium text-primary' : 'text-sm font-medium text-destructive'}>合计 {rentalTotal}%</span>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            {RENTAL_ROLE_LABELS.map((role) => (
+              <label key={role} className="flex items-center justify-between gap-3 rounded-lg border bg-background px-3 py-3 text-sm">
+                <span className="font-medium">{role}</span>
+                <span className="flex items-center gap-1">
+                  <Input type="number" min={0} max={100} value={rentalWeights[role]} aria-label={`${role}贡献比例`} onChange={(event) => setRentalWeights((current) => ({ ...current, [role]: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))} className="h-9 w-20 text-right" />
+                  <span className="text-muted-foreground">%</span>
+                </span>
+              </label>
+            ))}
+            <div className="flex justify-end sm:col-span-3"><Button disabled={!rentalValid}><Save data-icon="inline-start" />保存出租配置</Button></div>
           </CardContent>
         </Card>
       </div>

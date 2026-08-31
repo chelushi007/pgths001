@@ -46,9 +46,10 @@ type ProjectRow = {
   isNewProduct?: boolean
   // 履约结束后展示的资源名称
   resourceName?: string
-  // 出租方履约结束：资源规格、该资源第几次出租、本次退还后重新过磅的重量（吨）
+  // 出租方履约结束：资源规格、该资源周转次数、本次退还后重新过磅的重量（吨）
   resourceSpec?: string
   rentalSeq?: number
+  turnover?: number
   weight?: number
   // 处置业务运输/改制碳排放（tCO₂e）：
   // - emitTransferor 转让方将待处置资源运输至受让方产生的运输碳排放
@@ -592,8 +593,8 @@ export function FulfillmentList({
   // - 供应商（进行中/结束）：运输至采购方
   const showEmission =
     (isTransferor && isEnded) || isTransferee || isLessor || isLessee || isSupplier || isSteel
-  // 出租次数列：出租方履约/履约结束展示
-  const showRentalSeq = isLessor
+  // 周转次数列：出租方与供应商履约/履约结束展示
+  const showTurnover = isLessor || isSupplier
   // 全部角色在履约与履约结束均展示：资源名称、资源规格、重量（吨）
   const showResourceCol = true
   const rawProjects = isSteel
@@ -739,7 +740,7 @@ export function FulfillmentList({
 
       {/* 列表区 */}
       <section className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card shadow-sm">
-        {/* 操作按钮：仅发起方（出租方 / 转让方 / 采购方）显示发起入口；
+        {/* 操作按钮：仅发起方（出租方 / 转让方 / 采购方）显示发起入口���
             收货方（受让方 / 承租方 / 供应商）不显示 */}
         {((!isEnded && ((!isProcurement && !isSelfReceiver) || isBuyer)) ||
           (isEnded && isLessor)) && (
@@ -774,8 +775,8 @@ export function FulfillmentList({
                 {showResourceCol && (
                   <th className="px-4 py-3 font-medium">重量(吨)</th>
                 )}
-                {showRentalSeq && (
-                  <th className="px-4 py-3 font-medium">出租次数</th>
+                {showTurnover && (
+                  <th className="px-4 py-3 font-medium">周转次数</th>
                 )}
                 <th className="px-4 py-3 font-medium">报名开始</th>
                 <th className="px-4 py-3 font-medium">报名截止</th>
@@ -798,7 +799,7 @@ export function FulfillmentList({
                       (hideCarbon ? 7 : 8) +
                       (showResourceCol ? 3 : 0) +
                       (showEmission ? 1 : 0) +
-                      (showRentalSeq ? 1 : 0)
+                      (showTurnover ? 1 : 0)
                     }
                     className="px-4 py-16 text-center text-sm text-muted-foreground"
                   >
@@ -849,11 +850,11 @@ export function FulfillmentList({
                         {p.weight?.toFixed(2) ?? '—'}
                       </td>
                     )}
-                    {showRentalSeq && (
+                    {showTurnover && (
                       <td className="whitespace-nowrap px-4 py-3">
-                        {p.rentalSeq != null ? (
+                        {(p.turnover ?? p.rentalSeq) != null ? (
                           <span className="inline-flex items-center rounded bg-chart-1/12 px-2 py-0.5 text-xs font-medium tabular-nums text-chart-1">
-                            第 {p.rentalSeq} 次出租
+                            {p.turnover != null ? p.turnover : p.rentalSeq} 次周转
                           </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
