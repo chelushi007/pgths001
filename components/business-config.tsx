@@ -42,7 +42,7 @@ export function BusinessConfig() {
         <Card>
           <CardHeader className="flex flex-row items-start justify-between gap-4">
             <div>
-              <CardTitle className="text-base">碳减排贡献权重</CardTitle>
+              <CardTitle className="text-base">处置业务贡献比例</CardTitle>
               <CardDescription className="mt-1">自定义处置方、回收商、钢厂与平台四类角色的贡献比例，合计应为 100%。</CardDescription>
             </div>
             <span className={valid ? 'text-sm font-medium text-primary' : 'text-sm font-medium text-destructive'}>合计 {total}%</span>
@@ -57,7 +57,7 @@ export function BusinessConfig() {
                     min={0}
                     max={100}
                     value={weights[role]}
-                    aria-label={`${role}贡献权重`}
+                    aria-label={`${role}贡献比例`}
                     onChange={(event) => setWeights((current) => ({ ...current, [role]: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))}
                     className="h-9 w-20 text-right"
                   />
